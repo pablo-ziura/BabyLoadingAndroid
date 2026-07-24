@@ -27,6 +27,20 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 
 - Keep UI, state, domain logic, and platform integration separated as the project grows.
 - Prefer unidirectional data flow for Compose screens.
+- Use a feature-first Clean Architecture structure. Every product capability, including onboarding, belongs in `feature/<feature-name>/`.
+- Put screens, `ViewModel`s, immutable UI state, and UI events in `feature/<feature-name>/presentation/`.
+- Add `feature/<feature-name>/domain/` only when the feature has real business rules, use cases, domain models, or repository contracts. Domain code must not depend on Android, Compose, or data implementations.
+- Add `feature/<feature-name>/data/` only when the feature owns persisted or remote data. Data implementations may depend on the feature domain contracts and shared core infrastructure.
+- Keep feature-specific Retrofit services, DTOs, mappers, local sources, and repository implementations inside that feature's `data` layer.
+- Put genuinely reusable technical infrastructure in `core/`: the current design system is in `core/designsystem/theme/`; future shared HTTP configuration, database setup, preferences, and test utilities belong under dedicated `core` packages when implemented.
+- Do not create empty packages or speculative layers. Create a package only with its first concrete production or test file.
+- Keep visual application chrome in `app/shell/`; root and nested navigation contracts and hosts belong in `navigation/`.
+- Keep navigation routes in a dedicated `navigation` package using `@Serializable` type-safe routes.
+- Model top-level tabs as nested navigation graphs and preserve tab state with Navigation save/restore options.
+- Keep destination screens independent from `NavController`; expose navigation through event lambdas.
+- Keep feature screens in separate files; do not use a shared tab placeholder composable.
+- Presentation code may depend on its feature domain layer and `core`, but it must not access another feature's internals directly.
+- Navigation is the only layer that owns `NavController` instances and coordinates transitions between features.
 - Keep composables small, previewable, and focused on rendering state.
 - Move non-trivial business logic out of composables and into plain Kotlin classes, use cases, or ViewModels as appropriate.
 - Avoid introducing new architectural frameworks unless they solve a concrete project need.
@@ -39,6 +53,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Use `remember`, `derivedStateOf`, and side-effect APIs deliberately.
 - Avoid launching work directly from composable bodies; use Compose side-effect APIs or lifecycle-aware layers.
 - Provide previews for reusable UI components when the component has meaningful visual states.
+- Provide Compose previews for primary screens and app shell components.
 - Keep accessibility in mind: content descriptions, readable contrast, touch target sizes, semantic roles, and scalable text.
 
 ## Resources And Manifest
@@ -55,6 +70,13 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Prefer local unit tests for pure Kotlin logic.
 - Use instrumentation or Compose UI tests for Android framework integration and UI behavior.
 - Keep tests deterministic and avoid depending on network, clock, locale, or device state unless that is the behavior under test.
+
+## Workflow And Verification
+
+- To verify the project compiles successfully, run `./gradlew assembleDebug`.
+- To verify logic and automated checks, run `./gradlew check` or `./gradlew testDebugUnitTest`.
+- Before completing complex refactors or feature implementations, run `./gradlew clean assembleDebug testDebugUnitTest`.
+- The primary debugging device is a Pixel 9a running API 36.1. Ensure UI, UX, and hardware integrations remain compatible with this API level and hardware profile.
 
 ## Git And Commits
 
