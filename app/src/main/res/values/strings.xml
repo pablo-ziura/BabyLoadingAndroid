@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">Baby Loading</string>
+    <string name="onboarding_title">Welcome to Baby Loading</string>
+    <string name="onboarding_message">Your baby’s journey starts here.</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="dashboard_tab">Dashboard</string>
+    <string name="journey_tab">Journey</string>
+    <string name="gallery_tab">Gallery</string>
+    <string name="settings_tab">Settings</string>
+    <string name="dashboard_content_description">Open dashboard</string>
+    <string name="journey_content_description">Open journey</string>
+    <string name="gallery_content_description">Open gallery</string>
+    <string name="settings_content_description">Open settings</string>
+    <string name="dashboard_placeholder">Dashboard screen</string>
+    <string name="journey_placeholder">Journey screen</string>
+    <string name="gallery_placeholder">Gallery screen</string>
+    <string name="settings_placeholder">Settings screen</string>
 </resources>
