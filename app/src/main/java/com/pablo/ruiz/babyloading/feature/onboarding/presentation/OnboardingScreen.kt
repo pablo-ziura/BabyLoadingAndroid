@@ -15,14 +15,10 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.PregnantWoman
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.pablo.ruiz.babyloading.R
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingCard
+import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingDatePickerDialog
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingSpacing
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import java.time.LocalDate
@@ -142,7 +139,7 @@ fun OnboardingScreen(
     }
 
     if (showDatePicker) {
-        LastPeriodDatePickerDialog(
+        BabyLoadingDatePickerDialog(
             selectedDate = uiState.selectedDate,
             minimumDate = uiState.minimumDate,
             maximumDate = uiState.maximumDate,
@@ -154,53 +151,6 @@ fun OnboardingScreen(
         )
     }
 }
-
-@Composable
-private fun LastPeriodDatePickerDialog(
-    selectedDate: LocalDate?,
-    minimumDate: LocalDate,
-    maximumDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDate?.toUtcDatePickerMillis(),
-        selectableDates = object : androidx.compose.material3.SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                return utcTimeMillis in minimumDate.toUtcDatePickerMillis()..maximumDate.toUtcDatePickerMillis()
-            }
-        },
-    )
-
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    datePickerState.selectedDateMillis
-                        ?.toLocalDateFromDatePicker()
-                        ?.let(onDateSelected)
-                },
-                enabled = datePickerState.selectedDateMillis != null,
-            ) {
-                Text(text = stringResource(android.R.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = stringResource(android.R.string.cancel))
-            }
-        },
-    ) {
-        DatePicker(state = datePickerState)
-    }
-}
-
-internal fun LocalDate.toUtcDatePickerMillis(): Long = toEpochDay() * MILLIS_PER_DAY
-
-internal fun Long.toLocalDateFromDatePicker(): LocalDate = LocalDate.ofEpochDay(this / MILLIS_PER_DAY)
-
-private const val MILLIS_PER_DAY = 86_400_000L
 
 @Preview(showBackground = true)
 @Composable
