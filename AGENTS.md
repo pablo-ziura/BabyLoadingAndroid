@@ -84,6 +84,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 ## Resources And Manifest
 
 - Keep user-facing strings in `res/values/strings.xml`.
+- Declare supported English and Spanish app locales in `res/xml/locales_config.xml` and delegate language choice to Android per-app language settings.
 - Prefer theme and color resources for reusable styling decisions.
 - Keep manifest permissions minimal and explain why any new permission is required.
 - Do not add exported components unless they are required; explicitly set `android:exported` where needed.

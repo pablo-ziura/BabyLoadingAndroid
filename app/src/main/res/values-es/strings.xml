@@ -51,4 +51,17 @@
     <string name="journey_stage_review">La guía termina en la semana 42. Revisa la fecha guardada y contacta con tu equipo sanitario si es correcta.</string>
     <string name="gallery_placeholder">Pantalla de galería</string>
     <string name="settings_placeholder">Pantalla de ajustes</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_pregnancy_title">Fechas del embarazo</string>
+    <string name="settings_last_period_prompt">Primer día de tu última menstruación</string>
+    <string name="settings_choose_date">Elige una fecha</string>
+    <string name="settings_due_date">Fecha probable de parto</string>
+    <string name="settings_save_date">Guardar fecha</string>
+    <string name="settings_date_saved">Fecha del embarazo actualizada</string>
+    <string name="settings_language_title">Idioma de la aplicación</string>
+    <string name="settings_language_message">Baby Loading utiliza la preferencia de idioma por aplicación de Android.</string>
+    <string name="settings_language_action">Abrir ajustes de idioma</string>
+    <string name="settings_privacy_title">Privacidad</string>
+    <string name="settings_privacy_message">La configuración del embarazo y los datos privados de seguimiento permanecen en este dispositivo y se excluyen de las copias de seguridad y transferencias de Android.</string>
+    <string name="settings_version">Baby Loading %1$s</string>
 </resources>

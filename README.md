@@ -23,6 +23,8 @@ The dashboard combines the saved date and local weekly content in an immutable U
 
 The journey presents weeks 1–42 as an Android timeline with completed, current, and upcoming semantics. Weeks can be expanded for details, the list opens near the current position, and early or post-term rows use purpose-built guidance instead of inventing missing editorial data.
 
+Settings lets the user revise the last-period date within the same validated range, previews the estimated due date, links to Android’s native per-app language settings for English or Spanish, and states the local-only backup policy.
+
 ```text
 Baby Loading
 ├── app/
