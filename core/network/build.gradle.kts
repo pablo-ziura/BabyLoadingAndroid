@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.babyloading.core.network"
+    namespace = "com.pablo.ruiz.babyloading.core.network"
     compileSdk {
         version = release(37) {
             minorApiLevel = 0
