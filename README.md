@@ -16,6 +16,8 @@ Pregnancy calculations use `LocalDate` and an injected `Clock`. The estimated du
 
 On first launch, a mandatory Material date picker captures the last-period date. Preferences DataStore persists it as ISO-8601, and app startup waits for that state before choosing onboarding or the main shell.
 
+Validated local JSON provides weekly editorial content for weeks 6–40 in English and Spanish. Unsupported locales fall back to English, weeks below 6 have no weekly entry, and weeks 41–42 reuse week 40 content while retaining their distinct pregnancy stage.
+
 ```text
 Baby Loading
 ├── app/

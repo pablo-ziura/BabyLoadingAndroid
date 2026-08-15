@@ -39,6 +39,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Store the mandatory last-period date as an ISO-8601 string in Preferences DataStore; its presence decides whether onboarding or the main shell starts.
 - Keep feature-specific Retrofit services, DTOs, mappers, local sources, and repository implementations inside that feature's `data` layer.
 - Put genuinely reusable technical infrastructure in `core/`: the current design system is in `core/designsystem/theme/`; future shared HTTP configuration, database setup, preferences, and test utilities belong under dedicated `core` packages when implemented.
+- Keep weekly editorial pregnancy content local-only in validated `pregnancy-content.en.json` and `pregnancy-content.es.json` assets; do not add remote refresh behavior without an explicit product decision.
 - Do not create empty packages or speculative layers. Create a package only with its first concrete production or test file.
 - Keep visual application chrome in `app/shell/`; root and nested navigation contracts and hosts belong in `navigation/`.
 - Keep navigation routes in a dedicated `navigation` package using `@Serializable` type-safe routes.
