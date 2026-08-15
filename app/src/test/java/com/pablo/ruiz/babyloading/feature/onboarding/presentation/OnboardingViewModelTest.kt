@@ -77,6 +77,22 @@ class OnboardingViewModelTest {
         )
     }
 
+    @Test
+    fun dateOlderThanFortyTwoWeeksShowsValidationErrorWithoutPersisting() = runTest {
+        val viewModel = OnboardingViewModel(repository, saveUseCase, clock)
+        advanceUntilIdle()
+
+        viewModel.onEvent(OnboardingEvent.DateSelected(LocalDate.of(2025, 10, 24)))
+        viewModel.onEvent(OnboardingEvent.Continue)
+        advanceUntilIdle()
+
+        assertNull(repository.storedDate.value)
+        assertEquals(
+            OnboardingValidationError.DateTooOld,
+            viewModel.uiState.value.validationError,
+        )
+    }
+
     private class FakePregnancyRepository : PregnancyRepository {
         val storedDate = MutableStateFlow<LocalDate?>(null)
         override val lastPeriodDate: Flow<LocalDate?> = storedDate

@@ -42,6 +42,9 @@ class PregnancyUseCasesTest {
 
         assertEquals(PregnancyDateValidation.FutureDate, useCase(LocalDate.of(2026, 8, 16)))
         assertEquals(validDate, repository.savedDate.value)
+
+        assertEquals(PregnancyDateValidation.DateTooOld, useCase(LocalDate.of(2025, 10, 24)))
+        assertEquals(validDate, repository.savedDate.value)
     }
 
     @Test
