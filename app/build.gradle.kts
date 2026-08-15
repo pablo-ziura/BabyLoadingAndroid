@@ -47,6 +47,7 @@ android {
         buildConfig = true
         compose = true
     }
+    sourceSets.getByName("test").resources.directories.add("src/main/assets")
 }
 
 dependencies {
