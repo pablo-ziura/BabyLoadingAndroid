@@ -27,6 +27,8 @@ Settings lets the user revise the last-period date within the same validated ran
 
 The unified gallery imports up to 20 images through Android Photo Picker without storage permission, copies them into bounded app-private storage, and stores metadata in Room. Each tile identifies imported or guided-tracking origin; deleting a tracking item never removes its independent MediaStore export.
 
+Guided belly tracking uses CameraX with a consistent alignment overlay, front/back camera selection, and optional rear flash. Each capture is saved privately before Android exports an independent JPEG to `Pictures/Baby Loading`; a MediaStore failure never discards the private copy.
+
 ```text
 Baby Loading
 ├── app/

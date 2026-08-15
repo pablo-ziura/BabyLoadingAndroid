@@ -30,4 +30,7 @@ data object JourneyRoute
 data object GalleryRoute
 
 @Serializable
+data object GuidedTrackingRoute
+
+@Serializable
 data object SettingsRoute

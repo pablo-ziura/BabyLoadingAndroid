@@ -19,6 +19,7 @@ import com.pablo.ruiz.babyloading.app.shell.MainScreen
 import com.pablo.ruiz.babyloading.app.shell.MainTab
 import com.pablo.ruiz.babyloading.feature.dashboard.presentation.DashboardScreen
 import com.pablo.ruiz.babyloading.feature.gallery.presentation.GalleryScreen
+import com.pablo.ruiz.babyloading.feature.tracking.presentation.GuidedTrackingScreen
 import com.pablo.ruiz.babyloading.feature.journey.presentation.JourneyScreen
 import com.pablo.ruiz.babyloading.feature.settings.presentation.SettingsScreen
 
@@ -70,7 +71,15 @@ private fun TabNavigationHost(
         }
         navigation<GalleryGraph>(startDestination = GalleryRoute) {
             composable<GalleryRoute> {
-                GalleryScreen()
+                GalleryScreen(
+                    onStartTracking = { navController.navigate(GuidedTrackingRoute) },
+                )
+            }
+            composable<GuidedTrackingRoute> {
+                GuidedTrackingScreen(
+                    onBack = navController::navigateUp,
+                    onCaptureSaved = navController::navigateUp,
+                )
             }
         }
         navigation<SettingsGraph>(startDestination = SettingsRoute) {
