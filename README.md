@@ -2,7 +2,7 @@
 
 Android application built with Kotlin, Jetpack Compose Material 3, native edge-to-edge, and type-safe Navigation Compose routes.
 
-The Android application ID and root package are `com.pablo.ruiz.babyloading`.
+The Android application ID and root package are `com.pablo.ruiz.babyloading`. Application data is intentionally excluded from Android Auto Backup and device-to-device transfer.
 
 ## Architecture
 
