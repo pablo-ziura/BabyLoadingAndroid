@@ -52,7 +52,6 @@ import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingDatePic
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingSpacing
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import java.time.LocalDate
-import java.util.Locale
 
 @Composable
 fun SettingsScreen(
@@ -136,7 +135,7 @@ private fun SettingsList(
     onOpenLanguageSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val locale = checkNotNull(LocalConfiguration.current.locales[0])
     LazyColumn(
         modifier = modifier
             .fillMaxSize()

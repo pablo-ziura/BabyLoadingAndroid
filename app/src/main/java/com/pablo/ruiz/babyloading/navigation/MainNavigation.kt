@@ -26,7 +26,21 @@ import com.pablo.ruiz.babyloading.feature.settings.presentation.SettingsScreen
 @Composable
 internal fun MainNavigation(
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    dashboardContent: @Composable () -> Unit = { DashboardScreen() },
+    journeyContent: @Composable () -> Unit = { JourneyScreen() },
+    galleryContent: @Composable () -> Unit = {
+        GalleryScreen(
+            onStartTracking = { navController.navigate(GuidedTrackingRoute) },
+        )
+    },
+    guidedTrackingContent: @Composable () -> Unit = {
+        GuidedTrackingScreen(
+            onBack = navController::navigateUp,
+            onCaptureSaved = navController::navigateUp,
+        )
+    },
+    settingsContent: @Composable () -> Unit = { SettingsScreen() },
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val selectedTab = MainTab.entries.firstOrNull { tab ->
@@ -42,6 +56,11 @@ internal fun MainNavigation(
     ) { innerPadding ->
         TabNavigationHost(
             navController = navController,
+            dashboardContent = dashboardContent,
+            journeyContent = journeyContent,
+            galleryContent = galleryContent,
+            guidedTrackingContent = guidedTrackingContent,
+            settingsContent = settingsContent,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -52,7 +71,12 @@ internal fun MainNavigation(
 @Composable
 private fun TabNavigationHost(
     navController: NavHostController,
-    modifier: Modifier
+    dashboardContent: @Composable () -> Unit,
+    journeyContent: @Composable () -> Unit,
+    galleryContent: @Composable () -> Unit,
+    guidedTrackingContent: @Composable () -> Unit,
+    settingsContent: @Composable () -> Unit,
+    modifier: Modifier,
 ) {
     NavHost(
         navController = navController,
@@ -61,30 +85,25 @@ private fun TabNavigationHost(
     ) {
         navigation<DashboardGraph>(startDestination = DashboardRoute) {
             composable<DashboardRoute> {
-                DashboardScreen()
+                dashboardContent()
             }
         }
         navigation<JourneyGraph>(startDestination = JourneyRoute) {
             composable<JourneyRoute> {
-                JourneyScreen()
+                journeyContent()
             }
         }
         navigation<GalleryGraph>(startDestination = GalleryRoute) {
             composable<GalleryRoute> {
-                GalleryScreen(
-                    onStartTracking = { navController.navigate(GuidedTrackingRoute) },
-                )
+                galleryContent()
             }
             composable<GuidedTrackingRoute> {
-                GuidedTrackingScreen(
-                    onBack = navController::navigateUp,
-                    onCaptureSaved = navController::navigateUp,
-                )
+                guidedTrackingContent()
             }
         }
         navigation<SettingsGraph>(startDestination = SettingsRoute) {
             composable<SettingsRoute> {
-                SettingsScreen()
+                settingsContent()
             }
         }
     }
@@ -98,15 +117,9 @@ private fun tabNavigationOptions(navController: NavHostController) = navOptions 
     }
 }
 
-private fun NavDestination?.isInGraph(tab: MainTab): Boolean = when (tab) {
-    MainTab.Dashboard -> hasRoute(DashboardGraph::class.qualifiedName.orEmpty(), null)
-    MainTab.Journey -> hasRoute(JourneyGraph::class.qualifiedName.orEmpty(), null)
-    MainTab.Gallery -> hasRoute(GalleryGraph::class.qualifiedName.orEmpty(), null)
-    MainTab.Settings -> hasRoute(SettingsGraph::class.qualifiedName.orEmpty(), null)
-}
-
-private fun NavDestination?.hasRoute(route: String, arguments: android.os.Bundle?): Boolean {
+private fun NavDestination?.isInGraph(tab: MainTab): Boolean {
+    val graphRoute = tab.graphRoute::class.qualifiedName ?: return false
     return this?.hierarchy?.any { destination ->
-        destination.hasRoute(route, arguments)
+        destination.route == graphRoute
     } == true
 }

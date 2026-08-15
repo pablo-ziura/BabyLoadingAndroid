@@ -12,10 +12,10 @@ import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingUiSt
 
 @Composable
 fun AppNavigation(
+    modifier: Modifier = Modifier,
     startDestination: Any = OnboardingRoute,
     onboardingUiState: OnboardingUiState = OnboardingUiState(isLoading = false),
     onOnboardingEvent: (OnboardingEvent) -> Unit = {},
-    modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
     NavHost(

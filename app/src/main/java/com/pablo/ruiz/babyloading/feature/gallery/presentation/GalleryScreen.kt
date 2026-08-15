@@ -71,7 +71,6 @@ import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GalleryItem
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GallerySource
 import java.time.Instant
 import java.time.ZoneId
-import java.util.Locale
 
 @Composable
 fun GalleryScreen(
@@ -268,7 +267,7 @@ private fun GalleryGridItem(
     onClick: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val locale = checkNotNull(LocalConfiguration.current.locales[0])
     Card(
         modifier = Modifier
             .fillMaxWidth()

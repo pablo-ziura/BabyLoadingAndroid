@@ -1,7 +1,7 @@
 package com.pablo.ruiz.babyloading.feature.gallery.data.local
 
 import android.content.Context
-import android.net.Uri
+import androidx.core.net.toUri
 import com.pablo.ruiz.babyloading.core.coroutines.IoDispatcher
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
@@ -21,7 +21,7 @@ class PrivateGalleryImageStore @Inject constructor(
         get() = File(context.filesDir, GALLERY_DIRECTORY).apply { mkdirs() }
 
     override suspend fun importFromUri(uriValue: String): StoredGalleryImage = withContext(ioDispatcher) {
-        val uri = Uri.parse(uriValue)
+        val uri = uriValue.toUri()
         val extension = when (context.contentResolver.getType(uri)) {
             "image/png" -> "png"
             "image/webp" -> "webp"
