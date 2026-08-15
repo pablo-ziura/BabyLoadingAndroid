@@ -32,6 +32,23 @@
     <string name="dashboard_stage_postterm">Has superado la semana 40. Sigue el plan acordado con tu equipo sanitario.</string>
     <string name="dashboard_stage_review">Esta estimación supera la semana 42. Revisa la fecha guardada y contacta con tu equipo sanitario si es correcta.</string>
     <string name="journey_placeholder">Pantalla de evolución</string>
+    <string name="journey_title">Tu evolución</string>
+    <string name="journey_missing_setup">Falta la configuración del embarazo. Añade la fecha en Ajustes.</string>
+    <string name="journey_current_position">Ahora: semana %1$d + %2$d días</string>
+    <string name="journey_week">Semana %1$d</string>
+    <string name="journey_you_are_here">Estás aquí</string>
+    <string name="journey_status_completed">Semana completada</string>
+    <string name="journey_status_current">Semana actual</string>
+    <string name="journey_status_upcoming">Próxima semana</string>
+    <string name="journey_expand_week">Mostrar detalles de la semana</string>
+    <string name="journey_collapse_week">Ocultar detalles de la semana</string>
+    <string name="journey_early_week_summary">Inicio del embarazo</string>
+    <string name="journey_early_week_detail">La guía editorial detallada comienza en la semana 6. Tu progreso estimado sí incluye esta semana.</string>
+    <string name="journey_postterm_week_summary">Seguimiento postérmino</string>
+    <string name="journey_postterm_week_detail">Sigue el plan individual acordado con tu equipo sanitario para esta semana.</string>
+    <string name="journey_stage_early">La guía semanal comienza en la semana 1; el contenido detallado del desarrollo empieza en la semana 6.</string>
+    <string name="journey_stage_postterm">Las semanas 41 y 42 se muestran como seguimiento postérmino en lugar de repetir los hitos de la semana 40.</string>
+    <string name="journey_stage_review">La guía termina en la semana 42. Revisa la fecha guardada y contacta con tu equipo sanitario si es correcta.</string>
     <string name="gallery_placeholder">Pantalla de galería</string>
     <string name="settings_placeholder">Pantalla de ajustes</string>
 </resources>
