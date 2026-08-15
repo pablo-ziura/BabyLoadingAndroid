@@ -7,16 +7,14 @@ Android application built with Kotlin, Jetpack Compose Material 3, native edge-t
 The project follows a pragmatic, feature-first Clean Architecture. Packages are created only when they contain concrete code; no empty `data` or `domain` layers are kept as placeholders.
 
 ```text
-com.example.babyloading/
-├── app/shell/                    # Main application chrome and bottom bar UI
-├── navigation/                   # Type-safe routes and navigation hosts
-├── core/designsystem/theme/      # Shared Compose theme and visual tokens
-└── feature/
-    ├── onboarding/presentation/  # Onboarding UI
-    ├── dashboard/presentation/   # Dashboard UI
-    ├── journey/presentation/     # Journey UI
-    ├── gallery/presentation/     # Gallery UI
-    └── settings/presentation/    # Settings UI
+Baby Loading
+├── app/
+│   └── com.example.babyloading/
+│       ├── app/shell/                    # Main application chrome and bottom bar UI
+│       ├── navigation/                   # Type-safe routes and navigation hosts
+│       ├── core/designsystem/theme/      # Shared Compose theme and visual tokens
+│       └── feature/                      # Product capabilities
+└── core/network/                         # Shared HTTP, serialization, auth, and error handling
 ```
 
 Each feature owns its implementation:
@@ -27,6 +25,23 @@ Each feature owns its implementation:
 - Shared infrastructure belongs in `core/`. For example, a reusable HTTP client belongs in `core/network/`, while an endpoint used only by Gallery belongs in `feature/gallery/data/remote/`.
 
 The `app/shell` layer renders the main application chrome. The `navigation` layer owns `NavController`s and app transitions. Features stay navigation-agnostic and expose user events through lambdas.
+
+## Networking
+
+The `:core:network` module provides the shared Kotlinx Serialization, OkHttp, Retrofit, Hilt, authentication, and safe-call infrastructure. API-specific services, DTOs, mappers, remote data sources, and repositories remain in the owning feature's `data` package.
+
+Configure the API root as a Gradle property. The URL is normalized with a trailing slash:
+
+```bash
+./gradlew assembleDebug \
+  -PBABYLOADING_API_BASE_URL=https://api.example.com/
+```
+
+When the property is absent, the app uses `https://example.invalid/`, a deliberately non-routable fallback. This keeps builds reproducible before a backend is connected without risking calls to a real service.
+
+Normal feature services use the default authenticated `Retrofit`. Authentication and refresh implementations bind the optional `AccessTokenStore` and `AccessTokenRefresher` contracts. Login and refresh services must use the qualified unauthenticated client or Retrofit instance to prevent recursive `401` handling. Automatic Bearer credentials are sent only to the configured API origin; caller-provided `Authorization` headers are preserved and excluded from automatic refresh.
+
+Network calls return `NetworkResult` through `safeApiCall`. A feature maps `NetworkError` to its own domain error before crossing from `data` into `domain` or `presentation`.
 
 ## Navigation
 
@@ -39,7 +54,7 @@ Run these commands from the repository root:
 ```bash
 ./gradlew assembleDebug
 ./gradlew check
-./gradlew clean assembleDebug testDebugUnitTest
+./gradlew clean assembleDebug assembleRelease testDebugUnitTest testReleaseUnitTest check
 ```
 
 The primary debugging target is a Pixel 9a running API 36.1. The project compiles and targets Android API 37, while keeping runtime behavior compatible with the configured minimum SDK.
