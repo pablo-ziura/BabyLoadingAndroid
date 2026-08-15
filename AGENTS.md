@@ -65,6 +65,8 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 ## Jetpack Compose
 
 - Use Material 3 components by default.
+- Use the fixed light-only `BabyLoadingTheme`; do not enable dynamic color or dark mode unless the product direction changes explicitly.
+- Reuse design-system spacing, shapes, backgrounds, and cards instead of defining feature-local visual constants.
 - Keep UI state immutable where practical.
 - Use `remember`, `derivedStateOf`, and side-effect APIs deliberately.
 - Avoid launching work directly from composable bodies; use Compose side-effect APIs or lifecycle-aware layers.
