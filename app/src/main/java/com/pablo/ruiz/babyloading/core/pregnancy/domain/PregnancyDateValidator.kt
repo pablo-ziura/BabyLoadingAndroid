@@ -7,15 +7,22 @@ class PregnancyDateValidator {
         lastPeriodDate: LocalDate,
         currentDate: LocalDate,
     ): PregnancyDateValidation {
-        return if (lastPeriodDate.isAfter(currentDate)) {
-            PregnancyDateValidation.FutureDate
-        } else {
-            PregnancyDateValidation.Valid
+        return when {
+            lastPeriodDate.isAfter(currentDate) -> PregnancyDateValidation.FutureDate
+            lastPeriodDate.isBefore(currentDate.minusWeeks(MaximumPastWeeks.toLong())) -> {
+                PregnancyDateValidation.DateTooOld
+            }
+            else -> PregnancyDateValidation.Valid
         }
+    }
+
+    companion object {
+        const val MaximumPastWeeks = 42
     }
 }
 
 enum class PregnancyDateValidation {
     Valid,
     FutureDate,
+    DateTooOld,
 }

@@ -5,6 +5,7 @@
     <string name="onboarding_date_label">First day of your last period</string>
     <string name="onboarding_choose_date">Choose a date</string>
     <string name="onboarding_future_date_error">The date cannot be in the future.</string>
+    <string name="onboarding_old_date_error">Choose a date within the last 42 weeks.</string>
     <string name="onboarding_continue">Continue</string>
     <string name="dashboard_tab">Dashboard</string>
     <string name="journey_tab">Journey</string>

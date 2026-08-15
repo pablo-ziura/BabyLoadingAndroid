@@ -111,7 +111,12 @@ fun OnboardingScreen(
                 }
                 if (uiState.validationError != null) {
                     Text(
-                        text = stringResource(R.string.onboarding_future_date_error),
+                        text = stringResource(
+                            when (uiState.validationError) {
+                                OnboardingValidationError.FutureDate -> R.string.onboarding_future_date_error
+                                OnboardingValidationError.DateTooOld -> R.string.onboarding_old_date_error
+                            },
+                        ),
                         modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium,
@@ -139,6 +144,7 @@ fun OnboardingScreen(
     if (showDatePicker) {
         LastPeriodDatePickerDialog(
             selectedDate = uiState.selectedDate,
+            minimumDate = uiState.minimumDate,
             maximumDate = uiState.maximumDate,
             onDateSelected = { date ->
                 onEvent(OnboardingEvent.DateSelected(date))
@@ -152,6 +158,7 @@ fun OnboardingScreen(
 @Composable
 private fun LastPeriodDatePickerDialog(
     selectedDate: LocalDate?,
+    minimumDate: LocalDate,
     maximumDate: LocalDate,
     onDateSelected: (LocalDate) -> Unit,
     onDismiss: () -> Unit,
@@ -160,7 +167,7 @@ private fun LastPeriodDatePickerDialog(
         initialSelectedDateMillis = selectedDate?.toUtcDatePickerMillis(),
         selectableDates = object : androidx.compose.material3.SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                return utcTimeMillis <= maximumDate.toUtcDatePickerMillis()
+                return utcTimeMillis in minimumDate.toUtcDatePickerMillis()..maximumDate.toUtcDatePickerMillis()
             }
         },
     )
@@ -203,6 +210,7 @@ private fun OnboardingScreenPreview() {
             uiState = OnboardingUiState(
                 isLoading = false,
                 selectedDate = LocalDate.of(2026, 5, 10),
+                minimumDate = LocalDate.of(2025, 10, 25),
                 maximumDate = LocalDate.of(2026, 8, 15),
             ),
             onEvent = {},

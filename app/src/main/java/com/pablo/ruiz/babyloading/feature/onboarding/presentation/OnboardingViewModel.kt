@@ -3,6 +3,7 @@ package com.pablo.ruiz.babyloading.feature.onboarding.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidation
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.SavePregnancyDateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +24,12 @@ class OnboardingViewModel @Inject constructor(
     clock: Clock,
 ) : ViewModel() {
     private val currentDate = LocalDate.now(clock)
-    private val _uiState = MutableStateFlow(OnboardingUiState(maximumDate = currentDate))
+    private val _uiState = MutableStateFlow(
+        OnboardingUiState(
+            minimumDate = currentDate.minusWeeks(PregnancyDateValidator.MaximumPastWeeks.toLong()),
+            maximumDate = currentDate,
+        ),
+    )
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
 
     init {
@@ -67,6 +73,11 @@ class OnboardingViewModel @Inject constructor(
                 PregnancyDateValidation.FutureDate -> {
                     _uiState.update { state ->
                         state.copy(validationError = OnboardingValidationError.FutureDate)
+                    }
+                }
+                PregnancyDateValidation.DateTooOld -> {
+                    _uiState.update { state ->
+                        state.copy(validationError = OnboardingValidationError.DateTooOld)
                     }
                 }
             }
