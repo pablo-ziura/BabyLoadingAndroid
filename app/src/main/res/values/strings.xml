@@ -50,4 +50,17 @@
     <string name="journey_stage_review">The guide ends at week 42. Review your saved date and contact your healthcare team if it is correct.</string>
     <string name="gallery_placeholder">Gallery screen</string>
     <string name="settings_placeholder">Settings screen</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_pregnancy_title">Pregnancy dates</string>
+    <string name="settings_last_period_prompt">First day of your last period</string>
+    <string name="settings_choose_date">Choose a date</string>
+    <string name="settings_due_date">Estimated due date</string>
+    <string name="settings_save_date">Save date</string>
+    <string name="settings_date_saved">Pregnancy date updated</string>
+    <string name="settings_language_title">App language</string>
+    <string name="settings_language_message">Baby Loading follows Android’s per-app language preference.</string>
+    <string name="settings_language_action">Open language settings</string>
+    <string name="settings_privacy_title">Privacy</string>
+    <string name="settings_privacy_message">Your pregnancy settings and private tracking data stay on this device and are excluded from Android backup and device transfer.</string>
+    <string name="settings_version">Baby Loading %1$s</string>
 </resources>
