@@ -1,6 +1,9 @@
 package com.pablo.ruiz.babyloading
 
 import androidx.activity.ComponentActivity
+import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -8,20 +11,20 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.pablo.ruiz.babyloading.navigation.AppNavigation
-import com.pablo.ruiz.babyloading.navigation.MainShellGraph
+import com.pablo.ruiz.babyloading.navigation.MainNavigation
 import com.pablo.ruiz.babyloading.navigation.OnboardingRoute
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingEvent
 import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingUiState
 import java.time.LocalDate
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -33,11 +36,6 @@ class NavigationIntegrationTest {
 
     private lateinit var navController: NavHostController
     private var receivedOnboardingEvent: OnboardingEvent? = null
-
-    @Before
-    fun setUp() {
-        setNavigationContent()
-    }
 
     private fun setNavigationContent(
         startDestination: Any = OnboardingRoute,
@@ -66,6 +64,8 @@ class NavigationIntegrationTest {
 
     @Test
     fun onboardingIsTheInitialDestination() {
+        setNavigationContent()
+
         composeTestRule.onNodeWithText(string(R.string.onboarding_title)).assertIsDisplayed()
         composeTestRule.runOnIdle {
             assertTrue(navController.currentDestination.matches(OnboardingRoute::class.qualifiedName.orEmpty()))
@@ -74,6 +74,8 @@ class NavigationIntegrationTest {
 
     @Test
     fun continueRequestsDatePersistence() {
+        setNavigationContent()
+
         composeTestRule.onNodeWithText(string(R.string.onboarding_continue)).performClick()
 
         composeTestRule.runOnIdle {
@@ -95,18 +97,58 @@ class NavigationIntegrationTest {
 
     @Test
     fun tabsShowTheirRootDestinationAndSelection() {
-        setNavigationContent(startDestination = MainShellGraph)
+        setMainTabsContent()
 
-        assertTabSelection("dashboard_tab", R.string.dashboard_title)
-        assertTabSelection("journey_tab", R.string.journey_title)
-        assertTabSelection("gallery_tab", R.string.gallery_title)
-        assertTabSelection("settings_tab", R.string.settings_title)
+        assertTabSelection("dashboard_tab", "dashboard_screen")
+        assertTabSelection("journey_tab", "journey_screen")
+        assertTabSelection("gallery_tab", "gallery_screen")
+        assertTabSelection("settings_tab", "settings_screen")
     }
 
-    private fun assertTabSelection(tabTag: String, screenTitleRes: Int) {
+    private fun setMainTabsContent() {
+        composeTestRule.setContent {
+            val testNavController = TestNavHostController(composeTestRule.activity).apply {
+                navigatorProvider.addNavigator(ComposeNavigator())
+            }
+            navController = testNavController
+
+            BabyLoadingTheme {
+                MainNavigation(
+                    navController = testNavController,
+                    dashboardContent = {
+                        Text(
+                            text = stringResource(R.string.dashboard_title),
+                            modifier = Modifier.testTag("dashboard_screen"),
+                        )
+                    },
+                    journeyContent = {
+                        Text(
+                            text = stringResource(R.string.journey_title),
+                            modifier = Modifier.testTag("journey_screen"),
+                        )
+                    },
+                    galleryContent = {
+                        Text(
+                            text = stringResource(R.string.gallery_title),
+                            modifier = Modifier.testTag("gallery_screen"),
+                        )
+                    },
+                    guidedTrackingContent = {},
+                    settingsContent = {
+                        Text(
+                            text = stringResource(R.string.settings_title),
+                            modifier = Modifier.testTag("settings_screen"),
+                        )
+                    },
+                )
+            }
+        }
+    }
+
+    private fun assertTabSelection(tabTag: String, screenTag: String) {
         composeTestRule.onNodeWithTag(tabTag).performClick()
         composeTestRule.onNodeWithTag(tabTag).assertIsSelected()
-        composeTestRule.onNodeWithText(string(screenTitleRes)).assertIsDisplayed()
+        composeTestRule.onNodeWithTag(screenTag).assertIsDisplayed()
     }
 
     private fun string(resourceId: Int): String {
