@@ -51,6 +51,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Keep composables small, previewable, and focused on rendering state.
 - Use a bottom navigation bar below 600 dp and a navigation rail at 600 dp and above.
 - Move non-trivial business logic out of composables and into plain Kotlin classes, use cases, or ViewModels as appropriate.
+- Inject qualified coroutine dispatchers for blocking data work so ViewModel tests can control execution deterministically.
 - Avoid introducing new architectural frameworks unless they solve a concrete project need.
 - Follow existing package structure until a feature justifies creating clearer module or package boundaries.
 
