@@ -25,6 +25,8 @@ The journey presents weeks 1–42 as an Android timeline with completed, current
 
 Settings lets the user revise the last-period date within the same validated range, previews the estimated due date, links to Android’s native per-app language settings for English or Spanish, and states the local-only backup policy.
 
+The unified gallery imports up to 20 images through Android Photo Picker without storage permission, copies them into bounded app-private storage, and stores metadata in Room. Each tile identifies imported or guided-tracking origin; deleting a tracking item never removes its independent MediaStore export.
+
 ```text
 Baby Loading
 ├── app/
