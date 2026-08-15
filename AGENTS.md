@@ -43,6 +43,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Label gallery items as imported or guided tracking. Deleting a guided tracking item removes only its private app copy and never deletes an exported MediaStore copy.
 - Use CameraX for guided captures and request only the runtime camera permission. Save the private Room-backed copy first, then export a separate JPEG to `Pictures/Baby Loading` through MediaStore without storage permissions.
 - Treat MediaStore export as recoverable: if it fails, preserve and report the successfully saved private gallery copy.
+- Provide a single fixed 4x2 home-screen widget with Jetpack Glance. Refresh it immediately after pregnancy-date changes and at most daily while the app is inactive; do not schedule frequent background work or notifications.
 - Export Room schemas to `app/schemas/` and add migrations whenever the database version changes.
 - Put genuinely reusable technical infrastructure in `core/`: the current design system is in `core/designsystem/theme/`; future shared HTTP configuration, database setup, preferences, and test utilities belong under dedicated `core` packages when implemented.
 - Keep weekly editorial pregnancy content local-only in validated `pregnancy-content.en.json` and `pregnancy-content.es.json` assets; do not add remote refresh behavior without an explicit product decision.
