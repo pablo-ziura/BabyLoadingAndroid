@@ -27,12 +27,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddPhotoAlternate
 import androidx.compose.material.icons.outlined.BrokenImage
+import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -73,6 +75,7 @@ import java.util.Locale
 
 @Composable
 fun GalleryScreen(
+    onStartTracking: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: GalleryViewModel = hiltViewModel(),
 ) {
@@ -91,6 +94,7 @@ fun GalleryScreen(
                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
             )
         },
+        onStartTracking = onStartTracking,
         modifier = modifier,
     )
 }
@@ -100,6 +104,7 @@ private fun GalleryContent(
     uiState: GalleryUiState,
     onEvent: (GalleryEvent) -> Unit,
     onAddPhotos: () -> Unit,
+    onStartTracking: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -141,6 +146,7 @@ private fun GalleryContent(
                     items = uiState.items,
                     onItemSelected = { id -> onEvent(GalleryEvent.ItemSelected(id)) },
                     onDeleteRequested = { id -> onEvent(GalleryEvent.DeleteRequested(id)) },
+                    onStartTracking = onStartTracking,
                 )
             }
         }
@@ -167,6 +173,7 @@ private fun GalleryGrid(
     items: List<GalleryItem>,
     onItemSelected: (String) -> Unit,
     onDeleteRequested: (String) -> Unit,
+    onStartTracking: () -> Unit,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 148.dp),
@@ -189,6 +196,9 @@ private fun GalleryGrid(
                 style = MaterialTheme.typography.headlineLarge,
             )
         }
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            TrackingEntryCard(onStartTracking = onStartTracking)
+        }
         if (items.isEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 EmptyGallery()
@@ -203,6 +213,50 @@ private fun GalleryGrid(
                     onClick = { onItemSelected(item.id) },
                     onDelete = { onDeleteRequested(item.id) },
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TrackingEntryCard(onStartTracking: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = BabyLoadingSpacing.Medium),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(BabyLoadingSpacing.Medium),
+            horizontalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Medium),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.CameraAlt,
+                contentDescription = null,
+                modifier = Modifier.size(40.dp),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.tracking_entry_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = stringResource(R.string.tracking_entry_message),
+                    modifier = Modifier.padding(top = BabyLoadingSpacing.ExtraSmall),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Button(
+                    onClick = onStartTracking,
+                    modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
+                ) {
+                    Text(stringResource(R.string.tracking_entry_action))
+                }
             }
         }
     }
@@ -452,6 +506,7 @@ private fun EmptyGalleryPreview() {
             uiState = GalleryUiState(isLoading = false),
             onEvent = {},
             onAddPhotos = {},
+            onStartTracking = {},
         )
     }
 }
@@ -475,6 +530,7 @@ private fun GalleryGridPreview() {
             ),
             onEvent = {},
             onAddPhotos = {},
+            onStartTracking = {},
         )
     }
 }
