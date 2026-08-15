@@ -49,6 +49,27 @@
     <string name="journey_stage_postterm">Weeks 41 and 42 are shown as post-term follow-up rather than repeating week 40 milestones.</string>
     <string name="journey_stage_review">The guide ends at week 42. Review your saved date and contact your healthcare team if it is correct.</string>
     <string name="gallery_placeholder">Gallery screen</string>
+    <string name="gallery_title">Gallery</string>
+    <string name="gallery_add_photos">Add photos</string>
+    <string name="gallery_empty_title">Your gallery is empty</string>
+    <string name="gallery_empty_message">Choose photos with Android Photo Picker. Baby Loading keeps a private copy for your journey.</string>
+    <string name="gallery_source_imported">Imported</string>
+    <string name="gallery_source_tracking">Belly tracking</string>
+    <string name="gallery_photo_description">%1$s pregnancy photo</string>
+    <string name="gallery_image_unavailable">Image unavailable</string>
+    <string name="gallery_delete_photo">Delete photo</string>
+    <string name="gallery_close_photo">Close photo</string>
+    <string name="gallery_delete_title">Delete this photo?</string>
+    <string name="gallery_delete_imported_message">The private copy will be removed from Baby Loading.</string>
+    <string name="gallery_delete_tracking_message">The private tracking copy will be removed. Any copy previously saved to your system photo library will remain there.</string>
+    <string name="gallery_delete_confirm">Delete</string>
+    <string name="gallery_import_partial">%1$d photos added; %2$d could not be imported.</string>
+    <string name="gallery_import_failed">The selected photos could not be imported.</string>
+    <string name="gallery_delete_failed">The photo could not be deleted.</string>
+    <plurals name="gallery_import_completed">
+        <item quantity="one">%1$d photo added</item>
+        <item quantity="other">%1$d photos added</item>
+    </plurals>
     <string name="settings_placeholder">Settings screen</string>
     <string name="settings_title">Settings</string>
     <string name="settings_pregnancy_title">Pregnancy dates</string>

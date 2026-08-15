@@ -39,6 +39,9 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Add `feature/<feature-name>/data/` only when the feature owns persisted or remote data. Data implementations may depend on the feature domain contracts and shared core infrastructure.
 - Store the mandatory last-period date as an ISO-8601 string in Preferences DataStore; its presence decides whether onboarding or the main shell starts.
 - Keep feature-specific Retrofit services, DTOs, mappers, local sources, and repository implementations inside that feature's `data` layer.
+- Store unified gallery metadata in Room and image bytes in app-private files; use Android Photo Picker for imports without broad media permissions.
+- Label gallery items as imported or guided tracking. Deleting a guided tracking item removes only its private app copy and never deletes an exported MediaStore copy.
+- Export Room schemas to `app/schemas/` and add migrations whenever the database version changes.
 - Put genuinely reusable technical infrastructure in `core/`: the current design system is in `core/designsystem/theme/`; future shared HTTP configuration, database setup, preferences, and test utilities belong under dedicated `core` packages when implemented.
 - Keep weekly editorial pregnancy content local-only in validated `pregnancy-content.en.json` and `pregnancy-content.es.json` assets; do not add remote refresh behavior without an explicit product decision.
 - Do not create empty packages or speculative layers. Create a package only with its first concrete production or test file.

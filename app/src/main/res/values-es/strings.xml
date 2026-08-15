@@ -50,6 +50,27 @@
     <string name="journey_stage_postterm">Las semanas 41 y 42 se muestran como seguimiento postérmino en lugar de repetir los hitos de la semana 40.</string>
     <string name="journey_stage_review">La guía termina en la semana 42. Revisa la fecha guardada y contacta con tu equipo sanitario si es correcta.</string>
     <string name="gallery_placeholder">Pantalla de galería</string>
+    <string name="gallery_title">Galería</string>
+    <string name="gallery_add_photos">Añadir fotos</string>
+    <string name="gallery_empty_title">Tu galería está vacía</string>
+    <string name="gallery_empty_message">Elige fotos con el selector de Android. Baby Loading conservará una copia privada para tu evolución.</string>
+    <string name="gallery_source_imported">Importada</string>
+    <string name="gallery_source_tracking">Seguimiento de barriga</string>
+    <string name="gallery_photo_description">Foto del embarazo: %1$s</string>
+    <string name="gallery_image_unavailable">Imagen no disponible</string>
+    <string name="gallery_delete_photo">Eliminar foto</string>
+    <string name="gallery_close_photo">Cerrar foto</string>
+    <string name="gallery_delete_title">¿Eliminar esta foto?</string>
+    <string name="gallery_delete_imported_message">La copia privada se eliminará de Baby Loading.</string>
+    <string name="gallery_delete_tracking_message">La copia privada de seguimiento se eliminará. Cualquier copia guardada anteriormente en la fototeca del sistema permanecerá allí.</string>
+    <string name="gallery_delete_confirm">Eliminar</string>
+    <string name="gallery_import_partial">Se han añadido %1$d fotos; no se han podido importar %2$d.</string>
+    <string name="gallery_import_failed">No se han podido importar las fotos seleccionadas.</string>
+    <string name="gallery_delete_failed">No se ha podido eliminar la foto.</string>
+    <plurals name="gallery_import_completed">
+        <item quantity="one">Se ha añadido %1$d foto</item>
+        <item quantity="other">Se han añadido %1$d fotos</item>
+    </plurals>
     <string name="settings_placeholder">Pantalla de ajustes</string>
     <string name="settings_title">Ajustes</string>
     <string name="settings_pregnancy_title">Fechas del embarazo</string>
