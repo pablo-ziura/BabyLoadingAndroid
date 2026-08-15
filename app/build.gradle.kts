@@ -14,7 +14,7 @@ val apiBaseUrlLiteral = apiBaseUrl.map { value ->
 }
 
 android {
-    namespace = "com.example.babyloading"
+    namespace = "com.pablo.ruiz.babyloading"
     compileSdk {
         version = release(37) {
             minorApiLevel = 0
@@ -22,7 +22,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.babyloading"
+        applicationId = "com.pablo.ruiz.babyloading"
         minSdk = 36
         targetSdk = 37
         versionCode = 1

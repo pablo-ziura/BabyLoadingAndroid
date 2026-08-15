@@ -2,6 +2,8 @@
 
 Android application built with Kotlin, Jetpack Compose Material 3, native edge-to-edge, and type-safe Navigation Compose routes.
 
+The Android application ID and root package are `com.pablo.ruiz.babyloading`.
+
 ## Architecture
 
 The project follows a pragmatic, feature-first Clean Architecture. Packages are created only when they contain concrete code; no empty `data` or `domain` layers are kept as placeholders.
@@ -9,7 +11,7 @@ The project follows a pragmatic, feature-first Clean Architecture. Packages are 
 ```text
 Baby Loading
 ├── app/
-│   └── com.example.babyloading/
+│   └── com.pablo.ruiz.babyloading/
 │       ├── app/shell/                    # Main application chrome and bottom bar UI
 │       ├── navigation/                   # Type-safe routes and navigation hosts
 │       ├── core/designsystem/theme/      # Shared Compose theme and visual tokens

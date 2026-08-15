@@ -17,6 +17,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 ## Language And Build
 
 - Use Kotlin for application code.
+- Use `com.pablo.ruiz.babyloading` as the application ID, namespace, and root source package.
 - Use Kotlin DSL for Gradle files.
 - Use the existing Version Catalog in `gradle/libs.versions.toml` for dependencies and plugins.
 - Target Java 17 bytecode across Android modules; the Gradle daemon may use the configured Java 21 toolchain.
