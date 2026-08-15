@@ -99,7 +99,7 @@ class NavigationIntegrationTest {
 
         assertTabSelection("dashboard_tab", R.string.dashboard_title)
         assertTabSelection("journey_tab", R.string.journey_title)
-        assertTabSelection("gallery_tab", R.string.gallery_placeholder)
+        assertTabSelection("gallery_tab", R.string.gallery_title)
         assertTabSelection("settings_tab", R.string.settings_title)
     }
 
