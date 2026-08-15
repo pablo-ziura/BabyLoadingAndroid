@@ -9,9 +9,9 @@ class PregnancyDateValidatorTest {
     private val today = LocalDate.of(2026, 8, 15)
 
     @Test
-    fun todayAndPastDatesAreValid() {
+    fun todayAndFortyTwoWeeksAgoAreValid() {
         assertEquals(PregnancyDateValidation.Valid, validator.validate(today, today))
-        assertEquals(PregnancyDateValidation.Valid, validator.validate(today.minusDays(301), today))
+        assertEquals(PregnancyDateValidation.Valid, validator.validate(today.minusWeeks(42), today))
     }
 
     @Test
@@ -19,6 +19,14 @@ class PregnancyDateValidatorTest {
         assertEquals(
             PregnancyDateValidation.FutureDate,
             validator.validate(today.plusDays(1), today),
+        )
+    }
+
+    @Test
+    fun datesOlderThanFortyTwoWeeksAreRejected() {
+        assertEquals(
+            PregnancyDateValidation.DateTooOld,
+            validator.validate(today.minusWeeks(42).minusDays(1), today),
         )
     }
 }
