@@ -10,6 +10,8 @@ The project follows a pragmatic, feature-first Clean Architecture. Packages are 
 
 The Compose design system provides a fixed light Material 3 palette, typography, shapes, spacing, gradient background, and reusable surface card. Dynamic color is intentionally disabled so the product identity remains consistent.
 
+The main shell adapts at 600 dp: compact windows use Android bottom navigation, while medium and expanded windows use a navigation rail without changing the feature navigation graphs.
+
 ```text
 Baby Loading
 ├── app/

@@ -45,6 +45,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Presentation code may depend on its feature domain layer and `core`, but it must not access another feature's internals directly.
 - Navigation is the only layer that owns `NavController` instances and coordinates transitions between features.
 - Keep composables small, previewable, and focused on rendering state.
+- Use a bottom navigation bar below 600 dp and a navigation rail at 600 dp and above.
 - Move non-trivial business logic out of composables and into plain Kotlin classes, use cases, or ViewModels as appropriate.
 - Avoid introducing new architectural frameworks unless they solve a concrete project need.
 - Follow existing package structure until a feature justifies creating clearer module or package boundaries.
