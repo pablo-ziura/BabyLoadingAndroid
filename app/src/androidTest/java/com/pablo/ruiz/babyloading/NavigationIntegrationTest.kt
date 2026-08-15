@@ -3,9 +3,8 @@ package com.pablo.ruiz.babyloading
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -18,7 +17,9 @@ import com.pablo.ruiz.babyloading.navigation.AppNavigation
 import com.pablo.ruiz.babyloading.navigation.MainShellGraph
 import com.pablo.ruiz.babyloading.navigation.OnboardingRoute
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
-import org.junit.Assert.assertFalse
+import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingEvent
+import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingUiState
+import java.time.LocalDate
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -31,9 +32,21 @@ class NavigationIntegrationTest {
     val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
     private lateinit var navController: NavHostController
+    private var receivedOnboardingEvent: OnboardingEvent? = null
 
     @Before
     fun setUp() {
+        setNavigationContent()
+    }
+
+    private fun setNavigationContent(
+        startDestination: Any = OnboardingRoute,
+        onboardingUiState: OnboardingUiState = OnboardingUiState(
+            isLoading = false,
+            selectedDate = LocalDate.of(2026, 5, 10),
+            maximumDate = LocalDate.of(2026, 8, 15),
+        ),
+    ) {
         composeTestRule.setContent {
             val testNavController = TestNavHostController(composeTestRule.activity).apply {
                 navigatorProvider.addNavigator(ComposeNavigator())
@@ -41,7 +54,12 @@ class NavigationIntegrationTest {
             navController = testNavController
 
             BabyLoadingTheme {
-                AppNavigation(navController = testNavController)
+                AppNavigation(
+                    startDestination = startDestination,
+                    onboardingUiState = onboardingUiState,
+                    onOnboardingEvent = { event -> receivedOnboardingEvent = event },
+                    navController = testNavController,
+                )
             }
         }
     }
@@ -55,20 +73,29 @@ class NavigationIntegrationTest {
     }
 
     @Test
-    fun continueRemovesOnboardingFromBackStack() {
+    fun continueRequestsDatePersistence() {
         composeTestRule.onNodeWithText(string(R.string.onboarding_continue)).performClick()
 
-        composeTestRule.onNodeWithText(string(R.string.dashboard_placeholder)).assertIsDisplayed()
-        composeTestRule.onAllNodesWithText(string(R.string.onboarding_title)).assertCountEquals(0)
         composeTestRule.runOnIdle {
-            assertTrue(navController.currentDestination.matches(MainShellGraph::class.qualifiedName.orEmpty()))
-            assertFalse(navController.previousBackStackEntry?.destination.matches(OnboardingRoute::class.qualifiedName.orEmpty()))
+            assertTrue(receivedOnboardingEvent == OnboardingEvent.Continue)
         }
     }
 
     @Test
+    fun continueRequiresASelectedDate() {
+        setNavigationContent(
+            onboardingUiState = OnboardingUiState(
+                isLoading = false,
+                maximumDate = LocalDate.of(2026, 8, 15),
+            ),
+        )
+
+        composeTestRule.onNodeWithText(string(R.string.onboarding_continue)).assertIsNotEnabled()
+    }
+
+    @Test
     fun tabsShowTheirRootDestinationAndSelection() {
-        composeTestRule.onNodeWithText(string(R.string.onboarding_continue)).performClick()
+        setNavigationContent(startDestination = MainShellGraph)
 
         assertTabSelection("dashboard_tab", R.string.dashboard_placeholder)
         assertTabSelection("journey_tab", R.string.journey_placeholder)
