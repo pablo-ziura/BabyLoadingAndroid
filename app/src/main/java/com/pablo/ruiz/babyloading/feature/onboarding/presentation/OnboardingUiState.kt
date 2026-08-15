@@ -6,6 +6,7 @@ data class OnboardingUiState(
     val isLoading: Boolean = true,
     val storedDate: LocalDate? = null,
     val selectedDate: LocalDate? = null,
+    val minimumDate: LocalDate = LocalDate.MIN,
     val maximumDate: LocalDate = LocalDate.MIN,
     val isSaving: Boolean = false,
     val validationError: OnboardingValidationError? = null,
@@ -19,6 +20,7 @@ data class OnboardingUiState(
 
 enum class OnboardingValidationError {
     FutureDate,
+    DateTooOld,
 }
 
 sealed interface OnboardingEvent {

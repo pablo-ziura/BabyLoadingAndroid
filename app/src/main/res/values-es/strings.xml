@@ -6,6 +6,7 @@
     <string name="onboarding_date_label">Primer día de tu última menstruación</string>
     <string name="onboarding_choose_date">Elige una fecha</string>
     <string name="onboarding_future_date_error">La fecha no puede estar en el futuro.</string>
+    <string name="onboarding_old_date_error">Elige una fecha de las últimas 42 semanas.</string>
     <string name="onboarding_continue">Continuar</string>
     <string name="dashboard_tab">Inicio</string>
     <string name="journey_tab">Evolución</string>

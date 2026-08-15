@@ -15,6 +15,7 @@ The main shell adapts at 600 dp: compact windows use Android bottom navigation, 
 Pregnancy calculations use `LocalDate` and an injected `Clock`. The estimated due date is 280 days after the last menstrual period, and progress state distinguishes early, active, post-term, and needs-review boundaries.
 
 On first launch, a mandatory Material date picker captures the last-period date. Preferences DataStore persists it as ISO-8601, and app startup waits for that state before choosing onboarding or the main shell.
+The picker accepts dates from today through exactly 42 weeks ago. A previously valid stored date can continue ageing into the needs-review state after week 42.
 
 Validated local JSON provides weekly editorial content for weeks 6–40 in English and Spanish. Unsupported locales fall back to English, weeks below 6 have no weekly entry, and weeks 41–42 reuse week 40 content while retaining their distinct pregnancy stage.
 
