@@ -8,6 +8,8 @@ The Android application ID and root package are `com.pablo.ruiz.babyloading`. Ap
 
 The project follows a pragmatic, feature-first Clean Architecture. Packages are created only when they contain concrete code; no empty `data` or `domain` layers are kept as placeholders.
 
+The Compose design system provides a fixed light Material 3 palette, typography, shapes, spacing, gradient background, and reusable surface card. Dynamic color is intentionally disabled so the product identity remains consistent.
+
 ```text
 Baby Loading
 ├── app/
