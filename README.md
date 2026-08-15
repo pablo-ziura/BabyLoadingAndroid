@@ -29,6 +29,8 @@ The unified gallery imports up to 20 images through Android Photo Picker without
 
 Guided belly tracking uses CameraX with a consistent alignment overlay, front/back camera selection, and optional rear flash. Each capture is saved privately before Android exports an independent JPEG to `Pictures/Baby Loading`; a MediaStore failure never discards the private copy.
 
+The fixed 4×2 Glance home-screen widget shows the current week and day, remaining days, progress, and estimated due date. It opens Baby Loading when tapped, refreshes immediately after date changes, and otherwise relies on Android’s daily widget update without notifications or frequent background work.
+
 ```text
 Baby Loading
 ├── app/

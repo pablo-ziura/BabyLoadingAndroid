@@ -106,4 +106,17 @@
     <string name="settings_privacy_title">Privacidad</string>
     <string name="settings_privacy_message">La configuración del embarazo y los datos privados de seguimiento permanecen en este dispositivo y se excluyen de las copias de seguridad y transferencias de Android.</string>
     <string name="settings_version">Baby Loading %1$s</string>
+    <string name="widget_name">Progreso del bebé</string>
+    <string name="widget_description">Tu semana actual de embarazo, días restantes, progreso y fecha probable de parto.</string>
+    <string name="widget_title">BABY LOADING</string>
+    <string name="widget_setup_title">Configura tu embarazo</string>
+    <string name="widget_setup_message">Toca para elegir el primer día de tu última menstruación.</string>
+    <string name="widget_week_and_day">Semana %1$d + %2$d</string>
+    <string name="widget_due_date">Fecha probable: %1$s</string>
+    <plurals name="widget_days_remaining">
+        <item quantity="one">Queda %1$d día</item>
+        <item quantity="other">Quedan %1$d días</item>
+    </plurals>
+    <string name="widget_preview_week">Semana 24 + 3</string>
+    <string name="widget_preview_days">Quedan 109 días</string>
 </resources>
