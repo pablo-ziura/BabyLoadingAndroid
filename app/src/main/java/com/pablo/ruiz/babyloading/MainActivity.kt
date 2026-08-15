@@ -6,7 +6,6 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
-import com.pablo.ruiz.babyloading.navigation.AppNavigation
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -25,7 +24,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             BabyLoadingTheme {
-                AppNavigation()
+                BabyLoadingApp()
             }
         }
     }

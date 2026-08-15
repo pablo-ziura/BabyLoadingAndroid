@@ -7,26 +7,26 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingScreen
+import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingEvent
+import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingUiState
 
 @Composable
 fun AppNavigation(
+    startDestination: Any = OnboardingRoute,
+    onboardingUiState: OnboardingUiState = OnboardingUiState(isLoading = false),
+    onOnboardingEvent: (OnboardingEvent) -> Unit = {},
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
 ) {
     NavHost(
         navController = navController,
-        startDestination = OnboardingRoute,
-        modifier = modifier
+        startDestination = startDestination,
+        modifier = modifier,
     ) {
         composable<OnboardingRoute> {
             OnboardingScreen(
-                onContinue = {
-                    navController.navigate(MainShellGraph) {
-                        popUpTo<OnboardingRoute> {
-                            inclusive = true
-                        }
-                    }
-                }
+                uiState = onboardingUiState,
+                onEvent = onOnboardingEvent,
             )
         }
         composable<MainShellGraph> {
