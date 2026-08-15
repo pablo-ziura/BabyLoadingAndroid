@@ -79,6 +79,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Keep manifest permissions minimal and explain why any new permission is required.
 - Do not add exported components unless they are required; explicitly set `android:exported` where needed.
 - Keep backup, data extraction, and privacy-related XML files intentional and updated with feature changes.
+- Keep Android Auto Backup and device-to-device transfer disabled for all pregnancy and media data.
 
 ## Testing
 
