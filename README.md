@@ -18,6 +18,8 @@ On first launch, a mandatory Material date picker captures the last-period date.
 
 Validated local JSON provides weekly editorial content for weeks 6–40 in English and Spanish. Unsupported locales fall back to English, weeks below 6 have no weekly entry, and weeks 41–42 reuse week 40 content while retaining their distinct pregnancy stage.
 
+The dashboard combines the saved date and local weekly content in an immutable UI state. It shows estimated week and day, progress, remaining days, due date, baby-size imagery, milestones, and explicit early, post-term, and review guidance.
+
 ```text
 Baby Loading
 ├── app/
