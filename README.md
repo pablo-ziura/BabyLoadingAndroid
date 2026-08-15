@@ -21,6 +21,8 @@ Validated local JSON provides weekly editorial content for weeks 6–40 in Engli
 
 The dashboard combines the saved date and local weekly content in an immutable UI state. It shows estimated week and day, progress, remaining days, due date, baby-size imagery, milestones, and explicit early, post-term, and review guidance.
 
+The journey presents weeks 1–42 as an Android timeline with completed, current, and upcoming semantics. Weeks can be expanded for details, the list opens near the current position, and early or post-term rows use purpose-built guidance instead of inventing missing editorial data.
+
 ```text
 Baby Loading
 ├── app/

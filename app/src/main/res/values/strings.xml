@@ -31,6 +31,23 @@
     <string name="dashboard_stage_postterm">You are beyond week 40. Keep following the plan agreed with your healthcare team.</string>
     <string name="dashboard_stage_review">This estimate is beyond week 42. Review the saved date and contact your healthcare team if it is correct.</string>
     <string name="journey_placeholder">Journey screen</string>
+    <string name="journey_title">Your journey</string>
+    <string name="journey_missing_setup">Pregnancy setup is missing. Add your date in Settings.</string>
+    <string name="journey_current_position">Currently week %1$d + %2$d days</string>
+    <string name="journey_week">Week %1$d</string>
+    <string name="journey_you_are_here">You are here</string>
+    <string name="journey_status_completed">Completed week</string>
+    <string name="journey_status_current">Current week</string>
+    <string name="journey_status_upcoming">Upcoming week</string>
+    <string name="journey_expand_week">Show week details</string>
+    <string name="journey_collapse_week">Hide week details</string>
+    <string name="journey_early_week_summary">Early pregnancy</string>
+    <string name="journey_early_week_detail">Detailed editorial guidance begins at week 6. Your estimated progress still includes this week.</string>
+    <string name="journey_postterm_week_summary">Post-term follow-up</string>
+    <string name="journey_postterm_week_detail">Follow the individual plan agreed with your healthcare team for this week.</string>
+    <string name="journey_stage_early">The weekly guide starts at week 1; detailed baby development content begins at week 6.</string>
+    <string name="journey_stage_postterm">Weeks 41 and 42 are shown as post-term follow-up rather than repeating week 40 milestones.</string>
+    <string name="journey_stage_review">The guide ends at week 42. Review your saved date and contact your healthcare team if it is correct.</string>
     <string name="gallery_placeholder">Gallery screen</string>
     <string name="settings_placeholder">Settings screen</string>
 </resources>
