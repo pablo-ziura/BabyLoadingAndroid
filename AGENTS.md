@@ -36,6 +36,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Put screens, `ViewModel`s, immutable UI state, and UI events in `feature/<feature-name>/presentation/`.
 - Add `feature/<feature-name>/domain/` only when the feature has real business rules, use cases, domain models, or repository contracts. Domain code must not depend on Android, Compose, or data implementations.
 - Add `feature/<feature-name>/data/` only when the feature owns persisted or remote data. Data implementations may depend on the feature domain contracts and shared core infrastructure.
+- Store the mandatory last-period date as an ISO-8601 string in Preferences DataStore; its presence decides whether onboarding or the main shell starts.
 - Keep feature-specific Retrofit services, DTOs, mappers, local sources, and repository implementations inside that feature's `data` layer.
 - Put genuinely reusable technical infrastructure in `core/`: the current design system is in `core/designsystem/theme/`; future shared HTTP configuration, database setup, preferences, and test utilities belong under dedicated `core` packages when implemented.
 - Do not create empty packages or speculative layers. Create a package only with its first concrete production or test file.

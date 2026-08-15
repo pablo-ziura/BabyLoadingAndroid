@@ -14,6 +14,8 @@ The main shell adapts at 600 dp: compact windows use Android bottom navigation, 
 
 Pregnancy calculations use `LocalDate` and an injected `Clock`. The estimated due date is 280 days after the last menstrual period, and progress state distinguishes early, active, post-term, and needs-review boundaries.
 
+On first launch, a mandatory Material date picker captures the last-period date. Preferences DataStore persists it as ISO-8601, and app startup waits for that state before choosing onboarding or the main shell.
+
 ```text
 Baby Loading
 ├── app/
