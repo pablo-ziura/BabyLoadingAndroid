@@ -103,7 +103,7 @@ private fun DashboardProgress(
     weekContent: WeekContent?,
     modifier: Modifier = Modifier,
 ) {
-    val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val locale = checkNotNull(LocalConfiguration.current.locales[0])
     LazyColumn(
         modifier = modifier
             .fillMaxSize()

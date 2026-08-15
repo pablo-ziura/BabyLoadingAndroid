@@ -15,7 +15,6 @@
     <string name="journey_content_description">Open journey</string>
     <string name="gallery_content_description">Open gallery</string>
     <string name="settings_content_description">Open settings</string>
-    <string name="dashboard_placeholder">Dashboard screen</string>
     <string name="dashboard_title">Your pregnancy</string>
     <string name="dashboard_missing_setup">Pregnancy setup is missing. Add your date in Settings.</string>
     <string name="dashboard_week_and_day">Week %1$d + %2$d days</string>
@@ -30,7 +29,6 @@
     <string name="dashboard_stage_early">This is an early estimate. Dates may be adjusted later by your healthcare professional.</string>
     <string name="dashboard_stage_postterm">You are beyond week 40. Keep following the plan agreed with your healthcare team.</string>
     <string name="dashboard_stage_review">This estimate is beyond week 42. Review the saved date and contact your healthcare team if it is correct.</string>
-    <string name="journey_placeholder">Journey screen</string>
     <string name="journey_title">Your journey</string>
     <string name="journey_missing_setup">Pregnancy setup is missing. Add your date in Settings.</string>
     <string name="journey_current_position">Currently week %1$d + %2$d days</string>
@@ -48,7 +46,6 @@
     <string name="journey_stage_early">The weekly guide starts at week 1; detailed baby development content begins at week 6.</string>
     <string name="journey_stage_postterm">Weeks 41 and 42 are shown as post-term follow-up rather than repeating week 40 milestones.</string>
     <string name="journey_stage_review">The guide ends at week 42. Review your saved date and contact your healthcare team if it is correct.</string>
-    <string name="gallery_placeholder">Gallery screen</string>
     <string name="gallery_title">Gallery</string>
     <string name="gallery_add_photos">Add photos</string>
     <string name="gallery_empty_title">Your gallery is empty</string>
@@ -91,7 +88,6 @@
         <item quantity="one">%1$d photo added</item>
         <item quantity="other">%1$d photos added</item>
     </plurals>
-    <string name="settings_placeholder">Settings screen</string>
     <string name="settings_title">Settings</string>
     <string name="settings_pregnancy_title">Pregnancy dates</string>
     <string name="settings_last_period_prompt">First day of your last period</string>
