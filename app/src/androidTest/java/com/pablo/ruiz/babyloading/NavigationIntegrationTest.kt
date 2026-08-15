@@ -97,7 +97,7 @@ class NavigationIntegrationTest {
     fun tabsShowTheirRootDestinationAndSelection() {
         setNavigationContent(startDestination = MainShellGraph)
 
-        assertTabSelection("dashboard_tab", R.string.dashboard_placeholder)
+        assertTabSelection("dashboard_tab", R.string.dashboard_title)
         assertTabSelection("journey_tab", R.string.journey_placeholder)
         assertTabSelection("gallery_tab", R.string.gallery_placeholder)
         assertTabSelection("settings_tab", R.string.settings_placeholder)
