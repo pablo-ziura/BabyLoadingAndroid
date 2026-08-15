@@ -19,6 +19,8 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Use Kotlin for application code.
 - Use Kotlin DSL for Gradle files.
 - Use the existing Version Catalog in `gradle/libs.versions.toml` for dependencies and plugins.
+- Target Java 17 bytecode across Android modules; the Gradle daemon may use the configured Java 21 toolchain.
+- Use KSP for supported annotation processors. Do not introduce KAPT while AGP built-in Kotlin is enabled.
 - Do not hardcode dependency versions in module Gradle files when the Version Catalog can own them.
 - Keep build changes scoped and explain any changes to Android Gradle Plugin, Kotlin, Java compatibility, Compose compiler, or SDK versions.
 - Prefer Java/Kotlin compatibility levels already configured in the project unless a feature requires changing them.
@@ -46,6 +48,19 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Avoid introducing new architectural frameworks unless they solve a concrete project need.
 - Follow existing package structure until a feature justifies creating clearer module or package boundaries.
 
+## Networking
+
+- Shared HTTP infrastructure lives in the `:core:network` Android library module. The app depends on it, never the reverse.
+- Keep Retrofit services, DTOs, mappers, remote data sources, and repository implementations in the owning feature's `data` layer.
+- Use `NetworkResult` only at remote and data boundaries. Map `NetworkError` to feature domain errors before exposing results to presentation.
+- Define feature API services with Retrofit `Response<T>` return types and execute them through `safeApiCall`.
+- Use the authenticated Retrofit instance for normal feature traffic and the qualified unauthenticated instance for login, token refresh, or explicitly public clients.
+- `AccessTokenStore` implementations must be thread-safe. `AccessTokenRefresher` implementations must use the unauthenticated client so refresh cannot recurse through the authenticator.
+- Bearer attachment belongs in `AuthInterceptor`; `401` refresh and the single retry belong in `TokenRefreshAuthenticator`.
+- Automatic Bearer credentials are restricted to the configured API origin. Explicit `Authorization` headers are caller-owned and never participate in automatic refresh.
+- Production builds must not include HTTP logging. Debug logging stays metadata-only unless an explicit architectural decision changes the policy.
+- Configure the API root with the `BABYLOADING_API_BASE_URL` Gradle property. Never store credentials or tokens in Gradle properties.
+
 ## Jetpack Compose
 
 - Use Material 3 components by default.
@@ -68,6 +83,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 
 - Add or update tests when changing behavior, state handling, formatting, parsing, permissions, persistence, or navigation.
 - Prefer local unit tests for pure Kotlin logic.
+- Use MockWebServer for deterministic HTTP integration tests and `kotlinx-coroutines-test` for suspend and Flow behavior.
 - Use instrumentation or Compose UI tests for Android framework integration and UI behavior.
 - Keep tests deterministic and avoid depending on network, clock, locale, or device state unless that is the behavior under test.
 
