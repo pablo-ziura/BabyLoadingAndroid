@@ -29,6 +29,8 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 ## Architecture
 
 - Keep UI, state, domain logic, and platform integration separated as the project grows.
+- Represent pregnancy calendar values with `java.time.LocalDate` and inject `Clock` whenever current time affects behavior.
+- Treat weeks 0-5 as early, 6-40 as active, 41-42 as post-term, and 43 or later as requiring review; the journey ends at week 42.
 - Prefer unidirectional data flow for Compose screens.
 - Use a feature-first Clean Architecture structure. Every product capability, including onboarding, belongs in `feature/<feature-name>/`.
 - Put screens, `ViewModel`s, immutable UI state, and UI events in `feature/<feature-name>/presentation/`.

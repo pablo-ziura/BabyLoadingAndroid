@@ -12,6 +12,8 @@ The Compose design system provides a fixed light Material 3 palette, typography,
 
 The main shell adapts at 600 dp: compact windows use Android bottom navigation, while medium and expanded windows use a navigation rail without changing the feature navigation graphs.
 
+Pregnancy calculations use `LocalDate` and an injected `Clock`. The estimated due date is 280 days after the last menstrual period, and progress state distinguishes early, active, post-term, and needs-review boundaries.
+
 ```text
 Baby Loading
 ├── app/
