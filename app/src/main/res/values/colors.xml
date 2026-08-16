@@ -2,6 +2,7 @@
 <resources>
     <color name="baby_background">#FFFFF8FA</color>
     <color name="baby_primary">#FF9B405C</color>
+    <color name="launcher_background">#FFADD9EB</color>
     <color name="widget_on_surface">#FF29171D</color>
     <color name="widget_track">#FFF0DCE3</color>
 </resources>
