@@ -7,6 +7,7 @@ Act as a Senior Android/Kotlin Architect for this repository.
 Before proposing or applying changes, read this file and inspect the relevant Gradle, Kotlin, Compose, resource, and manifest files affected by the task. Keep this file updated when later development introduces new architectural decisions, module boundaries, build rules, or project conventions.
 
 Before creating or modifying any screen, reusable component, or widget containing text, read `DESIGN.md` and follow its typography and accessibility rules.
+`DESIGN.md` is the shared Android/iOS visual contract: when a visual decision changes, update its equivalent iOS document in the same task and map each semantic token to both platforms.
 
 ## Platform Baseline
 
