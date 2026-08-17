@@ -11,7 +11,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Target a modern Android/Kotlin application using Android API 37 as the project baseline.
 - Prefer stable AndroidX, Jetpack Compose, Kotlin, and Android Gradle Plugin APIs.
 - Keep `compileSdk` and `targetSdk` aligned with API 37 unless a task explicitly requires a temporary exception.
-- Keep `minSdk` intentional and documented when it changes.
+- Keep `minSdk` at API 34 (Android 14) to support the Redmi Note 12 Pro 5G while `compileSdk` and `targetSdk` remain at API 37; document any future change.
 - Validate API availability before using platform APIs introduced after the configured `minSdk`.
 
 ## Language And Build
