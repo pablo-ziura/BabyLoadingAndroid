@@ -48,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pablo.ruiz.babyloading.R
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingCard
+import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingScreenTitle
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingSpacing
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
@@ -117,28 +118,10 @@ private fun DashboardProgress(
         verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Medium),
     ) {
         item {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(R.string.dashboard_title),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics { heading() },
-                    style = MaterialTheme.typography.headlineLarge,
-                    textAlign = TextAlign.Center,
-                )
-                Text(
-                    text = stringResource(R.string.dashboard_subtitle),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = BabyLoadingSpacing.ExtraSmall),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f),
-                    textAlign = TextAlign.Center,
-                )
-            }
+            BabyLoadingScreenTitle(
+                title = stringResource(R.string.dashboard_title),
+                subtitle = stringResource(R.string.dashboard_subtitle),
+            )
         }
         item {
             StageNotice(stage = progress.stage)

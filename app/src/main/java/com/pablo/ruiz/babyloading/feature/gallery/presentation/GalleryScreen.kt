@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -65,6 +66,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pablo.ruiz.babyloading.R
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
+import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingScreenTitle
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingSpacing
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GalleryItem
@@ -118,6 +120,7 @@ private fun GalleryContent(
     Scaffold(
         modifier = modifier,
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             ExtendedFloatingActionButton(
@@ -137,7 +140,7 @@ private fun GalleryContent(
             )
         },
     ) { padding ->
-        BabyLoadingBackground(modifier = Modifier.padding(padding)) {
+        Box(modifier = Modifier.padding(padding)) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
@@ -189,10 +192,9 @@ private fun GalleryGrid(
         verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Small),
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
-            Text(
-                text = stringResource(R.string.gallery_title),
+            BabyLoadingScreenTitle(
+                title = stringResource(R.string.gallery_title),
                 modifier = Modifier.padding(bottom = BabyLoadingSpacing.Medium),
-                style = MaterialTheme.typography.headlineLarge,
             )
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -501,12 +503,14 @@ private fun galleryMessage(message: GalleryUserMessage?): String? = when (messag
 @Composable
 private fun EmptyGalleryPreview() {
     BabyLoadingTheme {
-        GalleryContent(
-            uiState = GalleryUiState(isLoading = false),
-            onEvent = {},
-            onAddPhotos = {},
-            onStartTracking = {},
-        )
+        BabyLoadingBackground {
+            GalleryContent(
+                uiState = GalleryUiState(isLoading = false),
+                onEvent = {},
+                onAddPhotos = {},
+                onStartTracking = {},
+            )
+        }
     }
 }
 
@@ -514,23 +518,25 @@ private fun EmptyGalleryPreview() {
 @Composable
 private fun GalleryGridPreview() {
     BabyLoadingTheme {
-        GalleryContent(
-            uiState = GalleryUiState(
-                isLoading = false,
-                items = listOf(
-                    GalleryItem(
-                        id = "preview",
-                        privateFilePath = "/preview.jpg",
-                        capturedAt = Instant.parse("2026-08-15T12:00:00Z"),
-                        source = GallerySource.GuidedTracking,
-                        pregnancyWeek = 24,
+        BabyLoadingBackground {
+            GalleryContent(
+                uiState = GalleryUiState(
+                    isLoading = false,
+                    items = listOf(
+                        GalleryItem(
+                            id = "preview",
+                            privateFilePath = "/preview.jpg",
+                            capturedAt = Instant.parse("2026-08-15T12:00:00Z"),
+                            source = GallerySource.GuidedTracking,
+                            pregnancyWeek = 24,
+                        ),
                     ),
                 ),
-            ),
-            onEvent = {},
-            onAddPhotos = {},
-            onStartTracking = {},
-        )
+                onEvent = {},
+                onAddPhotos = {},
+                onStartTracking = {},
+            )
+        }
     }
 }
 
