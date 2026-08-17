@@ -55,6 +55,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pablo.ruiz.babyloading.R
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
+import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingScreenTitle
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingSpacing
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
@@ -84,7 +85,7 @@ private fun JourneyContent(
     onEvent: (JourneyEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BabyLoadingBackground(modifier = modifier) {
+    Box(modifier = modifier.fillMaxSize()) {
         when {
             uiState.isLoading -> CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
@@ -128,18 +129,13 @@ private fun JourneyTimeline(
         contentPadding = androidx.compose.foundation.layout.PaddingValues(BabyLoadingSpacing.Large),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.journey_title),
-                style = MaterialTheme.typography.headlineLarge,
-            )
-            Text(
-                text = stringResource(
+            BabyLoadingScreenTitle(
+                title = stringResource(R.string.journey_title),
+                subtitle = stringResource(
                     R.string.journey_current_position,
                     uiState.currentWeek ?: 0,
                     uiState.currentDay,
                 ),
-                modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
-                style = MaterialTheme.typography.bodyLarge,
             )
             JourneyStageNotice(stage = uiState.stage)
             Spacer(modifier = Modifier.height(BabyLoadingSpacing.Medium))
@@ -353,33 +349,35 @@ private fun fallbackWeekSummary(week: Int): String {
 @Composable
 private fun JourneyScreenPreview() {
     BabyLoadingTheme {
-        JourneyContent(
-            uiState = JourneyUiState(
-                isLoading = false,
-                currentWeek = 20,
-                currentDay = 3,
-                stage = PregnancyStage.Active,
-                weeks = listOf(
-                    JourneyWeekUiModel(
-                        week = 19,
-                        status = JourneyWeekStatus.Completed,
-                        content = sampleContent(19),
+        BabyLoadingBackground {
+            JourneyContent(
+                uiState = JourneyUiState(
+                    isLoading = false,
+                    currentWeek = 20,
+                    currentDay = 3,
+                    stage = PregnancyStage.Active,
+                    weeks = listOf(
+                        JourneyWeekUiModel(
+                            week = 19,
+                            status = JourneyWeekStatus.Completed,
+                            content = sampleContent(19),
+                        ),
+                        JourneyWeekUiModel(
+                            week = 20,
+                            status = JourneyWeekStatus.Current,
+                            content = sampleContent(20),
+                        ),
+                        JourneyWeekUiModel(
+                            week = 21,
+                            status = JourneyWeekStatus.Upcoming,
+                            content = sampleContent(21),
+                        ),
                     ),
-                    JourneyWeekUiModel(
-                        week = 20,
-                        status = JourneyWeekStatus.Current,
-                        content = sampleContent(20),
-                    ),
-                    JourneyWeekUiModel(
-                        week = 21,
-                        status = JourneyWeekStatus.Upcoming,
-                        content = sampleContent(21),
-                    ),
+                    expandedWeek = 20,
                 ),
-                expandedWeek = 20,
-            ),
-            onEvent = {},
-        )
+                onEvent = {},
+            )
+        }
     }
 }
 

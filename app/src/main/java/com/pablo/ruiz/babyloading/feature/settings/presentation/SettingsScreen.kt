@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,6 +50,7 @@ import com.pablo.ruiz.babyloading.R
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingCard
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingDatePickerDialog
+import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingScreenTitle
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingSpacing
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import java.time.LocalDate
@@ -97,8 +99,9 @@ private fun SettingsContent(
         modifier = modifier,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { padding ->
-        BabyLoadingBackground(modifier = Modifier.padding(padding)) {
+        Box(modifier = Modifier.padding(padding)) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
@@ -144,10 +147,7 @@ private fun SettingsList(
         verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Medium),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.settings_title),
-                style = MaterialTheme.typography.headlineLarge,
-            )
+            BabyLoadingScreenTitle(title = stringResource(R.string.settings_title))
         }
         item {
             BabyLoadingCard(modifier = Modifier.fillMaxWidth()) {
@@ -297,17 +297,19 @@ private fun SettingsSectionHeader(
 @Composable
 private fun SettingsScreenPreview() {
     BabyLoadingTheme {
-        SettingsContent(
-            uiState = SettingsUiState(
-                isLoading = false,
-                savedDate = LocalDate.of(2026, 5, 10),
-                selectedDate = LocalDate.of(2026, 5, 12),
-                minimumDate = LocalDate.of(2025, 10, 25),
-                maximumDate = LocalDate.of(2026, 8, 15),
-                estimatedDueDate = LocalDate.of(2027, 2, 16),
-            ),
-            onEvent = {},
-            onOpenLanguageSettings = {},
-        )
+        BabyLoadingBackground {
+            SettingsContent(
+                uiState = SettingsUiState(
+                    isLoading = false,
+                    savedDate = LocalDate.of(2026, 5, 10),
+                    selectedDate = LocalDate.of(2026, 5, 12),
+                    minimumDate = LocalDate.of(2025, 10, 25),
+                    maximumDate = LocalDate.of(2026, 8, 15),
+                    estimatedDueDate = LocalDate.of(2027, 2, 16),
+                ),
+                onEvent = {},
+                onOpenLanguageSettings = {},
+            )
+        }
     }
 }
