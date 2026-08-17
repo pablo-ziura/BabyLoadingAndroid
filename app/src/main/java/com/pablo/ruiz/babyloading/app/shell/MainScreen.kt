@@ -19,9 +19,11 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -29,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pablo.ruiz.babyloading.R
+import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import com.pablo.ruiz.babyloading.navigation.DashboardGraph
 import com.pablo.ruiz.babyloading.navigation.GalleryGraph
@@ -43,6 +46,9 @@ internal fun MainScreen(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        if (selectedTab == MainTab.Dashboard) {
+            BabyLoadingBackground(content = {})
+        }
         when (MainNavigationType.forWidth(maxWidth)) {
             MainNavigationType.BottomBar -> CompactMainScreen(
                 selectedTab = selectedTab,
@@ -66,6 +72,11 @@ private fun CompactMainScreen(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
+        containerColor = if (selectedTab == MainTab.Dashboard) {
+            Color.Transparent
+        } else {
+            MaterialTheme.colorScheme.background
+        },
         bottomBar = {
             MainNavigationBar(
                 selectedTab = selectedTab,
@@ -89,6 +100,11 @@ private fun ExpandedMainScreen(
         )
         Scaffold(
             modifier = Modifier.weight(1f),
+            containerColor = if (selectedTab == MainTab.Dashboard) {
+                Color.Transparent
+            } else {
+                MaterialTheme.colorScheme.background
+            },
             content = content,
         )
     }
