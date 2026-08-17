@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         applicationId = "com.pablo.ruiz.babyloading"
-        minSdk = 36
+        minSdk = 34
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
