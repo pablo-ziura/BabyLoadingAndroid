@@ -76,10 +76,40 @@ class GuidedTrackingViewModelTest {
         assertEquals(null, viewModel.uiState.value.error)
     }
 
+    @Test
+    fun latestGuidedPhotoBecomesCameraReference() = runTest {
+        galleryRepository.itemsState.value = listOf(
+            GalleryItem(
+                id = "imported",
+                privateFilePath = "/imported.jpg",
+                capturedAt = Instant.parse("2026-08-15T12:00:00Z"),
+                source = GallerySource.Imported,
+            ),
+            GalleryItem(
+                id = "older-guided",
+                privateFilePath = "/older-guided.jpg",
+                capturedAt = Instant.parse("2026-08-10T12:00:00Z"),
+                source = GallerySource.GuidedTracking,
+            ),
+            GalleryItem(
+                id = "latest-guided",
+                privateFilePath = "/latest-guided.jpg",
+                capturedAt = Instant.parse("2026-08-14T12:00:00Z"),
+                source = GallerySource.GuidedTracking,
+            ),
+        )
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        assertEquals("/latest-guided.jpg", viewModel.uiState.value.referenceImagePath)
+    }
+
     private fun createViewModel(): GuidedTrackingViewModel {
         val calculateProgress = CalculatePregnancyProgressUseCase(PregnancyCalculator(), clock)
         return GuidedTrackingViewModel(
             pregnancyRepository = pregnancyRepository,
+            galleryRepository = galleryRepository,
             calculateProgress = calculateProgress,
             savePhoto = SaveGuidedTrackingPhotoUseCase(galleryRepository, exporter, clock),
         )
@@ -96,7 +126,8 @@ class GuidedTrackingViewModelTest {
     }
 
     private class FakeGalleryRepository : GalleryRepository {
-        override val items: Flow<List<GalleryItem>> = MutableStateFlow(emptyList())
+        val itemsState = MutableStateFlow<List<GalleryItem>>(emptyList())
+        override val items: Flow<List<GalleryItem>> = itemsState
         var savedWeek: Int? = null
         var failure: Throwable? = null
 
