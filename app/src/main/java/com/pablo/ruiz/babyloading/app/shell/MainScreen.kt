@@ -42,10 +42,18 @@ internal fun MainScreen(
     selectedTab: MainTab,
     onTabSelected: (MainTab) -> Unit,
     modifier: Modifier = Modifier,
+    showNavigation: Boolean = true,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         BabyLoadingBackground(content = {})
+        if (!showNavigation) {
+            Scaffold(
+                containerColor = Color.Transparent,
+                content = content,
+            )
+            return@BoxWithConstraints
+        }
         when (MainNavigationType.forWidth(maxWidth)) {
             MainNavigationType.BottomBar -> CompactMainScreen(
                 selectedTab = selectedTab,

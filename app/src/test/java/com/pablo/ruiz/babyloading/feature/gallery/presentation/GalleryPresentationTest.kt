@@ -1,6 +1,8 @@
 package com.pablo.ruiz.babyloading.feature.gallery.presentation
 
+import com.pablo.ruiz.babyloading.feature.gallery.domain.model.TrackingCadence
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.Locale
 import org.junit.Assert.assertEquals
@@ -22,5 +24,18 @@ class GalleryPresentationTest {
             "Aug 16, 2026",
             GalleryDateFormatter.format(instant, Locale.US, ZoneOffset.ofHours(2)),
         )
+    }
+
+    @Test
+    fun localDateUsesRequestedLocale() {
+        assertEquals(
+            "Aug 25, 2026",
+            GalleryDateFormatter.format(LocalDate.parse("2026-08-25"), Locale.US),
+        )
+    }
+
+    @Test
+    fun unsupportedCadenceFallsBackToWeekly() {
+        assertEquals(TrackingCadence.Weekly, TrackingCadence.fromIntervalDays(8))
     }
 }

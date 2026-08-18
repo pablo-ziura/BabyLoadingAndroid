@@ -34,3 +34,6 @@ internal val BabyOnErrorContainer = Color(0xFF410002)
 
 val BabyGradientTop = Color(0xFFFFBFD1)
 val BabyGradientBottom = Color(0xFFC7B8F5)
+
+val BabyStatusPositiveContainer = Color(0xFFDDF5E5)
+val BabyStatusAttentionContainer = Color(0xFFFFE8CC)
