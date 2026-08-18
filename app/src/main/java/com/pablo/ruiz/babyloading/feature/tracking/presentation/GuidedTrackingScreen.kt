@@ -328,7 +328,6 @@ private fun TrackingCamera(
                     executor = cameraExecutor,
                     mainExecutor = context.mainExecutor,
                     cacheDirectory = context.cacheDir,
-                    reverseHorizontally = false,
                     onSuccess = { data ->
                         isCapturing = false
                         onPhotoCaptured(data)
@@ -452,7 +451,6 @@ private fun capturePhoto(
     executor: ExecutorService,
     mainExecutor: java.util.concurrent.Executor,
     cacheDirectory: File,
-    reverseHorizontally: Boolean,
     onSuccess: (ByteArray) -> Unit,
     onFailure: () -> Unit,
 ) {
@@ -462,11 +460,7 @@ private fun capturePhoto(
         onFailure()
         return
     }
-    val metadata = ImageCapture.Metadata().apply {
-        isReversedHorizontal = reverseHorizontally
-    }
     val options = ImageCapture.OutputFileOptions.Builder(temporaryFile)
-        .setMetadata(metadata)
         .build()
     controller.takePicture(
         options,
