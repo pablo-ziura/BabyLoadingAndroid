@@ -52,6 +52,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -209,7 +210,7 @@ private fun TrackingCamera(
     var isShowingReference by remember(referenceImagePath) {
         mutableStateOf(referenceImagePath != null)
     }
-    var referenceOpacity by remember { mutableStateOf(DEFAULT_REFERENCE_OPACITY) }
+    var referenceOpacity by remember { mutableFloatStateOf(DEFAULT_REFERENCE_OPACITY) }
     val referenceBitmap by produceState<ImageBitmap?>(
         initialValue = null,
         key1 = referenceImagePath,

@@ -496,7 +496,13 @@ private fun TrackingCadenceSelector(
                     ),
                     icon = {},
                     label = {
-                        Text(stringResource(R.string.tracking_cadence_days, cadence.intervalDays))
+                        Text(
+                            pluralStringResource(
+                                R.plurals.tracking_cadence_days,
+                                cadence.intervalDays,
+                                cadence.intervalDays,
+                            ),
+                        )
                     },
                 )
             }
@@ -892,8 +898,9 @@ private fun galleryMessage(message: GalleryUserMessage?): String? = when (messag
         message.importedCount,
         message.importedCount,
     )
-    is GalleryUserMessage.ImportPartiallyCompleted -> stringResource(
-        R.string.gallery_import_partial,
+    is GalleryUserMessage.ImportPartiallyCompleted -> pluralStringResource(
+        R.plurals.gallery_import_partial,
+        message.importedCount,
         message.importedCount,
         message.failedCount,
     )

@@ -15,7 +15,7 @@ class ReleaseNetworkModuleTest {
             Class.forName(className)
             fail("$className must not be present in Release.")
         } catch (_: ClassNotFoundException) {
-            Unit
+            // Expected: the class must be absent from the release runtime.
         }
     }
 }
