@@ -16,8 +16,14 @@ class BabyProgressWidgetStateFactory(
             completedWeeks = progress.gestationalAge.completedWeeks,
             daysIntoWeek = progress.gestationalAge.daysIntoWeek,
             daysRemaining = progress.daysRemaining,
-            completedFraction = progress.completedFraction,
+            completedFraction = (
+                progress.gestationalAge.completedWeeks.toFloat() / TOTAL_PREGNANCY_WEEKS
+                ).coerceIn(0f, 1f),
             estimatedDueDate = progress.estimatedDueDate,
         )
+    }
+
+    private companion object {
+        const val TOTAL_PREGNANCY_WEEKS = 40f
     }
 }

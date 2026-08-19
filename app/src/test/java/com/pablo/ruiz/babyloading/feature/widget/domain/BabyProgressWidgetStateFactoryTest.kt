@@ -29,6 +29,7 @@ class BabyProgressWidgetStateFactoryTest {
         assertEquals(23, state.completedWeeks)
         assertEquals(6, state.daysIntoWeek)
         assertEquals(113, state.daysRemaining)
+        assertEquals(23f / 40f, state.completedFraction)
         assertEquals(LocalDate.of(2026, 12, 6), state.estimatedDueDate)
     }
 

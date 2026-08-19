@@ -3,6 +3,11 @@
     <color name="baby_background">#FFFFF8FA</color>
     <color name="baby_primary">#FF9B405C</color>
     <color name="launcher_background">#FFADD9EB</color>
-    <color name="widget_on_surface">#FF29171D</color>
-    <color name="widget_track">#FFF0DCE3</color>
+    <color name="widget_gradient_start">#FFED8CAB</color>
+    <color name="widget_gradient_end">#FFB38CD1</color>
+    <color name="widget_content">#FFFFFFFF</color>
+    <color name="widget_content_muted">#D9FFFFFF</color>
+    <color name="widget_ring_surface">#1FFFFFFF</color>
+    <color name="widget_ring_track">#33FFFFFF</color>
+    <color name="widget_progress_track">#33FFFFFF</color>
 </resources>
