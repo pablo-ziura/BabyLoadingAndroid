@@ -108,16 +108,14 @@
     <string name="settings_privacy_message">Your pregnancy settings and private tracking data stay on this device and are excluded from Android backup and device transfer.</string>
     <string name="settings_version">Baby Loading %1$s</string>
     <string name="widget_name">Baby progress</string>
-    <string name="widget_description">Your current pregnancy week, remaining days, progress, and estimated due date.</string>
-    <string name="widget_title">BABY LOADING</string>
-    <string name="widget_setup_title">Set up your pregnancy</string>
-    <string name="widget_setup_message">Tap to choose the first day of your last period.</string>
-    <string name="widget_week_and_day">Week %1$d + %2$d</string>
-    <string name="widget_due_date">Due %1$s</string>
-    <plurals name="widget_days_remaining">
-        <item quantity="one">%1$d day left</item>
-        <item quantity="other">%1$d days left</item>
-    </plurals>
-    <string name="widget_preview_week">Week 24 + 3</string>
-    <string name="widget_preview_days">109 days left</string>
+    <string name="widget_description">Your current pregnancy week, baby size, remaining days, and progress.</string>
+    <string name="widget_setup_message">Set the date\nin the app</string>
+    <string name="widget_week">Week %1$d</string>
+    <string name="widget_baby_size">The baby 🤰🏽 is now the size of %1$s</string>
+    <string name="widget_unknown_size">a mystery</string>
+    <string name="widget_baby_size_description">Baby size: %1$s</string>
+    <string name="widget_days">days</string>
+    <string name="widget_preview_week">Week 24</string>
+    <string name="widget_preview_baby_size">The baby 🤰🏽 is now the size of a pineapple</string>
+    <string name="widget_preview_days_value">109</string>
 </resources>
