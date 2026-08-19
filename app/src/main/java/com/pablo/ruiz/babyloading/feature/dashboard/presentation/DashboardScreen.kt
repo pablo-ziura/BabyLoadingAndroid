@@ -1,27 +1,25 @@
 package com.pablo.ruiz.babyloading.feature.dashboard.presentation
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.progressSemantics
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,11 +27,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -43,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pablo.ruiz.babyloading.R
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingCard
+import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingScreenTitle
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingSpacing
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
@@ -74,7 +80,7 @@ private fun DashboardContent(
     uiState: DashboardUiState,
     modifier: Modifier = Modifier,
 ) {
-    BabyLoadingBackground(modifier = modifier) {
+    Box(modifier = modifier.fillMaxSize()) {
         when {
             uiState.isLoading -> CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
@@ -112,19 +118,19 @@ private fun DashboardProgress(
         verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Medium),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.dashboard_title),
-                style = MaterialTheme.typography.headlineLarge,
+            BabyLoadingScreenTitle(
+                title = stringResource(R.string.dashboard_title),
+                subtitle = stringResource(R.string.dashboard_subtitle),
+                isProminent = true,
             )
         }
         item {
             StageNotice(stage = progress.stage)
         }
-        item {
-            ProgressHero(
-                progress = progress,
-                weekContent = weekContent,
-            )
+        if (weekContent != null) {
+            item {
+                ProgressHero(weekContent = weekContent)
+            }
         }
         item {
             ProgressFacts(
@@ -133,11 +139,7 @@ private fun DashboardProgress(
             )
         }
         if (weekContent != null) {
-            item { MilestoneCard(content = weekContent) }
-            item { KeyEventsCard(content = weekContent) }
-            weekContent.physiologicalImpact?.let { impact ->
-                item { PhysiologicalImpactCard(impact = impact) }
-            }
+            item { DevelopmentCard(content = weekContent) }
         } else {
             item {
                 BabyLoadingCard(modifier = Modifier.fillMaxWidth()) {
@@ -176,50 +178,96 @@ private fun StageNotice(stage: PregnancyStage) {
 
 @Composable
 private fun ProgressHero(
-    progress: PregnancyProgress,
-    weekContent: WeekContent?,
+    weekContent: WeekContent,
 ) {
-    BabyLoadingCard(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(
-                R.string.dashboard_week_and_day,
-                progress.gestationalAge.completedWeeks,
-                progress.gestationalAge.daysIntoWeek,
-            ),
-            modifier = Modifier.fillMaxWidth(),
-            style = MaterialTheme.typography.headlineMedium,
-        )
-        weekContent?.let { content ->
-            Image(
-                painter = painterResource(content.babySize.drawableResource()),
-                contentDescription = content.babySizeLabel,
-                modifier = Modifier
-                    .size(176.dp)
-                    .align(Alignment.CenterHorizontally),
-                contentScale = ContentScale.Fit,
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 20.dp,
+                shape = MaterialTheme.shapes.large,
+                ambientColor = Color.Black.copy(alpha = 0.08f),
+                spotColor = Color.Black.copy(alpha = 0.08f),
             )
+            .semantics(mergeDescendants = true) {},
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.65f),
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.4f)),
+    ) {
+        Column(
+            modifier = Modifier.padding(
+                horizontal = BabyLoadingSpacing.Medium,
+                vertical = BabyLoadingSpacing.Large,
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Medium),
+        ) {
+            BabySizeArtwork(babySize = weekContent.babySize)
             Text(
-                text = stringResource(R.string.dashboard_baby_size, content.babySizeLabel),
-                modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                text = stringResource(R.string.dashboard_baby_size, weekContent.babySizeLabel),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = BabyLoadingSpacing.Medium),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center,
             )
         }
-        Spacer(modifier = Modifier.height(BabyLoadingSpacing.Medium))
-        LinearProgressIndicator(
-            progress = { progress.completedFraction },
+    }
+}
+
+@Composable
+private fun BabySizeArtwork(babySize: BabySize) {
+    Box(
+        modifier = Modifier.size(200.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp)
-                .progressSemantics(progress.completedFraction),
+                .fillMaxSize()
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        0.6f to Color.White.copy(alpha = 0.4f),
+                        1f to Color.Transparent,
+                    ),
+                ),
         )
-        Text(
-            text = stringResource(
-                R.string.dashboard_progress_percent,
-                (progress.completedFraction * 100).toInt(),
-            ),
-            modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
-            style = MaterialTheme.typography.bodyMedium,
+        Surface(
+            modifier = Modifier
+                .size(160.dp)
+                .shadow(
+                    elevation = BabyLoadingSpacing.Medium,
+                    shape = CircleShape,
+                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                ),
+            shape = CircleShape,
+            color = Color.White,
+            content = {},
+        )
+        Image(
+            painter = painterResource(babySize.drawableResource()),
+            contentDescription = null,
+            modifier = Modifier
+                .size(130.dp)
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop,
+        )
+        Box(
+            modifier = Modifier
+                .size(160.dp)
+                .border(
+                    width = 3.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color.White,
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                        ),
+                    ),
+                    shape = CircleShape,
+                ),
         )
     }
 }
@@ -229,103 +277,224 @@ private fun ProgressFacts(
     progress: PregnancyProgress,
     locale: Locale,
 ) {
-    BabyLoadingCard(modifier = Modifier.fillMaxWidth()) {
-        DashboardFact(
-            icon = Icons.Outlined.Schedule,
-            label = stringResource(R.string.dashboard_days_remaining),
-            value = progress.daysRemaining.toString(),
-        )
-        HorizontalDivider(modifier = Modifier.padding(vertical = BabyLoadingSpacing.Medium))
-        DashboardFact(
-            icon = Icons.Outlined.Event,
-            label = stringResource(R.string.dashboard_due_date),
-            value = DashboardDateFormatter.format(progress.estimatedDueDate, locale),
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Medium),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Medium),
+        ) {
+            DashboardStatCard(
+                icon = Icons.Outlined.Event,
+                label = stringResource(R.string.dashboard_week),
+                value = progress.gestationalAge.completedWeeks.toString(),
+                modifier = Modifier.weight(1f),
+            )
+            DashboardStatCard(
+                icon = Icons.Outlined.Schedule,
+                label = stringResource(R.string.dashboard_days_remaining),
+                value = progress.daysRemaining.toString(),
+                modifier = Modifier.weight(1f),
+            )
+        }
+        DueDateCard(
+            dueDate = DashboardDateFormatter.format(progress.estimatedDueDate, locale),
         )
     }
 }
 
 @Composable
-private fun DashboardFact(
+private fun DashboardStatCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     value: String,
+    modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
+    Surface(
+        modifier = modifier
+            .shadow(
+                elevation = 12.dp,
+                shape = MaterialTheme.shapes.large,
+                ambientColor = Color.Black.copy(alpha = 0.08f),
+                spotColor = Color.Black.copy(alpha = 0.08f),
+            )
+            .semantics(mergeDescendants = true) {
+                contentDescription = "$label: $value"
+            },
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(modifier = Modifier.width(BabyLoadingSpacing.Medium))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = label, style = MaterialTheme.typography.bodyMedium)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(BabyLoadingSpacing.Medium),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Small),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.secondary,
+                            ),
+                        ),
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = Color.White,
+                )
+            }
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineMedium,
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
 }
 
 @Composable
-private fun MilestoneCard(content: WeekContent) {
-    BabyLoadingCard(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.dashboard_milestone),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Text(
-            text = content.milestoneTitle,
-            modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
-            style = MaterialTheme.typography.titleLarge,
-        )
-    }
-}
-
-@Composable
-private fun KeyEventsCard(content: WeekContent) {
-    BabyLoadingCard(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.dashboard_this_week),
-            style = MaterialTheme.typography.titleLarge,
-        )
-        content.keyEvents.forEach { event ->
-            Row(
-                modifier = Modifier.padding(top = BabyLoadingSpacing.Medium),
-                verticalAlignment = Alignment.Top,
-            ) {
-                Text(
-                    text = "•",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                Text(
-                    text = event,
-                    modifier = Modifier.padding(start = BabyLoadingSpacing.Small),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
+private fun DueDateCard(dueDate: String) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 12.dp,
+                shape = MaterialTheme.shapes.medium,
+                ambientColor = Color.Black.copy(alpha = 0.08f),
+                spotColor = Color.Black.copy(alpha = 0.08f),
+            )
+            .semantics(mergeDescendants = true) {},
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.65f),
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.35f)),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(BabyLoadingSpacing.Medium),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.ExtraSmall),
+        ) {
+            Text(
+                text = stringResource(R.string.dashboard_due_date),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = dueDate,
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
 
 @Composable
-private fun PhysiologicalImpactCard(impact: String) {
-    BabyLoadingCard(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.dashboard_why_it_matters),
-            style = MaterialTheme.typography.titleLarge,
-        )
-        Text(
-            text = impact,
-            modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
-            style = MaterialTheme.typography.bodyLarge,
-        )
+private fun DevelopmentCard(content: WeekContent) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 20.dp,
+                shape = MaterialTheme.shapes.large,
+                ambientColor = Color.Black.copy(alpha = 0.08f),
+                spotColor = Color.Black.copy(alpha = 0.08f),
+            ),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.65f),
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.4f)),
+    ) {
+        Column(
+            modifier = Modifier.padding(BabyLoadingSpacing.Medium),
+            verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Medium),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "🐣",
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                Text(
+                    text = content.milestoneTitle,
+                    modifier = Modifier
+                        .padding(start = BabyLoadingSpacing.Small)
+                        .semantics { heading() },
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Small),
+            ) {
+                content.keyEvents.forEach { event ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.small)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                            .padding(
+                                horizontal = BabyLoadingSpacing.Medium,
+                                vertical = BabyLoadingSpacing.Small,
+                            )
+                            .semantics(mergeDescendants = true) {},
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        Text(
+                            text = "✨",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Text(
+                            text = event,
+                            modifier = Modifier.padding(start = BabyLoadingSpacing.Small),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+                        )
+                    }
+                }
+            }
+
+            content.physiologicalImpact?.let { impact ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.06f))
+                        .padding(BabyLoadingSpacing.Medium)
+                        .semantics(mergeDescendants = true) {},
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Text(
+                        text = "💕",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        text = impact,
+                        modifier = Modifier.padding(start = BabyLoadingSpacing.Small),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f),
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -333,29 +502,31 @@ private fun PhysiologicalImpactCard(impact: String) {
 @Composable
 private fun DashboardScreenPreview() {
     BabyLoadingTheme {
-        DashboardContent(
-            uiState = DashboardUiState(
-                isLoading = false,
-                progress = PregnancyProgress(
-                    lastPeriodDate = LocalDate.of(2026, 3, 1),
-                    estimatedDueDate = LocalDate.of(2026, 12, 6),
-                    gestationalAge = GestationalAge(24, 3, 171),
-                    daysRemaining = 109,
-                    completedFraction = 0.61f,
-                    stage = PregnancyStage.Active,
-                ),
-                weekContent = WeekContent(
-                    week = 24,
-                    babySize = BabySize.Corn,
-                    babySizeLabel = "an ear of corn",
-                    milestoneTitle = "Lung development continues",
-                    keyEvents = listOf(
-                        "The lungs continue forming their smallest branches.",
-                        "Hearing becomes more responsive.",
+        BabyLoadingBackground {
+            DashboardContent(
+                uiState = DashboardUiState(
+                    isLoading = false,
+                    progress = PregnancyProgress(
+                        lastPeriodDate = LocalDate.of(2026, 3, 1),
+                        estimatedDueDate = LocalDate.of(2026, 12, 6),
+                        gestationalAge = GestationalAge(24, 3, 171),
+                        daysRemaining = 109,
+                        completedFraction = 0.61f,
+                        stage = PregnancyStage.Active,
                     ),
-                    physiologicalImpact = "These changes prepare the baby for life after birth.",
+                    weekContent = WeekContent(
+                        week = 24,
+                        babySize = BabySize.Corn,
+                        babySizeLabel = "an ear of corn",
+                        milestoneTitle = "Lung development continues",
+                        keyEvents = listOf(
+                            "The lungs continue forming their smallest branches.",
+                            "Hearing becomes more responsive.",
+                        ),
+                        physiologicalImpact = "These changes prepare the baby for life after birth.",
+                    ),
                 ),
-            ),
-        )
+            )
+        }
     }
 }

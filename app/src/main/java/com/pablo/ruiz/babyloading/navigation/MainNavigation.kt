@@ -46,10 +46,13 @@ internal fun MainNavigation(
     val selectedTab = MainTab.entries.firstOrNull { tab ->
         navBackStackEntry?.destination.isInGraph(tab)
     } ?: MainTab.Dashboard
+    val isGuidedTracking = navBackStackEntry?.destination?.route ==
+        GuidedTrackingRoute::class.qualifiedName
 
     MainScreen(
         modifier = modifier,
         selectedTab = selectedTab,
+        showNavigation = !isGuidedTracking,
         onTabSelected = { tab ->
             navController.navigate(tab.graphRoute, tabNavigationOptions(navController))
         }

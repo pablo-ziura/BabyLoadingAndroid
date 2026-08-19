@@ -5,7 +5,6 @@ import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
-import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyStage
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.CalculatePregnancyProgressUseCase
 import com.pablo.ruiz.babyloading.test.MainDispatcherRule
@@ -39,7 +38,7 @@ class JourneyViewModelTest {
     )
 
     @Test
-    fun timelineCoversWeeksOneThroughFortyTwoWithStatuses() = runTest {
+    fun timelineShowsEditorialWeeksSixThroughFortyWithStatuses() = runTest {
         pregnancyRepository.date.value = currentDate.minusWeeks(20).minusDays(3)
         val viewModel = createViewModel()
 
@@ -47,7 +46,7 @@ class JourneyViewModelTest {
 
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
-        assertEquals((1..42).toList(), state.weeks.map(JourneyWeekUiModel::week))
+        assertEquals((6..40).toList(), state.weeks.map(JourneyWeekUiModel::week))
         assertEquals(3, state.currentDay)
         assertEquals(JourneyWeekStatus.Completed, state.weeks.first { it.week == 19 }.status)
         assertEquals(JourneyWeekStatus.Current, state.weeks.first { it.week == 20 }.status)
@@ -55,43 +54,27 @@ class JourneyViewModelTest {
     }
 
     @Test
-    fun missingEditorialRangesRemainExplicitlyEmpty() = runTest {
+    fun timelineUsesOnlyWeeklyEditorialContent() = runTest {
         pregnancyRepository.date.value = currentDate.minusWeeks(20)
         val viewModel = createViewModel()
 
         advanceUntilIdle()
 
         val weeks = viewModel.uiState.value.weeks
-        assertNull(weeks.first { it.week == 5 }.content)
-        assertEquals(6, weeks.first { it.week == 6 }.content?.week)
-        assertEquals(40, weeks.first { it.week == 40 }.content?.week)
-        assertNull(weeks.first { it.week == 41 }.content)
-        assertNull(weeks.first { it.week == 42 }.content)
+        assertEquals((6..40).toList(), weeks.map(JourneyWeekUiModel::week))
+        assertEquals(6, weeks.first().content.week)
+        assertEquals(40, weeks.last().content.week)
     }
 
     @Test
-    fun weekSelectionTogglesExpandedDetails() = runTest {
-        pregnancyRepository.date.value = currentDate.minusWeeks(20)
-        val viewModel = createViewModel()
-        advanceUntilIdle()
-
-        viewModel.onEvent(JourneyEvent.WeekSelected(20))
-        assertEquals(20, viewModel.uiState.value.expandedWeek)
-
-        viewModel.onEvent(JourneyEvent.WeekSelected(20))
-        assertNull(viewModel.uiState.value.expandedWeek)
-    }
-
-    @Test
-    fun weekFortyThreeMarksEntireGuideCompletedAndNeedsReview() = runTest {
+    fun weeksPastTheGuideMarkEveryEditorialWeekCompleted() = runTest {
         pregnancyRepository.date.value = currentDate.minusWeeks(43)
         val viewModel = createViewModel()
 
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals(PregnancyStage.NeedsReview, state.stage)
-        assertEquals(42, state.weeks.count { it.status == JourneyWeekStatus.Completed })
+        assertEquals(35, state.weeks.count { it.status == JourneyWeekStatus.Completed })
         assertEquals(0, state.weeks.count { it.status == JourneyWeekStatus.Current })
     }
 

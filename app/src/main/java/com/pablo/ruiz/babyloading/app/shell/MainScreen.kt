@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Dashboard
-import androidx.compose.material.icons.outlined.PhotoLibrary
-import androidx.compose.material.icons.outlined.Route
-import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -23,12 +23,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pablo.ruiz.babyloading.R
+import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import com.pablo.ruiz.babyloading.navigation.DashboardGraph
 import com.pablo.ruiz.babyloading.navigation.GalleryGraph
@@ -40,9 +42,18 @@ internal fun MainScreen(
     selectedTab: MainTab,
     onTabSelected: (MainTab) -> Unit,
     modifier: Modifier = Modifier,
+    showNavigation: Boolean = true,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        BabyLoadingBackground(content = {})
+        if (!showNavigation) {
+            Scaffold(
+                containerColor = Color.Transparent,
+                content = content,
+            )
+            return@BoxWithConstraints
+        }
         when (MainNavigationType.forWidth(maxWidth)) {
             MainNavigationType.BottomBar -> CompactMainScreen(
                 selectedTab = selectedTab,
@@ -66,6 +77,7 @@ private fun CompactMainScreen(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     Scaffold(
+        containerColor = Color.Transparent,
         bottomBar = {
             MainNavigationBar(
                 selectedTab = selectedTab,
@@ -89,6 +101,7 @@ private fun ExpandedMainScreen(
         )
         Scaffold(
             modifier = Modifier.weight(1f),
+            containerColor = Color.Transparent,
             content = content,
         )
     }
@@ -156,28 +169,28 @@ internal enum class MainTab(
         graphRoute = DashboardGraph,
         labelRes = R.string.dashboard_tab,
         contentDescriptionRes = R.string.dashboard_content_description,
-        icon = Icons.Outlined.Dashboard,
+        icon = Icons.Filled.Favorite,
         testTag = "dashboard_tab",
     ),
     Journey(
         graphRoute = JourneyGraph,
         labelRes = R.string.journey_tab,
         contentDescriptionRes = R.string.journey_content_description,
-        icon = Icons.Outlined.Route,
+        icon = Icons.Filled.Map,
         testTag = "journey_tab",
     ),
     Gallery(
         graphRoute = GalleryGraph,
         labelRes = R.string.gallery_tab,
         contentDescriptionRes = R.string.gallery_content_description,
-        icon = Icons.Outlined.PhotoLibrary,
+        icon = Icons.Filled.PhotoLibrary,
         testTag = "gallery_tab",
     ),
     Settings(
         graphRoute = SettingsGraph,
         labelRes = R.string.settings_tab,
         contentDescriptionRes = R.string.settings_content_description,
-        icon = Icons.Outlined.Settings,
+        icon = Icons.Filled.Settings,
         testTag = "settings_tab",
     ),
 }
