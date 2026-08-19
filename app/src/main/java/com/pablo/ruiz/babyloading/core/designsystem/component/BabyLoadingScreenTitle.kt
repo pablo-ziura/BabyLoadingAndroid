@@ -22,6 +22,7 @@ fun BabyLoadingScreenTitle(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    isProminent: Boolean = false,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -32,7 +33,11 @@ fun BabyLoadingScreenTitle(
             modifier = Modifier
                 .fillMaxWidth()
                 .semantics { heading() },
-            style = MaterialTheme.typography.headlineLarge,
+            style = if (isProminent) {
+                MaterialTheme.typography.headlineLarge
+            } else {
+                MaterialTheme.typography.titleLarge
+            },
             textAlign = TextAlign.Center,
         )
         subtitle?.let {

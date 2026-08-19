@@ -121,6 +121,7 @@ private fun DashboardProgress(
             BabyLoadingScreenTitle(
                 title = stringResource(R.string.dashboard_title),
                 subtitle = stringResource(R.string.dashboard_subtitle),
+                isProminent = true,
             )
         }
         item {

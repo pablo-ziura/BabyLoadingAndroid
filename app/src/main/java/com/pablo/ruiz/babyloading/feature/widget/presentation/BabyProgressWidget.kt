@@ -57,6 +57,8 @@ import dagger.hilt.components.SingletonComponent
 import java.time.Clock
 import java.time.LocalDate
 import kotlinx.coroutines.flow.first
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.withClip
 
 class BabyProgressWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Single
@@ -120,7 +122,7 @@ private fun BabyProgressWidgetContent(
             .background(ImageProvider(R.drawable.widget_progress_background))
             .cornerRadius(android.R.dimen.system_app_widget_background_radius)
             .clickable(actionStartActivity<MainActivity>())
-            .padding(12.dp),
+            .padding(14.dp),
         contentAlignment = Alignment.Center,
     ) {
         when (state) {
@@ -147,7 +149,7 @@ private fun NeedsSetupContent(strings: BabyProgressWidgetStrings) {
             text = strings.setupMessage,
             style = TextStyle(
                 color = WidgetContentMuted,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
             ),
         )
@@ -178,7 +180,7 @@ private fun ProgressContent(
                     .cornerRadius((WIDGET_RING_SIZE_DP / 2).dp),
             ) {}
         }
-        Spacer(GlanceModifier.width(10.dp))
+        Spacer(GlanceModifier.width(12.dp))
         Column(
             modifier = GlanceModifier
                 .defaultWeight()
@@ -188,7 +190,7 @@ private fun ProgressContent(
                 text = strings.week,
                 style = TextStyle(
                     color = WidgetContent,
-                    fontSize = 15.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                 ),
             )
@@ -197,10 +199,10 @@ private fun ProgressContent(
                 text = strings.babySize,
                 style = TextStyle(
                     color = WidgetContentMuted,
-                    fontSize = 11.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                 ),
-                maxLines = 2,
+                maxLines = 3,
             )
             Spacer(GlanceModifier.defaultWeight())
             Row(verticalAlignment = Alignment.Bottom) {
@@ -208,7 +210,7 @@ private fun ProgressContent(
                     text = state.daysRemaining.toString(),
                     style = TextStyle(
                         color = WidgetContent,
-                        fontSize = 26.sp,
+                        fontSize = 34.sp,
                         fontWeight = FontWeight.Bold,
                     ),
                 )
@@ -217,7 +219,7 @@ private fun ProgressContent(
                     text = strings.days,
                     style = TextStyle(
                         color = WidgetContent,
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                     ),
                 )
@@ -296,7 +298,7 @@ private val WidgetContent = ColorProvider(R.color.widget_content)
 private val WidgetContentMuted = ColorProvider(R.color.widget_content_muted)
 private val WidgetRingSurface = ColorProvider(R.color.widget_ring_surface)
 private val WidgetProgressTrack = ColorProvider(R.color.widget_progress_track)
-private const val WIDGET_RING_SIZE_DP = 72
+private const val WIDGET_RING_SIZE_DP = 100
 
 private object BabySizeProgressImageRenderer {
     fun create(
@@ -310,7 +312,7 @@ private object BabySizeProgressImageRenderer {
         val center = size / 2f
         val outerRadius = center - strokeWidth / 2f
         val fruitBounds = RectF(strokeWidth, strokeWidth, size - strokeWidth, size - strokeWidth)
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(size, size)
         val canvas = Canvas(bitmap)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
@@ -322,10 +324,10 @@ private object BabySizeProgressImageRenderer {
             addCircle(center, center, fruitBounds.width() / 2f, Path.Direction.CW)
         }
         val source = BitmapFactory.decodeResource(context.resources, drawableRes)
-        canvas.save()
-        canvas.clipPath(fruitClip)
-        canvas.drawBitmap(source, null, fruitBounds, paint)
-        canvas.restore()
+        canvas.withClip(fruitClip) {
+            paint.alpha = OPAQUE_ALPHA
+            drawBitmap(source, null, fruitBounds, paint)
+        }
 
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = strokeWidth
@@ -351,4 +353,5 @@ private object BabySizeProgressImageRenderer {
 
     private const val RING_SIZE_DP = WIDGET_RING_SIZE_DP
     private const val RING_STROKE_DP = 5
+    private const val OPAQUE_ALPHA = 255
 }

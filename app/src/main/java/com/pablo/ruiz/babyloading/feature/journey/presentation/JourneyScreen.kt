@@ -285,17 +285,22 @@ private fun JourneyTimelineMarker(
                 accent = BabyAccentPink,
             )
         }
-        drawCircle(
-            color = if (isCurrent) BabyAccentPink else Color.White.copy(alpha = 0.5f),
-            radius = if (isCurrent) 7.dp.toPx() else 4.dp.toPx(),
-            center = Offset(centerX, centerY),
-        )
         if (isCurrent) {
             drawCircle(
                 color = Color.White,
-                radius = 9.dp.toPx(),
+                radius = 7.dp.toPx(),
                 center = Offset(centerX, centerY),
-                style = Stroke(width = 2.dp.toPx()),
+            )
+            drawCircle(
+                color = BabyAccentPink,
+                radius = 5.dp.toPx(),
+                center = Offset(centerX, centerY),
+            )
+        } else {
+            drawCircle(
+                color = Color.White.copy(alpha = 0.5f),
+                radius = 4.dp.toPx(),
+                center = Offset(centerX, centerY),
             )
         }
         (0..3).forEach { index ->
