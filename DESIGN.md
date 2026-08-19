@@ -33,7 +33,8 @@ Los dos ficheros viven en `app/src/main/res/font/`; la licencia se distribuye co
 
 | Propósito | Android Material 3 | iOS SwiftUI | Peso |
 | --- | --- | --- | --- |
-| Título de pantalla | `headlineLarge` | `.largeTitle` | 700 Bold |
+| Título destacado de Inicio | `headlineLarge` | `.largeTitle` | 700 Bold |
+| Título de pantalla de nivel superior | `titleLarge` | `.title2` | 700 Bold |
 | Título de componente | `titleLarge` | `.title3` | 700 Bold |
 | Cuerpo informativo | `bodyLarge` | `.body` | 400 Regular |
 | Control o acción | `labelLarge` | `.headline` | 600 SemiBold |
