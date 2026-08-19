@@ -1,7 +1,6 @@
 package com.pablo.ruiz.babyloading.feature.gallery.presentation
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import java.io.File
@@ -16,19 +15,20 @@ object GalleryBitmapLoader {
         val file = File(filePath)
         if (!file.isFile) return@withContext null
 
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeFile(file.absolutePath, bounds)
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@withContext null
-
-        val options = BitmapFactory.Options().apply {
-            inSampleSize = calculateInSampleSize(
-                width = bounds.outWidth,
-                height = bounds.outHeight,
-                requestedSize = requestedSizePx,
-            )
-            inPreferredConfig = Bitmap.Config.ARGB_8888
+        runCatching {
+            ImageDecoder.decodeBitmap(ImageDecoder.createSource(file)) { decoder, imageInfo, _ ->
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                decoder.memorySizePolicy = ImageDecoder.MEMORY_POLICY_LOW_RAM
+                decoder.setTargetSampleSize(
+                    calculateInSampleSize(
+                        width = imageInfo.size.width,
+                        height = imageInfo.size.height,
+                        requestedSize = requestedSizePx,
+                    ),
+                )
+            }.asImageBitmap()
         }
-        BitmapFactory.decodeFile(file.absolutePath, options)?.asImageBitmap()
+            .getOrNull()
     }
 
     fun calculateInSampleSize(

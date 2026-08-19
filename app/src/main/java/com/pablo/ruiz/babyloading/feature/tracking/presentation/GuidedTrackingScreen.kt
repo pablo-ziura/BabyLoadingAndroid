@@ -11,10 +11,12 @@ import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,11 +25,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material.icons.outlined.Cameraswitch
 import androidx.compose.material.icons.outlined.FlashOff
 import androidx.compose.material.icons.outlined.FlashOn
 import androidx.compose.material.icons.outlined.Lock
@@ -39,26 +41,29 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -74,6 +79,7 @@ import com.pablo.ruiz.babyloading.R
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingSpacing
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
+import com.pablo.ruiz.babyloading.feature.gallery.presentation.GalleryBitmapLoader
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -150,6 +156,7 @@ private fun GuidedTrackingContent(
         if (hasCameraPermission) {
             TrackingCamera(
                 pregnancyWeek = uiState.pregnancyWeek,
+                referenceImagePath = uiState.referenceImagePath,
                 isSaving = uiState.isSaving,
                 onPhotoCaptured = onPhotoCaptured,
                 onCaptureFailed = onCaptureFailed,
@@ -180,6 +187,7 @@ private fun GuidedTrackingContent(
 @Composable
 private fun TrackingCamera(
     pregnancyWeek: Int?,
+    referenceImagePath: String?,
     isSaving: Boolean,
     onPhotoCaptured: (ByteArray) -> Unit,
     onCaptureFailed: () -> Unit,
@@ -196,10 +204,21 @@ private fun TrackingCamera(
             cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
         }
     }
-    var lensFacing by remember { mutableIntStateOf(CameraSelector.LENS_FACING_BACK) }
     var flashEnabled by remember { mutableStateOf(false) }
     var isCapturing by remember { mutableStateOf(false) }
     var cameraAvailable by remember { mutableStateOf(true) }
+    var isShowingReference by remember(referenceImagePath) {
+        mutableStateOf(referenceImagePath != null)
+    }
+    var referenceOpacity by remember { mutableFloatStateOf(DEFAULT_REFERENCE_OPACITY) }
+    val referenceBitmap by produceState<ImageBitmap?>(
+        initialValue = null,
+        key1 = referenceImagePath,
+    ) {
+        value = referenceImagePath?.let { path ->
+            GalleryBitmapLoader.load(path, REFERENCE_IMAGE_SIZE_PX)
+        }
+    }
 
     DisposableEffect(cameraController, lifecycleOwner, cameraExecutor) {
         runCatching { cameraController.bindToLifecycle(lifecycleOwner) }
@@ -209,13 +228,8 @@ private fun TrackingCamera(
             cameraExecutor.shutdown()
         }
     }
-    LaunchedEffect(lensFacing, flashEnabled) {
+    LaunchedEffect(flashEnabled) {
         runCatching {
-            cameraController.cameraSelector = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
-                CameraSelector.DEFAULT_BACK_CAMERA
-            } else {
-                CameraSelector.DEFAULT_FRONT_CAMERA
-            }
             cameraController.imageCaptureFlashMode = if (flashEnabled) {
                 ImageCapture.FLASH_MODE_ON
             } else {
@@ -228,18 +242,35 @@ private fun TrackingCamera(
         }
     }
 
-    Box(modifier = modifier.background(Color.Black)) {
-        AndroidView(
-            factory = { viewContext ->
-                PreviewView(viewContext).apply {
-                    implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-                    scaleType = PreviewView.ScaleType.FILL_CENTER
-                    controller = cameraController
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
-        )
-        TrackingGuideOverlay(modifier = Modifier.fillMaxSize())
+    BoxWithConstraints(modifier = modifier.background(Color.Black)) {
+        val viewport = calculateTrackingGuideGeometry(maxWidth.value, maxHeight.value)
+        Box(
+            modifier = Modifier
+                .width(viewport.width.dp)
+                .height(viewport.height.dp)
+                .align(Alignment.Center),
+        ) {
+            AndroidView(
+                factory = { viewContext ->
+                    PreviewView(viewContext).apply {
+                        implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                        scaleType = PreviewView.ScaleType.FILL_CENTER
+                        controller = cameraController
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
+            if (referenceBitmap != null && isShowingReference) {
+                Image(
+                    bitmap = checkNotNull(referenceBitmap),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    alpha = referenceOpacity,
+                )
+            }
+            TrackingGuideOverlay(modifier = Modifier.fillMaxSize())
+        }
 
         Row(
             modifier = Modifier
@@ -266,7 +297,7 @@ private fun TrackingCamera(
             )
             IconButton(
                 onClick = { flashEnabled = !flashEnabled },
-                enabled = lensFacing == CameraSelector.LENS_FACING_BACK && cameraAvailable,
+                enabled = cameraAvailable,
             ) {
                 Icon(
                     imageVector = if (flashEnabled) Icons.Outlined.FlashOn else Icons.Outlined.FlashOff,
@@ -276,19 +307,17 @@ private fun TrackingCamera(
             }
         }
 
-        Text(
-            text = if (cameraAvailable) {
-                stringResource(R.string.tracking_alignment_hint)
-            } else {
-                stringResource(R.string.tracking_camera_unavailable)
-            },
+        TrackingReferenceControls(
+            hasReferenceImage = referenceBitmap != null,
+            isShowingReference = isShowingReference,
+            onShowingReferenceChanged = { isShowingReference = it },
+            referenceOpacity = referenceOpacity,
+            onReferenceOpacityChanged = { referenceOpacity = it },
+            cameraAvailable = cameraAvailable,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.58f))
-                .padding(start = 24.dp, top = 18.dp, end = 24.dp, bottom = 124.dp),
-            color = Color.White,
-            style = MaterialTheme.typography.bodyMedium,
+                .padding(start = 20.dp, end = 20.dp, bottom = 124.dp),
         )
 
         FilledIconButton(
@@ -299,7 +328,6 @@ private fun TrackingCamera(
                     executor = cameraExecutor,
                     mainExecutor = context.mainExecutor,
                     cacheDirectory = context.cacheDir,
-                    reverseHorizontally = lensFacing == CameraSelector.LENS_FACING_FRONT,
                     onSuccess = { data ->
                         isCapturing = false
                         onPhotoCaptured(data)
@@ -330,27 +358,63 @@ private fun TrackingCamera(
                 )
             }
         }
+    }
+}
 
-        IconButton(
-            onClick = {
-                flashEnabled = false
-                lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
-                    CameraSelector.LENS_FACING_FRONT
-                } else {
-                    CameraSelector.LENS_FACING_BACK
-                }
+@Composable
+private fun TrackingReferenceControls(
+    hasReferenceImage: Boolean,
+    isShowingReference: Boolean,
+    onShowingReferenceChanged: (Boolean) -> Unit,
+    referenceOpacity: Float,
+    onReferenceOpacityChanged: (Float) -> Unit,
+    cameraAvailable: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .background(Color.Black.copy(alpha = 0.58f), MaterialTheme.shapes.large)
+            .padding(BabyLoadingSpacing.Medium),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = if (cameraAvailable) {
+                stringResource(R.string.tracking_alignment_hint)
+            } else {
+                stringResource(R.string.tracking_camera_unavailable)
             },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 28.dp, bottom = 38.dp)
-                .background(Color.Black.copy(alpha = 0.54f), CircleShape),
-            enabled = cameraAvailable && !isCapturing && !isSaving,
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Cameraswitch,
-                contentDescription = stringResource(R.string.tracking_switch_camera),
-                tint = Color.White,
-            )
+            color = Color.White,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        if (hasReferenceImage) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.tracking_reference_toggle),
+                    modifier = Modifier.weight(1f),
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                Switch(
+                    checked = isShowingReference,
+                    onCheckedChange = onShowingReferenceChanged,
+                )
+            }
+            if (isShowingReference) {
+                Text(
+                    text = stringResource(R.string.tracking_reference_opacity),
+                    color = Color.White.copy(alpha = 0.8f),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Slider(
+                    value = referenceOpacity,
+                    onValueChange = onReferenceOpacityChanged,
+                    valueRange = 0f..MAX_REFERENCE_OPACITY,
+                )
+            }
         }
     }
 }
@@ -361,27 +425,24 @@ private fun TrackingGuideOverlay(modifier: Modifier = Modifier) {
     Canvas(
         modifier = modifier.semantics { contentDescription = guideDescription },
     ) {
-        val guide = calculateTrackingGuideGeometry(size.width, size.height)
-        val strokeColor = Color.White.copy(alpha = 0.82f)
-        drawRoundRect(
-            color = strokeColor,
-            topLeft = Offset(guide.left, guide.top),
-            size = Size(guide.width, guide.height),
-            cornerRadius = CornerRadius(guide.width * 0.28f),
-            style = Stroke(width = 4.dp.toPx()),
-        )
-        drawLine(
-            color = strokeColor.copy(alpha = 0.55f),
-            start = Offset(guide.left, guide.top + guide.height / 2f),
-            end = Offset(guide.right, guide.top + guide.height / 2f),
-            strokeWidth = 2.dp.toPx(),
-        )
-        drawLine(
-            color = strokeColor.copy(alpha = 0.35f),
-            start = Offset(size.width / 2f, guide.top),
-            end = Offset(size.width / 2f, guide.bottom),
-            strokeWidth = 2.dp.toPx(),
-        )
+        val lineColor = Color.White.copy(alpha = 0.25f)
+        val pathEffect = PathEffect.dashPathEffect(floatArrayOf(6.dp.toPx(), 6.dp.toPx()))
+        listOf(1f / 3f, 2f / 3f).forEach { fraction ->
+            drawLine(
+                color = lineColor,
+                start = Offset(size.width * fraction, 0f),
+                end = Offset(size.width * fraction, size.height),
+                strokeWidth = 1.dp.toPx(),
+                pathEffect = pathEffect,
+            )
+            drawLine(
+                color = lineColor,
+                start = Offset(0f, size.height * fraction),
+                end = Offset(size.width, size.height * fraction),
+                strokeWidth = 1.dp.toPx(),
+                pathEffect = pathEffect,
+            )
+        }
     }
 }
 
@@ -390,7 +451,6 @@ private fun capturePhoto(
     executor: ExecutorService,
     mainExecutor: java.util.concurrent.Executor,
     cacheDirectory: File,
-    reverseHorizontally: Boolean,
     onSuccess: (ByteArray) -> Unit,
     onFailure: () -> Unit,
 ) {
@@ -400,11 +460,7 @@ private fun capturePhoto(
         onFailure()
         return
     }
-    val metadata = ImageCapture.Metadata().apply {
-        isReversedHorizontal = reverseHorizontally
-    }
     val options = ImageCapture.OutputFileOptions.Builder(temporaryFile)
-        .setMetadata(metadata)
         .build()
     controller.takePicture(
         options,
@@ -522,3 +578,7 @@ private fun CaptureSavedDialogPreview() {
         }
     }
 }
+
+private const val DEFAULT_REFERENCE_OPACITY = 0.35f
+private const val MAX_REFERENCE_OPACITY = 0.7f
+private const val REFERENCE_IMAGE_SIZE_PX = 1600

@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.CalculatePregnancyProgressUseCase
+import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GallerySource
+import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.GalleryRepository
 import com.pablo.ruiz.babyloading.feature.tracking.domain.usecase.SaveGuidedTrackingPhotoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -16,6 +18,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class GuidedTrackingViewModel @Inject constructor(
     pregnancyRepository: PregnancyRepository,
+    galleryRepository: GalleryRepository,
     private val calculateProgress: CalculatePregnancyProgressUseCase,
     private val savePhoto: SaveGuidedTrackingPhotoUseCase,
 ) : ViewModel() {
@@ -29,6 +32,18 @@ class GuidedTrackingViewModel @Inject constructor(
                     state.copy(
                         pregnancyWeek = date?.let { calculateProgress(it).gestationalAge.completedWeeks },
                     )
+                }
+            }
+        }
+        viewModelScope.launch {
+            galleryRepository.items.collect { items ->
+                val referenceImagePath = items
+                    .asSequence()
+                    .filter { it.source == GallerySource.GuidedTracking }
+                    .maxByOrNull { it.capturedAt }
+                    ?.privateFilePath
+                _uiState.update { state ->
+                    state.copy(referenceImagePath = referenceImagePath)
                 }
             }
         }

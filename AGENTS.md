@@ -6,6 +6,9 @@ Act as a Senior Android/Kotlin Architect for this repository.
 
 Before proposing or applying changes, read this file and inspect the relevant Gradle, Kotlin, Compose, resource, and manifest files affected by the task. Keep this file updated when later development introduces new architectural decisions, module boundaries, build rules, or project conventions.
 
+Before creating or modifying any screen, reusable component, or widget containing text, read `DESIGN.md` and follow its typography and accessibility rules.
+`DESIGN.md` is the shared Android/iOS visual contract: when a visual decision changes, update its equivalent iOS document in the same task and map each semantic token to both platforms.
+
 ## Platform Baseline
 
 - Target a modern Android/Kotlin application using Android API 37 as the project baseline.
@@ -40,6 +43,7 @@ Before proposing or applying changes, read this file and inspect the relevant Gr
 - Store the mandatory last-period date as an ISO-8601 string in Preferences DataStore; its presence decides whether onboarding or the main shell starts.
 - Keep feature-specific Retrofit services, DTOs, mappers, local sources, and repository implementations inside that feature's `data` layer.
 - Store unified gallery metadata in Room and image bytes in app-private files; use Android Photo Picker for imports without broad media permissions.
+- Store the belly-tracking cadence as 7, 14, or 28 days in the feature-owned Preferences DataStore; invalid stored values fall back to 7 days.
 - Label gallery items as imported or guided tracking. Deleting a guided tracking item removes only its private app copy and never deletes an exported MediaStore copy.
 - Use CameraX for guided captures and request only the runtime camera permission. Save the private Room-backed copy first, then export a separate JPEG to `Pictures/Baby Loading` through MediaStore without storage permissions.
 - Treat MediaStore export as recoverable: if it fails, preserve and report the successfully saved private gallery copy.

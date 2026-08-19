@@ -2,12 +2,14 @@ package com.pablo.ruiz.babyloading.feature.gallery.di
 
 import android.content.Context
 import androidx.room.Room
+import com.pablo.ruiz.babyloading.feature.gallery.data.DataStoreTrackingPreferencesRepository
 import com.pablo.ruiz.babyloading.feature.gallery.data.OfflineGalleryRepository
 import com.pablo.ruiz.babyloading.feature.gallery.data.local.BabyLoadingDatabase
 import com.pablo.ruiz.babyloading.feature.gallery.data.local.GalleryDao
 import com.pablo.ruiz.babyloading.feature.gallery.data.local.GalleryImageStore
 import com.pablo.ruiz.babyloading.feature.gallery.data.local.PrivateGalleryImageStore
 import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.GalleryRepository
+import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.TrackingPreferencesRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -30,6 +32,12 @@ abstract class GalleryBindingsModule {
     abstract fun bindGalleryImageStore(
         imageStore: PrivateGalleryImageStore,
     ): GalleryImageStore
+
+    @Binds
+    @Singleton
+    abstract fun bindTrackingPreferencesRepository(
+        repository: DataStoreTrackingPreferencesRepository,
+    ): TrackingPreferencesRepository
 }
 
 @Module
