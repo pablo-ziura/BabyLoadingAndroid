@@ -17,7 +17,7 @@ data class SettingsUiState(
         get() = selectedDate != null && selectedDate != savedDate
 
     val canSave: Boolean
-        get() = hasChanges && !isSaving
+        get() = selectedDate != null && !isSaving
 }
 
 enum class SettingsValidationError {
