@@ -38,7 +38,7 @@ class SettingsViewModelTest {
     )
 
     @Test
-    fun storedDateLoadsWithEstimatedDueDateAndNoPendingChanges() = runTest {
+    fun storedDateLoadsWithEstimatedDueDateAndCanBeSavedAgain() = runTest {
         val viewModel = createViewModel()
 
         advanceUntilIdle()
@@ -48,7 +48,7 @@ class SettingsViewModelTest {
         assertEquals(LocalDate.of(2026, 5, 10), state.selectedDate)
         assertEquals(LocalDate.of(2027, 2, 14), state.estimatedDueDate)
         assertFalse(state.hasChanges)
-        assertFalse(state.canSave)
+        assertTrue(state.canSave)
     }
 
     @Test
