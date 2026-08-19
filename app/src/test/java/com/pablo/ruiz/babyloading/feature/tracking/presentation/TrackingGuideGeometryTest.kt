@@ -6,13 +6,13 @@ import org.junit.Test
 
 class TrackingGuideGeometryTest {
     @Test
-    fun guideIsCenteredWithStableViewportRatios() {
+    fun guideUsesCenteredNineBySixteenViewport() {
         val guide = calculateTrackingGuideGeometry(width = 1000f, height = 2000f)
 
-        assertEquals(680f, guide.width, 0.01f)
-        assertEquals(1320f, guide.height, 0.01f)
-        assertEquals(160f, guide.left, 0.01f)
-        assertEquals(320f, guide.top, 0.01f)
+        assertEquals(1000f, guide.width, 0.01f)
+        assertEquals(1777.78f, guide.height, 0.01f)
+        assertEquals(0f, guide.left, 0.01f)
+        assertEquals(111.11f, guide.top, 0.01f)
     }
 
     @Test

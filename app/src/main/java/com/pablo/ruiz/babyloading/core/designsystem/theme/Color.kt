@@ -3,6 +3,8 @@ package com.pablo.ruiz.babyloading.core.designsystem.theme
 import androidx.compose.ui.graphics.Color
 
 internal val BrandPink = Color(0xFF9B405C)
+val BabyAccentPink = Color(0xFFFF2D55)
+val BabyAccentPurple = Color(0xFFAF52DE)
 internal val OnBrandPink = Color(0xFFFFFFFF)
 internal val BrandPinkContainer = Color(0xFFFFD9E2)
 internal val OnBrandPinkContainer = Color(0xFF3E001A)
@@ -32,3 +34,6 @@ internal val BabyOnErrorContainer = Color(0xFF410002)
 
 val BabyGradientTop = Color(0xFFFFBFD1)
 val BabyGradientBottom = Color(0xFFC7B8F5)
+
+val BabyStatusPositiveContainer = Color(0xFFDDF5E5)
+val BabyStatusAttentionContainer = Color(0xFFFFE8CC)
