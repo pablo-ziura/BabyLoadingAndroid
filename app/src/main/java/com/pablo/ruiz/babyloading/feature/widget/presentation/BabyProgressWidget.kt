@@ -1,16 +1,25 @@
 package com.pablo.ruiz.babyloading.feature.widget.presentation
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.Image
+import androidx.glance.ImageProvider
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.LinearProgressIndicator
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
@@ -20,10 +29,12 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
@@ -31,6 +42,10 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.pablo.ruiz.babyloading.MainActivity
 import com.pablo.ruiz.babyloading.R
+import com.pablo.ruiz.babyloading.core.localization.AppLocaleProvider
+import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
+import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
+import com.pablo.ruiz.babyloading.core.pregnancy.content.presentation.drawableResource
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetState
@@ -41,8 +56,6 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import java.time.Clock
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import kotlinx.coroutines.flow.first
 
 class BabyProgressWidget : GlanceAppWidget() {
@@ -59,12 +72,33 @@ class BabyProgressWidget : GlanceAppWidget() {
                 currentDate = LocalDate.now(dependencies.clock()),
             )
         }.getOrDefault(BabyProgressWidgetState.NeedsSetup)
-        val strings = BabyProgressWidgetStrings.create(context, state)
+        val weekContent = (state as? BabyProgressWidgetState.Progress)?.let { progress ->
+            runCatching {
+                dependencies.pregnancyContentRepository().contentForWeek(
+                    week = progress.completedWeeks,
+                    locale = dependencies.appLocaleProvider().currentLocale(),
+                )
+            }.getOrNull()
+        }
+        val strings = BabyProgressWidgetStrings.create(context, state, weekContent)
+        val babySizeProgressImage = (state as? BabyProgressWidgetState.Progress)
+            ?.let { progress ->
+                weekContent?.let { content ->
+                    ImageProvider(
+                        BabySizeProgressImageRenderer.create(
+                            context = context,
+                            drawableRes = content.babySize.drawableResource(),
+                            progress = progress.completedFraction,
+                        ),
+                    )
+                }
+            }
 
         provideContent {
             BabyProgressWidgetContent(
                 state = state,
                 strings = strings,
+                babySizeProgressImage = babySizeProgressImage,
             )
         }
     }
@@ -78,142 +112,167 @@ class BabyProgressWidgetReceiver : GlanceAppWidgetReceiver() {
 private fun BabyProgressWidgetContent(
     state: BabyProgressWidgetState,
     strings: BabyProgressWidgetStrings,
+    babySizeProgressImage: ImageProvider?,
 ) {
-    Column(
+    Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(WidgetSurface)
+            .background(ImageProvider(R.drawable.widget_progress_background))
             .cornerRadius(android.R.dimen.system_app_widget_background_radius)
             .clickable(actionStartActivity<MainActivity>())
-            .padding(18.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(12.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = strings.title,
-            style = TextStyle(
-                color = WidgetPrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-            ),
-        )
-        Spacer(GlanceModifier.height(6.dp))
         when (state) {
             BabyProgressWidgetState.NeedsSetup -> NeedsSetupContent(strings)
-            is BabyProgressWidgetState.Progress -> ProgressContent(state, strings)
+            is BabyProgressWidgetState.Progress -> ProgressContent(
+                state = state,
+                strings = strings,
+                babySizeProgressImage = babySizeProgressImage,
+            )
         }
     }
 }
 
 @Composable
 private fun NeedsSetupContent(strings: BabyProgressWidgetStrings) {
-    Text(
-        text = strings.setupTitle,
-        style = TextStyle(
-            color = WidgetOnSurface,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-        ),
-    )
-    Spacer(GlanceModifier.height(8.dp))
-    Text(
-        text = strings.setupMessage,
-        style = TextStyle(color = WidgetOnSurface, fontSize = 14.sp),
-    )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Image(
+            provider = ImageProvider(R.drawable.ic_widget_calendar),
+            contentDescription = null,
+            modifier = GlanceModifier.size(36.dp),
+        )
+        Spacer(GlanceModifier.width(12.dp))
+        Text(
+            text = strings.setupMessage,
+            style = TextStyle(
+                color = WidgetContentMuted,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+            ),
+        )
+    }
 }
 
 @Composable
 private fun ProgressContent(
     state: BabyProgressWidgetState.Progress,
     strings: BabyProgressWidgetStrings,
+    babySizeProgressImage: ImageProvider?,
 ) {
     Row(
-        modifier = GlanceModifier.fillMaxWidth(),
+        modifier = GlanceModifier.fillMaxSize(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = strings.week,
-            modifier = GlanceModifier.defaultWeight(),
-            style = TextStyle(
-                color = WidgetOnSurface,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-            ),
-        )
-        Text(
-            text = strings.daysRemaining,
-            style = TextStyle(
-                color = WidgetOnSurface,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-            ),
-        )
-    }
-    Spacer(GlanceModifier.height(12.dp))
-    Box(
-        modifier = GlanceModifier
-            .fillMaxWidth()
-            .height(8.dp)
-            .background(WidgetTrack)
-            .cornerRadius(4.dp),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Box(
+        if (babySizeProgressImage != null) {
+            Image(
+                provider = babySizeProgressImage,
+                contentDescription = strings.babySizeContentDescription,
+                modifier = GlanceModifier.size(WIDGET_RING_SIZE_DP.dp),
+            )
+        } else {
+            Box(
+                modifier = GlanceModifier
+                    .size(WIDGET_RING_SIZE_DP.dp)
+                    .background(WidgetRingSurface)
+                    .cornerRadius((WIDGET_RING_SIZE_DP / 2).dp),
+            ) {}
+        }
+        Spacer(GlanceModifier.width(10.dp))
+        Column(
             modifier = GlanceModifier
-                .width((WIDGET_PROGRESS_WIDTH_DP * state.completedFraction).coerceAtLeast(4f).dp)
-                .height(8.dp)
-                .background(WidgetPrimary)
-                .cornerRadius(4.dp),
-        ) {}
+                .defaultWeight()
+                .fillMaxHeight(),
+        ) {
+            Text(
+                text = strings.week,
+                style = TextStyle(
+                    color = WidgetContent,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+            )
+            Spacer(GlanceModifier.height(2.dp))
+            Text(
+                text = strings.babySize,
+                style = TextStyle(
+                    color = WidgetContentMuted,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                ),
+                maxLines = 2,
+            )
+            Spacer(GlanceModifier.defaultWeight())
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = state.daysRemaining.toString(),
+                    style = TextStyle(
+                        color = WidgetContent,
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                )
+                Spacer(GlanceModifier.width(4.dp))
+                Text(
+                    text = strings.days,
+                    style = TextStyle(
+                        color = WidgetContent,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                    ),
+                )
+            }
+            Spacer(GlanceModifier.height(4.dp))
+            LinearProgressIndicator(
+                progress = state.completedFraction,
+                modifier = GlanceModifier
+                    .fillMaxWidth()
+                    .height(4.dp),
+                color = WidgetContent,
+                backgroundColor = WidgetProgressTrack,
+            )
+        }
     }
-    Spacer(GlanceModifier.height(10.dp))
-    Text(
-        text = strings.dueDate,
-        style = TextStyle(color = WidgetOnSurfaceMuted, fontSize = 13.sp),
-    )
 }
 
 private data class BabyProgressWidgetStrings(
-    val title: String,
-    val setupTitle: String,
     val setupMessage: String,
     val week: String,
-    val daysRemaining: String,
-    val dueDate: String,
+    val babySize: String,
+    val babySizeContentDescription: String?,
+    val days: String,
 ) {
     companion object {
         fun create(
             context: Context,
             state: BabyProgressWidgetState,
+            weekContent: WeekContent?,
         ): BabyProgressWidgetStrings {
             if (state !is BabyProgressWidgetState.Progress) {
                 return BabyProgressWidgetStrings(
-                    title = context.getString(R.string.widget_title),
-                    setupTitle = context.getString(R.string.widget_setup_title),
                     setupMessage = context.getString(R.string.widget_setup_message),
                     week = "",
-                    daysRemaining = "",
-                    dueDate = "",
+                    babySize = "",
+                    babySizeContentDescription = null,
+                    days = "",
                 )
             }
-            val locale = context.resources.configuration.locales[0]
-            val formattedDueDate = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-                .withLocale(locale)
-                .format(state.estimatedDueDate)
+            val babySizeLabel = weekContent?.babySizeLabel
+                ?: context.getString(R.string.widget_unknown_size)
             return BabyProgressWidgetStrings(
-                title = context.getString(R.string.widget_title),
-                setupTitle = "",
                 setupMessage = "",
                 week = context.getString(
-                    R.string.widget_week_and_day,
+                    R.string.widget_week,
                     state.completedWeeks,
-                    state.daysIntoWeek,
                 ),
-                daysRemaining = context.resources.getQuantityString(
-                    R.plurals.widget_days_remaining,
-                    state.daysRemaining,
-                    state.daysRemaining,
+                babySize = context.getString(
+                    R.string.widget_baby_size,
+                    babySizeLabel,
                 ),
-                dueDate = context.getString(R.string.widget_due_date, formattedDueDate),
+                babySizeContentDescription = weekContent?.let {
+                    context.getString(R.string.widget_baby_size_description, babySizeLabel)
+                },
+                days = context.getString(R.string.widget_days),
             )
         }
     }
@@ -226,12 +285,70 @@ interface BabyProgressWidgetDependencies {
 
     fun pregnancyCalculator(): PregnancyCalculator
 
+    fun pregnancyContentRepository(): PregnancyContentRepository
+
+    fun appLocaleProvider(): AppLocaleProvider
+
     fun clock(): Clock
 }
 
-private val WidgetSurface = ColorProvider(Color(0xFFFFF8F5))
-private val WidgetPrimary = ColorProvider(Color(0xFF96516A))
-private val WidgetOnSurface = ColorProvider(Color(0xFF29171D))
-private val WidgetOnSurfaceMuted = ColorProvider(Color(0xFF68585D))
-private val WidgetTrack = ColorProvider(Color(0xFFF0DCE3))
-private const val WIDGET_PROGRESS_WIDTH_DP = 214f
+private val WidgetContent = ColorProvider(R.color.widget_content)
+private val WidgetContentMuted = ColorProvider(R.color.widget_content_muted)
+private val WidgetRingSurface = ColorProvider(R.color.widget_ring_surface)
+private val WidgetProgressTrack = ColorProvider(R.color.widget_progress_track)
+private const val WIDGET_RING_SIZE_DP = 72
+
+private object BabySizeProgressImageRenderer {
+    fun create(
+        context: Context,
+        @DrawableRes drawableRes: Int,
+        progress: Float,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val size = (RING_SIZE_DP * density).toInt()
+        val strokeWidth = RING_STROKE_DP * density
+        val center = size / 2f
+        val outerRadius = center - strokeWidth / 2f
+        val fruitBounds = RectF(strokeWidth, strokeWidth, size - strokeWidth, size - strokeWidth)
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        paint.style = Paint.Style.FILL
+        paint.color = context.getColor(R.color.widget_ring_surface)
+        canvas.drawCircle(center, center, outerRadius, paint)
+
+        val fruitClip = Path().apply {
+            addCircle(center, center, fruitBounds.width() / 2f, Path.Direction.CW)
+        }
+        val source = BitmapFactory.decodeResource(context.resources, drawableRes)
+        canvas.save()
+        canvas.clipPath(fruitClip)
+        canvas.drawBitmap(source, null, fruitBounds, paint)
+        canvas.restore()
+
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = strokeWidth
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.color = context.getColor(R.color.widget_ring_track)
+        canvas.drawCircle(center, center, outerRadius, paint)
+
+        paint.color = context.getColor(R.color.widget_content)
+        canvas.drawArc(
+            RectF(
+                strokeWidth / 2f,
+                strokeWidth / 2f,
+                size - strokeWidth / 2f,
+                size - strokeWidth / 2f,
+            ),
+            -90f,
+            progress.coerceIn(0f, 1f) * 360f,
+            false,
+            paint,
+        )
+        return bitmap
+    }
+
+    private const val RING_SIZE_DP = WIDGET_RING_SIZE_DP
+    private const val RING_STROKE_DP = 5
+}
