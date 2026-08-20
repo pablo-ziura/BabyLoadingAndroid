@@ -8,8 +8,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GalleryDao {
-    @Query("SELECT * FROM gallery_items ORDER BY capturedAtEpochMillis DESC, id DESC")
-    fun observeItems(): Flow<List<GalleryItemEntity>>
+    @Query(
+        "SELECT * FROM gallery_items WHERE source = :source " +
+            "ORDER BY capturedAtEpochMillis DESC, id DESC",
+    )
+    fun observeItems(source: String): Flow<List<GalleryItemEntity>>
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(item: GalleryItemEntity)

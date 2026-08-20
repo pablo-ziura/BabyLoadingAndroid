@@ -7,7 +7,9 @@ import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 
 interface GalleryRepository {
-    val items: Flow<List<GalleryItem>>
+    val importedItems: Flow<List<GalleryItem>>
+
+    val trackingItems: Flow<List<GalleryItem>>
 
     suspend fun importPhotos(sourceUris: List<String>): GalleryImportResult
 

@@ -12,6 +12,8 @@ import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -68,6 +70,28 @@ class OfflineGalleryRepositoryTest {
     }
 
     @Test
+    fun sourceSpecificFlowsDoNotMixImportedAndGuidedPhotos() = runTest {
+        val repository = createRepository()
+
+        repository.importPhotos(listOf("content://photos/imported"))
+        repository.addPrivatePhoto(
+            data = byteArrayOf(1, 2, 3),
+            source = GallerySource.GuidedTracking,
+            capturedAt = clock.instant(),
+            pregnancyWeek = 24,
+        )
+
+        assertEquals(
+            listOf(GallerySource.Imported),
+            repository.importedItems.first().map { it.source },
+        )
+        assertEquals(
+            listOf(GallerySource.GuidedTracking),
+            repository.trackingItems.first().map { it.source },
+        )
+    }
+
+    @Test
     fun databaseFailureCleansUpNewPrivateFile() = runTest {
         dao.failInserts = true
         val repository = createRepository()
@@ -92,7 +116,9 @@ class OfflineGalleryRepositoryTest {
         val entities = MutableStateFlow<List<GalleryItemEntity>>(emptyList())
         var failInserts = false
 
-        override fun observeItems(): Flow<List<GalleryItemEntity>> = entities
+        override fun observeItems(source: String): Flow<List<GalleryItemEntity>> {
+            return entities.map { items -> items.filter { it.source == source } }
+        }
 
         override suspend fun insert(item: GalleryItemEntity) {
             if (failInserts) throw IOException("Database unavailable")
