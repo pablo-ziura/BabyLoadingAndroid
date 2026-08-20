@@ -91,6 +91,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun GalleryScreen(
@@ -136,7 +137,7 @@ private fun GalleryContent(
     }
     LaunchedEffect(Unit) {
         while (true) {
-            delay(TRACKING_STATUS_REFRESH_INTERVAL_MILLIS)
+            delay(TRACKING_STATUS_REFRESH_INTERVAL_MILLIS.milliseconds)
             onEvent(GalleryEvent.TrackingStatusRefreshRequested)
         }
     }
