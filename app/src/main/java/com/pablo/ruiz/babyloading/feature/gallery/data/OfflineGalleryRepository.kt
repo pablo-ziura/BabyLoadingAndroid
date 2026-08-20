@@ -25,7 +25,12 @@ class OfflineGalleryRepository @Inject constructor(
     private val clock: Clock,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : GalleryRepository {
-    override val items: Flow<List<GalleryItem>> = dao.observeItems().map { entities ->
+    override val importedItems: Flow<List<GalleryItem>> = observeItems(GallerySource.Imported)
+
+    override val trackingItems: Flow<List<GalleryItem>> = observeItems(GallerySource.GuidedTracking)
+
+    private fun observeItems(source: GallerySource): Flow<List<GalleryItem>> =
+        dao.observeItems(source.name).map { entities ->
         entities.map { entity ->
             entity.toDomain(
                 privateFilePath = imageStore.fileFor(entity.privateFileName).absolutePath,

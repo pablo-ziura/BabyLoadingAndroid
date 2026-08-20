@@ -155,7 +155,6 @@ private fun GuidedTrackingContent(
     ) { padding ->
         if (hasCameraPermission) {
             TrackingCamera(
-                pregnancyWeek = uiState.pregnancyWeek,
                 referenceImagePath = uiState.referenceImagePath,
                 isSaving = uiState.isSaving,
                 onPhotoCaptured = onPhotoCaptured,
@@ -186,7 +185,6 @@ private fun GuidedTrackingContent(
 
 @Composable
 private fun TrackingCamera(
-    pregnancyWeek: Int?,
     referenceImagePath: String?,
     isSaving: Boolean,
     onPhotoCaptured: (ByteArray) -> Unit,
@@ -289,9 +287,7 @@ private fun TrackingCamera(
                 )
             }
             Text(
-                text = pregnancyWeek?.let {
-                    stringResource(R.string.tracking_week, it)
-                } ?: stringResource(R.string.tracking_title),
+                text = stringResource(R.string.tracking_title),
                 color = Color.White,
                 style = MaterialTheme.typography.titleMedium,
             )

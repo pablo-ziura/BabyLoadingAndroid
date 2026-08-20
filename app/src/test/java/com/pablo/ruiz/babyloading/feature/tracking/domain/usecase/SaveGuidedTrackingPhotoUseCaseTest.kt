@@ -54,7 +54,8 @@ class SaveGuidedTrackingPhotoUseCaseTest {
     }
 
     private class RecordingGalleryRepository : GalleryRepository {
-        override val items: Flow<List<GalleryItem>> = emptyFlow()
+        override val importedItems: Flow<List<GalleryItem>> = emptyFlow()
+        override val trackingItems: Flow<List<GalleryItem>> = emptyFlow()
         var savedData: ByteArray? = null
         var savedSource: GallerySource? = null
         var savedAt: Instant? = null
