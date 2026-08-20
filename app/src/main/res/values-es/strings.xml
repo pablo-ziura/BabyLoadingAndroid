@@ -64,7 +64,7 @@
     <string name="tracking_latest_capture">Última captura guiada</string>
     <string name="tracking_cadence">Cadencia del seguimiento</string>
     <string name="tracking_timeline_title">Línea temporal</string>
-    <string name="tracking_title">Seguimiento de barriga</string>
+    <string name="tracking_title">Crecimiento semana a semana</string>
     <string name="tracking_week">Semana %1$d</string>
     <string name="tracking_back">Atrás</string>
     <string name="tracking_toggle_flash">Activar o desactivar el flash</string>

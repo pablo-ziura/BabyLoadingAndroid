@@ -63,7 +63,7 @@
     <string name="tracking_latest_capture">Latest guided capture</string>
     <string name="tracking_cadence">Tracking cadence</string>
     <string name="tracking_timeline_title">Timeline</string>
-    <string name="tracking_title">Belly Tracking</string>
+    <string name="tracking_title">Week-by-week growth</string>
     <string name="tracking_week">Week %1$d</string>
     <string name="tracking_back">Back</string>
     <string name="tracking_toggle_flash">Toggle flash</string>
