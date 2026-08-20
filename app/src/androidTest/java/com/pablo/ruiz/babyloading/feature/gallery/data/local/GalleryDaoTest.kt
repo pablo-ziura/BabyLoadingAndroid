@@ -37,22 +37,39 @@ class GalleryDaoTest {
     fun itemsAreOrderedNewestFirstAndCanBeDeleted() = runTest {
         val older = entity(id = "older", capturedAt = 100)
         val newer = entity(id = "newer", capturedAt = 200)
+        val tracking = entity(
+            id = "tracking",
+            capturedAt = 300,
+            source = GallerySource.GuidedTracking,
+        )
 
         dao.insert(older)
         dao.insert(newer)
+        dao.insert(tracking)
 
-        assertEquals(listOf(newer, older), dao.observeItems().first())
+        assertEquals(
+            listOf(newer, older),
+            dao.observeItems(GallerySource.Imported.name).first(),
+        )
+        assertEquals(
+            listOf(tracking),
+            dao.observeItems(GallerySource.GuidedTracking.name).first(),
+        )
         assertEquals(newer, dao.itemById("newer"))
 
         dao.deleteById("newer")
         assertNull(dao.itemById("newer"))
     }
 
-    private fun entity(id: String, capturedAt: Long) = GalleryItemEntity(
+    private fun entity(
+        id: String,
+        capturedAt: Long,
+        source: GallerySource = GallerySource.Imported,
+    ) = GalleryItemEntity(
         id = id,
         privateFileName = "$id.jpg",
         capturedAtEpochMillis = capturedAt,
-        source = GallerySource.Imported.name,
+        source = source.name,
         pregnancyWeek = null,
     )
 }
