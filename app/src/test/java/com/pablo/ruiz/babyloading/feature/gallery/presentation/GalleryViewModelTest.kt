@@ -4,6 +4,7 @@ import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GalleryImportResu
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GalleryItem
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GallerySource
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.TrackingCadence
+import com.pablo.ruiz.babyloading.feature.gallery.domain.model.TrackingStatus
 import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.GalleryRepository
 import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.TrackingPreferencesRepository
 import com.pablo.ruiz.babyloading.test.MainDispatcherRule
@@ -18,7 +19,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -35,16 +35,20 @@ class GalleryViewModelTest {
     )
 
     @Test
-    fun itemsAreObservedAndCanBeSelected() = runTest {
+    fun sourceSpecificItemsAreObservedAndCanBeSelected() = runTest {
         val viewModel = createViewModel()
-        repository.itemsState.value = listOf(galleryItem("one"))
+        repository.importedItemsState.value = listOf(galleryItem("imported"))
+        repository.trackingItemsState.value = listOf(
+            galleryItem("tracking", source = GallerySource.GuidedTracking),
+        )
         advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.isLoading)
-        assertEquals(1, viewModel.uiState.value.items.size)
+        assertEquals(listOf("imported"), viewModel.uiState.value.importedItems.map { it.id })
+        assertEquals(listOf("tracking"), viewModel.uiState.value.trackingItems.map { it.id })
 
-        viewModel.onEvent(GalleryEvent.ItemSelected("one"))
-        assertEquals("one", viewModel.uiState.value.selectedItem?.id)
+        viewModel.onEvent(GalleryEvent.ItemSelected("tracking"))
+        assertEquals("tracking", viewModel.uiState.value.selectedItem?.id)
     }
 
     @Test
@@ -66,7 +70,7 @@ class GalleryViewModelTest {
     @Test
     fun confirmedDeletionUsesPendingItemAndClosesViewer() = runTest {
         val item = galleryItem("one")
-        repository.itemsState.value = listOf(item)
+        repository.importedItemsState.value = listOf(item)
         val viewModel = createViewModel()
         advanceUntilIdle()
 
@@ -83,8 +87,9 @@ class GalleryViewModelTest {
     }
 
     @Test
-    fun cadenceUpdatesNextPhotoDateAndDueState() = runTest {
-        repository.itemsState.value = listOf(
+    fun cadenceUpdatesTrackingStatusFromOnlyGuidedCaptures() = runTest {
+        repository.importedItemsState.value = listOf(galleryItem("imported"))
+        repository.trackingItemsState.value = listOf(
             galleryItem(
                 id = "tracking",
                 source = GallerySource.GuidedTracking,
@@ -94,15 +99,19 @@ class GalleryViewModelTest {
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        assertEquals("2026-08-17", viewModel.uiState.value.nextTrackingPhotoDate.toString())
-        assertTrue(viewModel.uiState.value.isTrackingDue)
+        assertEquals(
+            TrackingStatus.Pending(java.time.LocalDate.parse("2026-08-17")),
+            viewModel.uiState.value.trackingStatus,
+        )
 
         viewModel.onEvent(GalleryEvent.TrackingCadenceSelected(TrackingCadence.EveryTwoWeeks))
         advanceUntilIdle()
 
         assertEquals(TrackingCadence.EveryTwoWeeks, viewModel.uiState.value.trackingCadence)
-        assertEquals("2026-08-24", viewModel.uiState.value.nextTrackingPhotoDate.toString())
-        assertFalse(viewModel.uiState.value.isTrackingDue)
+        assertEquals(
+            TrackingStatus.UpToDate(java.time.LocalDate.parse("2026-08-24")),
+            viewModel.uiState.value.trackingStatus,
+        )
     }
 
     private fun createViewModel() = GalleryViewModel(
@@ -123,8 +132,10 @@ class GalleryViewModelTest {
     )
 
     private class FakeGalleryRepository : GalleryRepository {
-        val itemsState = MutableStateFlow<List<GalleryItem>>(emptyList())
-        override val items: Flow<List<GalleryItem>> = itemsState
+        val importedItemsState = MutableStateFlow<List<GalleryItem>>(emptyList())
+        val trackingItemsState = MutableStateFlow<List<GalleryItem>>(emptyList())
+        override val importedItems: Flow<List<GalleryItem>> = importedItemsState
+        override val trackingItems: Flow<List<GalleryItem>> = trackingItemsState
         var nextImportResult = GalleryImportResult(0, 0)
         val deletedIds = mutableListOf<String>()
 
@@ -141,7 +152,8 @@ class GalleryViewModelTest {
 
         override suspend fun deleteItem(id: String) {
             deletedIds += id
-            itemsState.value = itemsState.value.filterNot { it.id == id }
+            importedItemsState.value = importedItemsState.value.filterNot { it.id == id }
+            trackingItemsState.value = trackingItemsState.value.filterNot { it.id == id }
         }
     }
 

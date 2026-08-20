@@ -1,29 +1,27 @@
 package com.pablo.ruiz.babyloading.feature.gallery.presentation
 
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GalleryItem
-import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GallerySource
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.TrackingCadence
-import java.time.LocalDate
+import com.pablo.ruiz.babyloading.feature.gallery.domain.model.TrackingStatus
 
 data class GalleryUiState(
     val isLoading: Boolean = true,
     val isImporting: Boolean = false,
-    val items: List<GalleryItem> = emptyList(),
+    val importedItems: List<GalleryItem> = emptyList(),
+    val trackingItems: List<GalleryItem> = emptyList(),
     val selectedItem: GalleryItem? = null,
     val pendingDeleteItem: GalleryItem? = null,
     val trackingCadence: TrackingCadence = TrackingCadence.Default,
-    val nextTrackingPhotoDate: LocalDate? = null,
-    val isTrackingDue: Boolean = false,
+    val trackingStatus: TrackingStatus = TrackingStatus.NeedsInitialCapture,
     val message: GalleryUserMessage? = null,
 ) {
-    val trackingItems: List<GalleryItem>
-        get() = items.filter { it.source == GallerySource.GuidedTracking }
-
-    val importedItems: List<GalleryItem>
-        get() = items.filter { it.source == GallerySource.Imported }
-
     val latestTrackingItem: GalleryItem?
         get() = trackingItems.maxByOrNull(GalleryItem::capturedAt)
+
+    fun itemById(id: String): GalleryItem? {
+        return importedItems.firstOrNull { it.id == id }
+            ?: trackingItems.firstOrNull { it.id == id }
+    }
 }
 
 sealed interface GalleryUserMessage {
@@ -55,4 +53,6 @@ sealed interface GalleryEvent {
     data object DialogDismissed : GalleryEvent
 
     data object MessageShown : GalleryEvent
+
+    data object TrackingStatusRefreshRequested : GalleryEvent
 }

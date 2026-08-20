@@ -78,13 +78,15 @@ class GuidedTrackingViewModelTest {
 
     @Test
     fun latestGuidedPhotoBecomesCameraReference() = runTest {
-        galleryRepository.itemsState.value = listOf(
+        galleryRepository.importedItemsState.value = listOf(
             GalleryItem(
                 id = "imported",
                 privateFilePath = "/imported.jpg",
                 capturedAt = Instant.parse("2026-08-15T12:00:00Z"),
                 source = GallerySource.Imported,
             ),
+        )
+        galleryRepository.trackingItemsState.value = listOf(
             GalleryItem(
                 id = "older-guided",
                 privateFilePath = "/older-guided.jpg",
@@ -126,8 +128,10 @@ class GuidedTrackingViewModelTest {
     }
 
     private class FakeGalleryRepository : GalleryRepository {
-        val itemsState = MutableStateFlow<List<GalleryItem>>(emptyList())
-        override val items: Flow<List<GalleryItem>> = itemsState
+        val importedItemsState = MutableStateFlow<List<GalleryItem>>(emptyList())
+        val trackingItemsState = MutableStateFlow<List<GalleryItem>>(emptyList())
+        override val importedItems: Flow<List<GalleryItem>> = importedItemsState
+        override val trackingItems: Flow<List<GalleryItem>> = trackingItemsState
         var savedWeek: Int? = null
         var failure: Throwable? = null
 

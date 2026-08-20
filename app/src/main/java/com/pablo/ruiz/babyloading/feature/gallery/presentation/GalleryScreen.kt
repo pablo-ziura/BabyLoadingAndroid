@@ -86,9 +86,12 @@ import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyStatusPositiveCont
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GalleryItem
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GallerySource
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.TrackingCadence
+import com.pablo.ruiz.babyloading.feature.gallery.domain.model.TrackingStatus
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun GalleryScreen(
@@ -130,6 +133,12 @@ private fun GalleryContent(
         if (uiState.message != null && message != null) {
             snackbarHostState.showSnackbar(message)
             onEvent(GalleryEvent.MessageShown)
+        }
+    }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(TRACKING_STATUS_REFRESH_INTERVAL_MILLIS.milliseconds)
+            onEvent(GalleryEvent.TrackingStatusRefreshRequested)
         }
     }
 
@@ -252,7 +261,7 @@ private fun BellyTrackingSection(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            TrackingStatusBadge(isDue = uiState.isTrackingDue)
+            TrackingStatusBadge(status = uiState.trackingStatus)
         }
 
         Row(
@@ -268,7 +277,7 @@ private fun BellyTrackingSection(
             )
             TrackingStat(
                 title = stringResource(R.string.tracking_next_photo),
-                value = nextTrackingPhotoLabel(uiState),
+                value = nextTrackingPhotoLabel(uiState.trackingStatus),
                 modifier = Modifier.weight(1f),
             )
         }
@@ -340,16 +349,19 @@ private fun BellyTrackingSection(
 }
 
 @Composable
-private fun TrackingStatusBadge(isDue: Boolean) {
+private fun TrackingStatusBadge(status: TrackingStatus) {
+    val (label, containerColor) = when (status) {
+        is TrackingStatus.UpToDate -> R.string.tracking_on_track to BabyStatusPositiveContainer
+        TrackingStatus.NeedsInitialCapture -> R.string.tracking_start_now to BabyStatusAttentionContainer
+        is TrackingStatus.Pending -> R.string.tracking_due_now to BabyStatusAttentionContainer
+    }
     Surface(
         shape = CircleShape,
-        color = if (isDue) BabyStatusAttentionContainer else BabyStatusPositiveContainer,
+        color = containerColor,
         contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         Text(
-            text = stringResource(
-                if (isDue) R.string.tracking_due_now else R.string.tracking_on_track,
-            ),
+            text = stringResource(label),
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
             style = MaterialTheme.typography.labelMedium,
         )
@@ -880,13 +892,13 @@ private fun sourceLabel(source: GallerySource): String {
 }
 
 @Composable
-private fun nextTrackingPhotoLabel(uiState: GalleryUiState): String {
-    return when {
-        uiState.nextTrackingPhotoDate == null -> stringResource(R.string.tracking_start_now)
-        uiState.isTrackingDue -> stringResource(R.string.tracking_due_now)
-        else -> {
+private fun nextTrackingPhotoLabel(status: TrackingStatus): String {
+    return when (status) {
+        TrackingStatus.NeedsInitialCapture -> stringResource(R.string.tracking_start_now)
+        is TrackingStatus.Pending -> stringResource(R.string.tracking_due_now)
+        is TrackingStatus.UpToDate -> {
             val locale = checkNotNull(LocalConfiguration.current.locales[0])
-            GalleryDateFormatter.format(checkNotNull(uiState.nextTrackingPhotoDate), locale)
+            GalleryDateFormatter.format(status.nextDueDate, locale)
         }
     }
 }
@@ -950,7 +962,7 @@ private fun GalleryWithTrackingPreview() {
             GalleryContent(
                 uiState = GalleryUiState(
                     isLoading = false,
-                    items = listOf(
+                    trackingItems = listOf(
                         GalleryItem(
                             id = "tracking-preview",
                             privateFilePath = "/preview-tracking.jpg",
@@ -958,6 +970,8 @@ private fun GalleryWithTrackingPreview() {
                             source = GallerySource.GuidedTracking,
                             pregnancyWeek = 24,
                         ),
+                    ),
+                    importedItems = listOf(
                         GalleryItem(
                             id = "ultrasound-preview",
                             privateFilePath = "/preview-ultrasound.jpg",
@@ -965,7 +979,7 @@ private fun GalleryWithTrackingPreview() {
                             source = GallerySource.Imported,
                         ),
                     ),
-                    nextTrackingPhotoDate = LocalDate.parse("2026-08-22"),
+                    trackingStatus = TrackingStatus.UpToDate(LocalDate.parse("2026-08-22")),
                 ),
                 onEvent = {},
                 onAddPhotos = {},
@@ -977,3 +991,4 @@ private fun GalleryWithTrackingPreview() {
 
 private const val MAX_PHOTO_SELECTION = 10
 private const val ACCESSIBILITY_FONT_SCALE = 1.3f
+private const val TRACKING_STATUS_REFRESH_INTERVAL_MILLIS = 60_000L

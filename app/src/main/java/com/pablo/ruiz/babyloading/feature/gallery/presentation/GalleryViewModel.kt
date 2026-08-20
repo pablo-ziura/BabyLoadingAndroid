@@ -3,13 +3,12 @@ package com.pablo.ruiz.babyloading.feature.gallery.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GalleryItem
-import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GallerySource
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.TrackingCadence
+import com.pablo.ruiz.babyloading.feature.gallery.domain.model.trackingStatus
 import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.GalleryRepository
 import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.TrackingPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
-import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,26 +29,32 @@ class GalleryViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            combine(repository.items, trackingPreferencesRepository.cadence) { items, cadence ->
-                items to cadence
+            combine(
+                repository.importedItems,
+                repository.trackingItems,
+                trackingPreferencesRepository.cadence,
+            ) { importedItems, trackingItems, cadence ->
+                GalleryItemsAndCadence(importedItems, trackingItems, cadence)
             }
                 .catch {
                     _uiState.update { state ->
                         state.copy(isLoading = false, message = GalleryUserMessage.ImportFailed)
                     }
                 }
-                .collect { (items, cadence) ->
-                    val nextPhotoDate = calculateNextTrackingPhotoDate(items, cadence)
-                    val today = LocalDate.now(clock)
+                .collect { (importedItems, trackingItems, cadence) ->
                     _uiState.update { state ->
                         state.copy(
                             isLoading = false,
-                            items = items,
+                            importedItems = importedItems,
+                            trackingItems = trackingItems,
                             trackingCadence = cadence,
-                            nextTrackingPhotoDate = nextPhotoDate,
-                            isTrackingDue = nextPhotoDate?.let { !it.isAfter(today) } == true,
-                            selectedItem = items.firstOrNull { it.id == state.selectedItem?.id },
-                            pendingDeleteItem = items.firstOrNull { it.id == state.pendingDeleteItem?.id },
+                            trackingStatus = trackingStatus(trackingItems, cadence),
+                            selectedItem = state.selectedItem?.let { item ->
+                                itemById(item.id, importedItems, trackingItems)
+                            },
+                            pendingDeleteItem = state.pendingDeleteItem?.let { item ->
+                                itemById(item.id, importedItems, trackingItems)
+                            },
                         )
                     }
                 }
@@ -60,10 +65,10 @@ class GalleryViewModel @Inject constructor(
         when (event) {
             is GalleryEvent.PhotosSelected -> importPhotos(event.uriValues)
             is GalleryEvent.ItemSelected -> _uiState.update { state ->
-                state.copy(selectedItem = state.items.firstOrNull { it.id == event.id })
+                state.copy(selectedItem = state.itemById(event.id))
             }
             is GalleryEvent.DeleteRequested -> _uiState.update { state ->
-                state.copy(pendingDeleteItem = state.items.firstOrNull { it.id == event.id })
+                state.copy(pendingDeleteItem = state.itemById(event.id))
             }
             is GalleryEvent.TrackingCadenceSelected -> updateTrackingCadence(event.cadence)
             GalleryEvent.DeleteConfirmed -> deletePendingItem()
@@ -71,6 +76,9 @@ class GalleryViewModel @Inject constructor(
                 state.copy(selectedItem = null, pendingDeleteItem = null)
             }
             GalleryEvent.MessageShown -> _uiState.update { it.copy(message = null) }
+            GalleryEvent.TrackingStatusRefreshRequested -> _uiState.update { state ->
+                state.copy(trackingStatus = trackingStatus(state.trackingItems, state.trackingCadence))
+            }
         }
     }
 
@@ -121,17 +129,27 @@ class GalleryViewModel @Inject constructor(
         }
     }
 
-    private fun calculateNextTrackingPhotoDate(
-        items: List<GalleryItem>,
+    private fun trackingStatus(
+        trackingItems: List<GalleryItem>,
         cadence: TrackingCadence,
-    ): LocalDate? {
-        return items
-            .asSequence()
-            .filter { it.source == GallerySource.GuidedTracking }
-            .maxByOrNull { it.capturedAt }
-            ?.capturedAt
-            ?.atZone(clock.zone)
-            ?.toLocalDate()
-            ?.plusDays(cadence.intervalDays.toLong())
+    ) = cadence.trackingStatus(
+        lastCapture = trackingItems.maxByOrNull(GalleryItem::capturedAt)?.capturedAt,
+        asOf = clock.instant(),
+        zoneId = clock.zone,
+    )
+
+    private fun itemById(
+        id: String,
+        importedItems: List<GalleryItem>,
+        trackingItems: List<GalleryItem>,
+    ): GalleryItem? {
+        return importedItems.firstOrNull { it.id == id }
+            ?: trackingItems.firstOrNull { it.id == id }
     }
+
+    private data class GalleryItemsAndCadence(
+        val importedItems: List<GalleryItem>,
+        val trackingItems: List<GalleryItem>,
+        val cadence: TrackingCadence,
+    )
 }
