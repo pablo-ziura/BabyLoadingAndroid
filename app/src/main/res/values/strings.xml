@@ -100,6 +100,10 @@
     <string name="settings_save_date">Set date ✨</string>
     <string name="settings_date_saved">Pregnancy date updated</string>
     <string name="settings_language_title">Language</string>
+    <string name="settings_language_current">Current app language: %1$s</string>
+    <string name="settings_language_system_message">Android system settings manage the app language.</string>
+    <string name="settings_language_open_settings">Open Settings</string>
+    <string name="settings_language_open_settings_description">Open app language settings</string>
     <string name="settings_info">Change the date of your last period to recalculate all your pregnancy information.</string>
     <string name="settings_language_english">English</string>
     <string name="settings_language_spanish">Español</string>

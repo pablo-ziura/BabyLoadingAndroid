@@ -1,6 +1,8 @@
 package com.pablo.ruiz.babyloading.feature.journey.presentation
 
-import com.pablo.ruiz.babyloading.core.localization.AppLocaleProvider
+import com.pablo.ruiz.babyloading.core.localization.AppLanguage
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
@@ -12,10 +14,10 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.util.Locale
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -83,9 +85,10 @@ class JourneyViewModelTest {
             pregnancyRepository = pregnancyRepository,
             contentRepository = contentRepository,
             calculateProgress = CalculatePregnancyProgressUseCase(PregnancyCalculator(), clock),
-            localeProvider = object : AppLocaleProvider {
-                override fun currentLocale(): Locale = Locale.ENGLISH
+            languageProvider = object : AppLanguageProvider {
+                override fun currentLanguage(): AppLanguage = AppLanguage.English
             },
+            languageChanges = NoOpLanguageChanges(),
             ioDispatcher = mainDispatcherRule.testDispatcher,
         )
     }
@@ -104,9 +107,9 @@ class JourneyViewModelTest {
     }
 
     private class FakeContentRepository : PregnancyContentRepository {
-        override fun contentForWeek(week: Int, locale: Locale): WeekContent? = null
+        override fun contentForWeek(week: Int, language: AppLanguage): WeekContent? = null
 
-        override fun allContent(locale: Locale): List<WeekContent> {
+        override fun allContent(language: AppLanguage): List<WeekContent> {
             return (6..40).map { week ->
                 WeekContent(
                     week = week,
@@ -117,5 +120,11 @@ class JourneyViewModelTest {
                 )
             }
         }
+    }
+
+    private class NoOpLanguageChanges : AppLanguageChanges {
+        override val changes: Flow<AppLanguage> = MutableSharedFlow()
+
+        override suspend fun refreshIfLanguageChanged(): Boolean = false
     }
 }

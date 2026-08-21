@@ -3,7 +3,8 @@ package com.pablo.ruiz.babyloading.feature.journey.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pablo.ruiz.babyloading.core.coroutines.IoDispatcher
-import com.pablo.ruiz.babyloading.core.localization.AppLocaleProvider
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.CalculatePregnancyProgressUseCase
@@ -23,7 +24,8 @@ class JourneyViewModel @Inject constructor(
     private val pregnancyRepository: PregnancyRepository,
     private val contentRepository: PregnancyContentRepository,
     private val calculateProgress: CalculatePregnancyProgressUseCase,
-    private val localeProvider: AppLocaleProvider,
+    private val languageProvider: AppLanguageProvider,
+    private val languageChanges: AppLanguageChanges,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(JourneyUiState())
@@ -36,6 +38,11 @@ class JourneyViewModel @Inject constructor(
             pregnancyRepository.lastPeriodDate.collectLatest { date ->
                 lastPeriodDate = date
                 load(date)
+            }
+        }
+        viewModelScope.launch {
+            languageChanges.changes.collectLatest {
+                load(lastPeriodDate)
             }
         }
     }
@@ -55,7 +62,7 @@ class JourneyViewModel @Inject constructor(
         _uiState.value = withContext(ioDispatcher) {
             val progress = calculateProgress(date)
             val weeklyContent = contentRepository
-                .allContent(localeProvider.currentLocale())
+                .allContent(languageProvider.currentLanguage())
                 .sortedBy { content -> content.week }
             val currentWeek = progress.gestationalAge.completedWeeks
 

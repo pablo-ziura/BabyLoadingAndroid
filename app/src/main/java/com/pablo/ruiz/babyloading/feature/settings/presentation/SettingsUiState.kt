@@ -1,5 +1,6 @@
 package com.pablo.ruiz.babyloading.feature.settings.presentation
 
+import com.pablo.ruiz.babyloading.core.localization.AppLanguage
 import java.time.LocalDate
 
 data class SettingsUiState(
@@ -12,6 +13,7 @@ data class SettingsUiState(
     val isSaving: Boolean = false,
     val saveCompleted: Boolean = false,
     val validationError: SettingsValidationError? = null,
+    val appLanguage: AppLanguage = AppLanguage.English,
 ) {
     val hasChanges: Boolean
         get() = selectedDate != null && selectedDate != savedDate

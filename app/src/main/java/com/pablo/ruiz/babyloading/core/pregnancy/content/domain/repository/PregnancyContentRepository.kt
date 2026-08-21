@@ -1,10 +1,10 @@
 package com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository
 
+import com.pablo.ruiz.babyloading.core.localization.AppLanguage
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
-import java.util.Locale
 
 interface PregnancyContentRepository {
-    fun contentForWeek(week: Int, locale: Locale): WeekContent?
+    fun contentForWeek(week: Int, language: AppLanguage): WeekContent?
 
-    fun allContent(locale: Locale): List<WeekContent>
+    fun allContent(language: AppLanguage): List<WeekContent>
 }
