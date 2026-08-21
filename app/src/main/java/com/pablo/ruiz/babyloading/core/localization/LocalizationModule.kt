@@ -11,7 +11,13 @@ import javax.inject.Singleton
 abstract class LocalizationModule {
     @Binds
     @Singleton
-    abstract fun bindAppLocaleProvider(
+    abstract fun bindAppLanguageProvider(
         provider: AndroidAppLocaleProvider,
-    ): AppLocaleProvider
+    ): AppLanguageProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindAppLanguageChanges(
+        changes: AndroidAppLanguageChanges,
+    ): AppLanguageChanges
 }

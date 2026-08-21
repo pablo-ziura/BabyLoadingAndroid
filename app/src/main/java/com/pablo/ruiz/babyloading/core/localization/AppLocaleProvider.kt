@@ -1,20 +1,44 @@
 package com.pablo.ruiz.babyloading.core.localization
 
 import android.content.Context
+import android.app.LocaleManager
+import android.os.LocaleList
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import java.util.Locale
 
-interface AppLocaleProvider {
-    fun currentLocale(): Locale
+/**
+ * Read-only access to Android's effective per-app language.
+ */
+interface AppLanguageProvider {
+    fun currentLanguage(): AppLanguage
 }
 
 @Singleton
 class AndroidAppLocaleProvider @Inject constructor(
-    @param:ApplicationContext private val context: Context,
-) : AppLocaleProvider {
-    override fun currentLocale(): Locale {
-        return context.resources.configuration.locales[0] ?: Locale.ENGLISH
+    @ApplicationContext context: Context,
+    private val resolver: AppLanguageResolver,
+) : AppLanguageProvider {
+    private val localeManager = requireNotNull(context.getSystemService(LocaleManager::class.java))
+
+    override fun currentLanguage(): AppLanguage {
+        return resolver.resolve(
+            applicationLocales = localeManager.applicationLocales.toLocales(),
+            deviceLocales = localeManager.systemLocales.toLocales(),
+        )
     }
 }
+
+class AppLanguageResolver @Inject constructor() {
+    fun resolve(
+        applicationLocales: List<Locale>,
+        deviceLocales: List<Locale>,
+    ): AppLanguage {
+        return applicationLocales.firstNotNullOfOrNull(AppLanguage::from)
+            ?: deviceLocales.firstNotNullOfOrNull(AppLanguage::from)
+            ?: AppLanguage.English
+    }
+}
+
+private fun LocaleList.toLocales(): List<Locale> = List(size()) { index -> get(index) }

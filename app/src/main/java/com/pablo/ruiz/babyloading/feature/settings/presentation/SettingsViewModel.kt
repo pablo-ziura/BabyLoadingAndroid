@@ -2,6 +2,8 @@ package com.pablo.ruiz.babyloading.feature.settings.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidation
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidator
@@ -23,6 +25,8 @@ class SettingsViewModel @Inject constructor(
     private val repository: PregnancyRepository,
     private val savePregnancyDate: SavePregnancyDateUseCase,
     private val calculator: PregnancyCalculator,
+    private val languageProvider: AppLanguageProvider,
+    private val languageChanges: AppLanguageChanges,
     clock: Clock,
 ) : ViewModel() {
     private val currentDate = LocalDate.now(clock)
@@ -30,6 +34,7 @@ class SettingsViewModel @Inject constructor(
         SettingsUiState(
             minimumDate = currentDate.minusWeeks(PregnancyDateValidator.MaximumPastWeeks.toLong()),
             maximumDate = currentDate,
+            appLanguage = languageProvider.currentLanguage(),
         ),
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -46,6 +51,11 @@ class SettingsViewModel @Inject constructor(
                         estimatedDueDate = selectedDate?.let(calculator::estimatedDueDate),
                     )
                 }
+            }
+        }
+        viewModelScope.launch {
+            languageChanges.changes.collectLatest { language ->
+                _uiState.update { state -> state.copy(appLanguage = language) }
             }
         }
     }
