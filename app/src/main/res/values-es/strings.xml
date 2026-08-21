@@ -104,6 +104,10 @@
     <string name="settings_save_date">Fijar fecha ✨</string>
     <string name="settings_date_saved">Fecha del embarazo actualizada</string>
     <string name="settings_language_title">Idioma</string>
+    <string name="settings_language_current">Idioma actual de la aplicación: %1$s</string>
+    <string name="settings_language_system_message">Los ajustes del sistema Android gestionan el idioma de la aplicación.</string>
+    <string name="settings_language_open_settings">Abrir ajustes</string>
+    <string name="settings_language_open_settings_description">Abrir los ajustes de idioma de la aplicación</string>
     <string name="settings_info">Cambia la fecha de tu última menstruación para recalcular toda tu información de embarazo.</string>
     <string name="settings_language_english">English</string>
     <string name="settings_language_spanish">Español</string>

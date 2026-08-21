@@ -1,6 +1,9 @@
 package com.pablo.ruiz.babyloading.feature.settings.presentation
 
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
+import com.pablo.ruiz.babyloading.core.localization.AppLanguage
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.SavePregnancyDateUseCase
@@ -12,6 +15,7 @@ import java.time.ZoneOffset
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -88,6 +92,10 @@ class SettingsViewModelTest {
             repository = repository,
             savePregnancyDate = saveUseCase,
             calculator = calculator,
+            languageProvider = object : AppLanguageProvider {
+                override fun currentLanguage(): AppLanguage = AppLanguage.English
+            },
+            languageChanges = NoOpLanguageChanges(),
             clock = clock,
         )
     }
@@ -103,5 +111,11 @@ class SettingsViewModelTest {
         override suspend fun clearLastPeriodDate() {
             date.value = null
         }
+    }
+
+    private class NoOpLanguageChanges : AppLanguageChanges {
+        override val changes: Flow<AppLanguage> = MutableSharedFlow()
+
+        override suspend fun refreshIfLanguageChanged(): Boolean = false
     }
 }

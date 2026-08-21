@@ -41,6 +41,8 @@ Before creating or modifying any screen, reusable component, or widget containin
 - Add `feature/<feature-name>/domain/` only when the feature has real business rules, use cases, domain models, or repository contracts. Domain code must not depend on Android, Compose, or data implementations.
 - Add `feature/<feature-name>/data/` only when the feature owns persisted or remote data. Data implementations may depend on the feature domain contracts and shared core infrastructure.
 - Store the mandatory last-period date as an ISO-8601 string in Preferences DataStore; its presence decides whether onboarding or the main shell starts.
+- Resolve the effective app language through the read-only Android per-app language provider. It prioritizes Android's per-app setting, then the device language, and finally English; never read or write a separate app language preference.
+- When the app returns to the foreground after a language change, reload language-dependent pregnancy content and refresh widgets.
 - Keep feature-specific Retrofit services, DTOs, mappers, local sources, and repository implementations inside that feature's `data` layer.
 - Store unified gallery metadata in Room and image bytes in app-private files; use Android Photo Picker for imports without broad media permissions.
 - Store the belly-tracking cadence as 7, 14, or 28 days in the feature-owned Preferences DataStore; invalid stored values fall back to 7 days.

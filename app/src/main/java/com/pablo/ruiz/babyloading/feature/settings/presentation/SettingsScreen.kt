@@ -1,7 +1,8 @@
 package com.pablo.ruiz.babyloading.feature.settings.presentation
 
-import android.app.LocaleManager
-import android.os.LocaleList
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,15 +22,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
-import androidx.compose.material.icons.outlined.RadioButtonUnchecked
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -67,6 +66,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pablo.ruiz.babyloading.BuildConfig
 import com.pablo.ruiz.babyloading.R
+import com.pablo.ruiz.babyloading.core.localization.AppLanguage
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingCard
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingScreenTitle
@@ -89,9 +89,13 @@ fun SettingsScreen(
     SettingsContent(
         uiState = uiState,
         onEvent = viewModel::onEvent,
-        onLanguageSelected = { languageTag ->
-            context.getSystemService(LocaleManager::class.java).applicationLocales =
-                LocaleList.forLanguageTags(languageTag)
+        onOpenLanguageSettings = {
+            context.startActivity(
+                Intent(
+                    Settings.ACTION_APP_LOCALE_SETTINGS,
+                    Uri.fromParts("package", context.packageName, null),
+                ),
+            )
         },
         modifier = modifier,
     )
@@ -101,7 +105,7 @@ fun SettingsScreen(
 private fun SettingsContent(
     uiState: SettingsUiState,
     onEvent: (SettingsEvent) -> Unit,
-    onLanguageSelected: (String) -> Unit,
+    onOpenLanguageSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -128,7 +132,7 @@ private fun SettingsContent(
                     uiState = uiState,
                     onSaveDate = { onEvent(SettingsEvent.SaveDate) },
                     onDateSelected = { date -> onEvent(SettingsEvent.DateSelected(date)) },
-                    onLanguageSelected = onLanguageSelected,
+                    onOpenLanguageSettings = onOpenLanguageSettings,
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
             }
@@ -141,10 +145,13 @@ private fun SettingsList(
     uiState: SettingsUiState,
     onSaveDate: () -> Unit,
     onDateSelected: (LocalDate) -> Unit,
-    onLanguageSelected: (String) -> Unit,
+    onOpenLanguageSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val locale = LocalConfiguration.current.locales[0] ?: Locale.ENGLISH
+    val openLanguageSettingsDescription = stringResource(
+        R.string.settings_language_open_settings_description,
+    )
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -206,19 +213,32 @@ private fun SettingsList(
                 containerColor = Color.White,
             ) {
                 LanguageSectionHeader()
-                Spacer(modifier = Modifier.height(BabyLoadingSpacing.Medium))
-                Column(verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Small)) {
-                    LanguageOption(
-                        title = stringResource(R.string.settings_language_english),
-                        languageTag = EnglishLanguageTag,
-                        selectedLanguageTag = locale.language,
-                        onLanguageSelected = onLanguageSelected,
-                    )
-                    LanguageOption(
-                        title = stringResource(R.string.settings_language_spanish),
-                        languageTag = SpanishLanguageTag,
-                        selectedLanguageTag = locale.language,
-                        onLanguageSelected = onLanguageSelected,
+                Spacer(modifier = Modifier.height(BabyLoadingSpacing.Small))
+                Text(
+                    text = stringResource(
+                        R.string.settings_language_current,
+                        appLanguageName(uiState.appLanguage),
+                    ),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                Text(
+                    text = stringResource(R.string.settings_language_system_message),
+                    modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Button(
+                    onClick = onOpenLanguageSettings,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = BabyLoadingSpacing.Medium)
+                        .semantics {
+                            contentDescription = openLanguageSettingsDescription
+                        },
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_language_open_settings),
+                        style = MaterialTheme.typography.labelLarge,
                     )
                 }
             }
@@ -470,66 +490,12 @@ private fun LanguageSectionHeader() {
 }
 
 @Composable
-private fun LanguageOption(
-    title: String,
-    languageTag: String,
-    selectedLanguageTag: String,
-    onLanguageSelected: (String) -> Unit,
-) {
-    val isSelected = languageTag == selectedLanguageTag
-    val shape = MaterialTheme.shapes.medium
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 52.dp)
-            .clip(shape)
-            .background(
-                color = if (isSelected) {
-                    BabyAccentPink.copy(alpha = 0.12f)
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.06f)
-                },
-                shape = shape,
-            )
-            .border(
-                width = 1.dp,
-                color = if (isSelected) {
-                    BabyAccentPink.copy(alpha = 0.45f)
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
-                },
-                shape = shape,
-            )
-            .selectable(
-                selected = isSelected,
-                role = Role.RadioButton,
-                onClick = { onLanguageSelected(languageTag) },
-            )
-            .padding(horizontal = BabyLoadingSpacing.Medium),
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelLarge,
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                imageVector = if (isSelected) {
-                    Icons.Filled.CheckCircle
-                } else {
-                    Icons.Outlined.RadioButtonUnchecked
-                },
-                contentDescription = null,
-                modifier = Modifier.size(28.dp),
-                tint = if (isSelected) BabyAccentPink else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
-            )
-        }
-    }
-}
+private fun appLanguageName(language: AppLanguage): String = stringResource(
+    when (language) {
+        AppLanguage.English -> R.string.settings_language_english
+        AppLanguage.Spanish -> R.string.settings_language_spanish
+    },
+)
 
 @Composable
 private fun SettingsInformation() {
@@ -576,8 +542,6 @@ private fun YearMonth.calendarDates(): List<LocalDate?> {
     }
 }
 
-private const val EnglishLanguageTag = "en"
-private const val SpanishLanguageTag = "es"
 private const val DaysInWeek = 7
 private const val DisabledActionAlpha = 0.38f
 private val CalendarDayHeight = 48.dp
@@ -598,7 +562,7 @@ private fun SettingsScreenPreview() {
                     estimatedDueDate = LocalDate.of(2027, 2, 16),
                 ),
                 onEvent = {},
-                onLanguageSelected = {},
+                onOpenLanguageSettings = {},
             )
         }
     }

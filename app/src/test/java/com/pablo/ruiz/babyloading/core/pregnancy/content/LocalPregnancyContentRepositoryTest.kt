@@ -1,41 +1,37 @@
 package com.pablo.ruiz.babyloading.core.pregnancy.content
 
+import com.pablo.ruiz.babyloading.core.localization.AppLanguage
 import com.pablo.ruiz.babyloading.core.pregnancy.content.data.LocalPregnancyContentRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.content.data.PregnancyContentSource
-import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.PregnancyContentLocaleResolver
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.PregnancyContentDocument
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
-import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
 class LocalPregnancyContentRepositoryTest {
     private val source = FakeContentSource()
-    private val repository = LocalPregnancyContentRepository(
-        source = source,
-        localeResolver = PregnancyContentLocaleResolver(),
-    )
+    private val repository = LocalPregnancyContentRepository(source = source)
 
     @Test
-    fun localeResolutionUsesSpanishAndFallsBackToEnglish() {
-        assertEquals("es", repository.allContent(Locale.forLanguageTag("es-MX")).first().babySizeLabel)
-        assertEquals("en", repository.allContent(Locale.FRENCH).first().babySizeLabel)
+    fun languageSelectsTheMatchingBundledContent() {
+        assertEquals("es", repository.allContent(AppLanguage.Spanish).first().babySizeLabel)
+        assertEquals("en", repository.allContent(AppLanguage.English).first().babySizeLabel)
     }
 
     @Test
     fun earlyWeeksHaveNoEditorialContentAndLateWeeksReuseWeekForty() {
-        assertNull(repository.contentForWeek(5, Locale.ENGLISH))
-        assertEquals(40, repository.contentForWeek(41, Locale.ENGLISH)?.week)
-        assertEquals(40, repository.contentForWeek(42, Locale.ENGLISH)?.week)
+        assertNull(repository.contentForWeek(5, AppLanguage.English))
+        assertEquals(40, repository.contentForWeek(41, AppLanguage.English)?.week)
+        assertEquals(40, repository.contentForWeek(42, AppLanguage.English)?.week)
     }
 
     @Test
-    fun documentsAreCachedPerResolvedLocale() {
-        repository.allContent(Locale.US)
-        repository.allContent(Locale.UK)
-        repository.allContent(Locale.forLanguageTag("es-ES"))
+    fun documentsAreCachedPerLanguage() {
+        repository.allContent(AppLanguage.English)
+        repository.allContent(AppLanguage.English)
+        repository.allContent(AppLanguage.Spanish)
 
         assertEquals(listOf("en", "es"), source.loadedLocales)
     }
