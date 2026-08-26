@@ -1,6 +1,9 @@
 package com.pablo.ruiz.babyloading.feature.widget.presentation
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -23,6 +26,7 @@ import androidx.glance.appwidget.LinearProgressIndicator
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.updateAll
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -50,13 +54,17 @@ import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetState
 import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetStateFactory
+import com.pablo.ruiz.babyloading.feature.widget.data.WidgetDailyRefreshScheduler
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import java.time.Clock
 import java.time.LocalDate
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withClip
 
@@ -108,6 +116,59 @@ class BabyProgressWidget : GlanceAppWidget() {
 
 class BabyProgressWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = BabyProgressWidget()
+
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        WidgetDailyRefreshScheduler(context).scheduleNextRefresh()
+    }
+
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray,
+    ) {
+        super.onUpdate(context, appWidgetManager, appWidgetIds)
+        WidgetDailyRefreshScheduler(context).scheduleNextRefresh()
+    }
+
+    override fun onDisabled(context: Context) {
+        WidgetDailyRefreshScheduler(context).cancel()
+        super.onDisabled(context)
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        when (intent.action) {
+            WidgetDailyRefreshScheduler.DAILY_REFRESH_ACTION,
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED,
+            -> {
+                if (hasWidgets(context)) {
+                    WidgetDailyRefreshScheduler(context).scheduleNextRefresh()
+                    refreshWidgets(context)
+                }
+            }
+
+            else -> super.onReceive(context, intent)
+        }
+    }
+
+    private fun hasWidgets(context: Context): Boolean {
+        return AppWidgetManager.getInstance(context).getAppWidgetIds(
+            ComponentName(context, BabyProgressWidgetReceiver::class.java),
+        ).isNotEmpty()
+    }
+
+    private fun refreshWidgets(context: Context) {
+        val pendingResult = goAsync()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                runCatching { BabyProgressWidget().updateAll(context.applicationContext) }
+            } finally {
+                pendingResult.finish()
+            }
+        }
+    }
 }
 
 @Composable
