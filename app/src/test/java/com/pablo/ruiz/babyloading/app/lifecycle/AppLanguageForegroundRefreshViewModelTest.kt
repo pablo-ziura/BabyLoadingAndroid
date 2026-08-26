@@ -32,7 +32,7 @@ class AppLanguageForegroundRefreshViewModelTest {
     }
 
     @Test
-    fun unchangedForegroundLanguageDoesNotRefreshWidgets() = runTest {
+    fun unchangedForegroundLanguageRefreshesWidgets() = runTest {
         val languageChanges = FakeLanguageChanges(languageChanged = false)
         val widgetNotifier = RecordingWidgetNotifier()
         val viewModel = AppLanguageForegroundRefreshViewModel(languageChanges, widgetNotifier)
@@ -41,7 +41,7 @@ class AppLanguageForegroundRefreshViewModelTest {
         advanceUntilIdle()
 
         assertEquals(1, languageChanges.refreshCalls)
-        assertEquals(0, widgetNotifier.refreshCalls)
+        assertEquals(1, widgetNotifier.refreshCalls)
     }
 
     private class FakeLanguageChanges(

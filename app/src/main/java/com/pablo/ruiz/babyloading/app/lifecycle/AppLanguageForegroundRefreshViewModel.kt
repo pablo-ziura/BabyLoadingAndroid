@@ -15,9 +15,8 @@ class AppLanguageForegroundRefreshViewModel @Inject constructor(
 ) : ViewModel() {
     fun onAppForeground() {
         viewModelScope.launch {
-            if (languageChanges.refreshIfLanguageChanged()) {
-                runCatching { widgetNotifier.onPregnancyDataChanged() }
-            }
+            languageChanges.refreshIfLanguageChanged()
+            runCatching { widgetNotifier.onPregnancyDataChanged() }
         }
     }
 }
