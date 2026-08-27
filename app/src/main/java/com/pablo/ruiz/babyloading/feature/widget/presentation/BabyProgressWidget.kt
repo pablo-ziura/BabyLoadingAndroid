@@ -321,31 +321,34 @@ private fun PhaseContent(
 ) {
     Row(
         modifier = GlanceModifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
-            provider = ImageProvider(R.drawable.ic_widget_calendar),
+            provider = ImageProvider(R.drawable.ic_widget_calendar_alert),
             contentDescription = null,
-            modifier = GlanceModifier.size(36.dp),
+            modifier = GlanceModifier.size(32.dp),
         )
         Spacer(GlanceModifier.width(12.dp))
-        Column(modifier = GlanceModifier.defaultWeight()) {
+        Column(modifier = GlanceModifier.width(PHASE_TEXT_WIDTH_DP.dp)) {
             Text(
                 text = strings.phaseTitle,
                 style = TextStyle(
                     color = WidgetContent,
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                 ),
             )
+            Spacer(GlanceModifier.height(4.dp))
             Text(
                 text = strings.gestationalAge,
                 style = TextStyle(
                     color = WidgetContent,
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                 ),
             )
+            Spacer(GlanceModifier.height(4.dp))
             Text(
                 text = strings.dueDateRelation,
                 style = TextStyle(
@@ -355,6 +358,7 @@ private fun PhaseContent(
                 ),
                 maxLines = 2,
             )
+            Spacer(GlanceModifier.height(4.dp))
             Text(
                 text = strings.reviewDateMessage,
                 style = TextStyle(
@@ -507,6 +511,7 @@ private val WidgetContentMuted = ColorProvider(R.color.widget_content_muted)
 private val WidgetRingSurface = ColorProvider(R.color.widget_ring_surface)
 private val WidgetProgressTrack = ColorProvider(R.color.widget_progress_track)
 private const val WIDGET_RING_SIZE_DP = 100
+private const val PHASE_TEXT_WIDTH_DP = 184
 
 private fun com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetDetails
     .completionFraction(): Float {
