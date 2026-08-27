@@ -33,8 +33,8 @@ Before creating or modifying any screen, reusable component, or widget containin
 
 - Keep UI, state, domain logic, and platform integration separated as the project grows.
 - Represent pregnancy calendar values with `java.time.LocalDate` and inject `Clock` whenever current time affects behavior.
-- Treat weeks 0-5 as early, 6-40 as active, 41-42 as post-term, and 43 or later as requiring review; the journey ends at week 42.
-- Date selection accepts today through exactly 42 weeks in the past; older stored dates remain readable so elapsed pregnancies can enter the needs-review state.
+- Treat pregnancies as ongoing through 40+6, late term from 41+0 through 41+6, and postterm from 42+0 onward. Future stored last-period dates are invalid states, never week zero.
+- Date selection accepts today through exactly 42 weeks in the past; older stored dates remain readable as postterm progress. Editorial content and the fetal-size journey cover only weeks 6-40 and never reuse week 40 for later phases.
 - Prefer unidirectional data flow for Compose screens.
 - Use a feature-first Clean Architecture structure. Every product capability, including onboarding, belongs in `feature/<feature-name>/`.
 - Put screens, `ViewModel`s, immutable UI state, and UI events in `feature/<feature-name>/presentation/`.
@@ -49,7 +49,7 @@ Before creating or modifying any screen, reusable component, or widget containin
 - Label gallery items as imported or guided tracking. Deleting a guided tracking item removes only its private app copy and never deletes an exported MediaStore copy.
 - Use CameraX for guided captures and request only the runtime camera permission. Save the private Room-backed copy first, then export a separate JPEG to `Pictures/Baby Loading` through MediaStore without storage permissions.
 - Treat MediaStore export as recoverable: if it fails, preserve and report the successfully saved private gallery copy.
-- Provide a single fixed 4x2 home-screen widget with Jetpack Glance. Refresh it immediately after pregnancy-date changes and at most daily while the app is inactive; do not schedule frequent background work or notifications.
+- Provide a single fixed 4x2 home-screen widget with Jetpack Glance. Refresh it immediately after pregnancy-date changes and at most daily while an ongoing, late-term, or postterm pregnancy is active; do not schedule a daily refresh for setup or invalid-date states, frequent background work, or notifications.
 - Export Room schemas to `app/schemas/` and add migrations whenever the database version changes.
 - Put genuinely reusable technical infrastructure in `core/`: the current design system is in `core/designsystem/theme/`; future shared HTTP configuration, database setup, preferences, and test utilities belong under dedicated `core` packages when implemented.
 - Keep weekly editorial pregnancy content local-only in validated `pregnancy-content.en.json` and `pregnancy-content.es.json` assets; do not add remote refresh behavior without an explicit product decision.

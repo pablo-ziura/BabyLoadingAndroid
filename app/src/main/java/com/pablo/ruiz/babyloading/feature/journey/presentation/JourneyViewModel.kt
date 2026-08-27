@@ -6,6 +6,8 @@ import com.pablo.ruiz.babyloading.core.coroutines.IoDispatcher
 import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
 import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyPhase
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.CalculatePregnancyProgressUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -64,17 +66,22 @@ class JourneyViewModel @Inject constructor(
             val weeklyContent = contentRepository
                 .allContent(languageProvider.currentLanguage())
                 .sortedBy { content -> content.week }
-            val currentWeek = progress.gestationalAge.completedWeeks
+            val activeProgress = (progress as? PregnancyProgress.Active)?.progress
+            val timelineProgress = activeProgress?.takeIf { progress ->
+                progress.phase == PregnancyPhase.Ongoing
+            }
+            val currentWeek = timelineProgress?.gestationalAge?.completedWeeks
 
             JourneyUiState(
                 isLoading = false,
+                isConfigured = true,
                 currentWeek = currentWeek,
-                currentDay = progress.gestationalAge.daysIntoWeek,
+                currentDay = timelineProgress?.gestationalAge?.daysIntoWeek ?: 0,
                 weeks = weeklyContent.map { content ->
                     JourneyWeekUiModel(
                         week = content.week,
                         status = when {
-                            content.week < currentWeek -> JourneyWeekStatus.Completed
+                            currentWeek != null && content.week < currentWeek -> JourneyWeekStatus.Completed
                             content.week == currentWeek -> JourneyWeekStatus.Current
                             else -> JourneyWeekStatus.Upcoming
                         },
