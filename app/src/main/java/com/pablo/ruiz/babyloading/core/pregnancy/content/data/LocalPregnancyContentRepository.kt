@@ -15,10 +15,9 @@ class LocalPregnancyContentRepository @Inject constructor(
     private val cachedDocuments = ConcurrentHashMap<String, PregnancyContentDocument>()
 
     override fun contentForWeek(week: Int, language: AppLanguage): WeekContent? {
-        if (week < PregnancyContentDocument.CoveredWeeks.first()) return null
+        if (week !in PregnancyContentDocument.CoveredWeeks) return null
 
-        val contentWeek = week.coerceAtMost(PregnancyContentDocument.CoveredWeeks.last())
-        return documentFor(language)?.weeks?.firstOrNull { content -> content.week == contentWeek }
+        return documentFor(language)?.weeks?.firstOrNull { content -> content.week == week }
     }
 
     override fun allContent(language: AppLanguage): List<WeekContent> {

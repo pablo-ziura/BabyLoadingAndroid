@@ -176,6 +176,17 @@ private fun SettingsList(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
+                if (uiState.hasStoredFutureDate) {
+                    Text(
+                        text = stringResource(R.string.settings_invalid_future_last_period_date),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = BabyLoadingSpacing.Small),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                }
                 Spacer(modifier = Modifier.height(BabyLoadingSpacing.Small))
                 SettingsCalendar(
                     selectedDate = uiState.selectedDate,

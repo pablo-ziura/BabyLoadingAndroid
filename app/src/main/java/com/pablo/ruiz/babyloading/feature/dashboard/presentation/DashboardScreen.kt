@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -54,9 +56,11 @@ import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
 import com.pablo.ruiz.babyloading.core.pregnancy.content.presentation.drawableResource
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.ActivePregnancyProgress
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.DueDateRelation
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.GestationalAge
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyPhase
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
-import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyStage
 import java.time.LocalDate
 import java.util.Locale
 
@@ -124,54 +128,96 @@ private fun DashboardProgress(
                 isProminent = true,
             )
         }
-        item {
-            StageNotice(stage = progress.stage)
-        }
-        if (weekContent != null) {
-            item {
-                ProgressHero(weekContent = weekContent)
-            }
-        }
-        item {
-            ProgressFacts(
-                progress = progress,
-                locale = locale,
-            )
-        }
-        if (weekContent != null) {
-            item { DevelopmentCard(content = weekContent) }
-        } else {
-            item {
-                BabyLoadingCard(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = stringResource(R.string.dashboard_early_content),
-                        style = MaterialTheme.typography.bodyLarge,
+        when (progress) {
+            is PregnancyProgress.Active -> {
+                val activeProgress = progress.progress
+                if (activeProgress.phase != PregnancyPhase.Ongoing) {
+                    item {
+                        PregnancyProgressStatusCard(
+                            progress = activeProgress,
+                        )
+                    }
+                }
+                if (weekContent != null) {
+                    item {
+                        ProgressHero(weekContent = weekContent)
+                    }
+                }
+                item {
+                    ProgressFacts(
+                        progress = activeProgress,
+                        locale = locale,
                     )
                 }
+                if (weekContent != null) {
+                    item { DevelopmentCard(content = weekContent) }
+                }
+            }
+
+            is PregnancyProgress.InvalidFutureLastPeriodDate -> item {
+                InvalidDateCard()
             }
         }
     }
 }
 
 @Composable
-private fun StageNotice(stage: PregnancyStage) {
-    val message = when (stage) {
-        PregnancyStage.Early -> R.string.dashboard_stage_early
-        PregnancyStage.Active -> return
-        PregnancyStage.PostTerm -> R.string.dashboard_stage_postterm
-        PregnancyStage.NeedsReview -> R.string.dashboard_stage_review
+private fun PregnancyProgressStatusCard(progress: ActivePregnancyProgress) {
+    val title = when (progress.phase) {
+        PregnancyPhase.Ongoing -> return
+        PregnancyPhase.LateTerm -> R.string.pregnancy_status_late_term_title
+        PregnancyPhase.PostTerm -> R.string.pregnancy_status_post_term_title
+    }
+    val message = when (progress.phase) {
+        PregnancyPhase.Ongoing -> return
+        PregnancyPhase.LateTerm -> R.string.pregnancy_status_late_term_message
+        PregnancyPhase.PostTerm -> R.string.pregnancy_status_post_term_message
     }
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        shape = MaterialTheme.shapes.medium,
+    BabyLoadingCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {},
+        containerColor = Color.White.copy(alpha = 0.88f),
     ) {
         Text(
+            text = stringResource(title),
+            modifier = Modifier.semantics { heading() },
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
             text = stringResource(message),
-            modifier = Modifier.padding(BabyLoadingSpacing.Medium),
+            modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
             style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = dueDateRelationText(progress.dueDateRelation),
+            modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun InvalidDateCard() {
+    BabyLoadingCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {},
+        containerColor = Color.White.copy(alpha = 0.88f),
+    ) {
+        Text(
+            text = stringResource(R.string.pregnancy_status_invalid_date_title),
+            modifier = Modifier.semantics { heading() },
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            text = stringResource(R.string.pregnancy_status_invalid_date_message),
+            modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -274,7 +320,7 @@ private fun BabySizeArtwork(babySize: BabySize) {
 
 @Composable
 private fun ProgressFacts(
-    progress: PregnancyProgress,
+    progress: ActivePregnancyProgress,
     locale: Locale,
 ) {
     Column(
@@ -291,10 +337,8 @@ private fun ProgressFacts(
                 value = progress.gestationalAge.completedWeeks.toString(),
                 modifier = Modifier.weight(1f),
             )
-            DashboardStatCard(
-                icon = Icons.Outlined.Schedule,
-                label = stringResource(R.string.dashboard_days_remaining),
-                value = progress.daysRemaining.toString(),
+            DueDateRelationStatCard(
+                relation = progress.dueDateRelation,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -302,6 +346,37 @@ private fun ProgressFacts(
             dueDate = DashboardDateFormatter.format(progress.estimatedDueDate, locale),
         )
     }
+}
+
+@Composable
+private fun DueDateRelationStatCard(
+    relation: DueDateRelation,
+    modifier: Modifier = Modifier,
+) {
+    val label: String
+    val value: String
+    when (relation) {
+        is DueDateRelation.Upcoming -> {
+            label = stringResource(R.string.dashboard_days_until_due_date)
+            value = relation.days.toString()
+        }
+
+        DueDateRelation.Today -> {
+            label = stringResource(R.string.dashboard_due_date_metric)
+            value = stringResource(R.string.pregnancy_status_due_date_today)
+        }
+
+        is DueDateRelation.Elapsed -> {
+            label = stringResource(R.string.dashboard_days_since_due_date)
+            value = relation.days.toString()
+        }
+    }
+    DashboardStatCard(
+        icon = Icons.Outlined.Schedule,
+        label = label,
+        value = value,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -313,6 +388,7 @@ private fun DashboardStatCard(
 ) {
     Surface(
         modifier = modifier
+            .heightIn(min = DashboardMetricCardMinHeight)
             .shadow(
                 elevation = 12.dp,
                 shape = MaterialTheme.shapes.large,
@@ -356,15 +432,39 @@ private fun DashboardStatCard(
             }
             Text(
                 text = value,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = DashboardMetricBandHeight)
+                    .wrapContentHeight(Alignment.CenterVertically),
                 style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center,
             )
             Text(
                 text = label,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = DashboardMetricBandHeight)
+                    .wrapContentHeight(Alignment.Top),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
             )
         }
     }
+}
+
+@Composable
+private fun dueDateRelationText(relation: DueDateRelation): String = when (relation) {
+    is DueDateRelation.Upcoming -> stringResource(
+        R.string.pregnancy_status_due_date_upcoming,
+        relation.days,
+    )
+
+    DueDateRelation.Today -> stringResource(R.string.pregnancy_status_due_date_today)
+    is DueDateRelation.Elapsed -> stringResource(
+        R.string.pregnancy_status_due_date_elapsed,
+        relation.days,
+    )
 }
 
 @Composable
@@ -506,13 +606,14 @@ private fun DashboardScreenPreview() {
             DashboardContent(
                 uiState = DashboardUiState(
                     isLoading = false,
-                    progress = PregnancyProgress(
-                        lastPeriodDate = LocalDate.of(2026, 3, 1),
-                        estimatedDueDate = LocalDate.of(2026, 12, 6),
-                        gestationalAge = GestationalAge(24, 3, 171),
-                        daysRemaining = 109,
-                        completedFraction = 0.61f,
-                        stage = PregnancyStage.Active,
+                    progress = PregnancyProgress.Active(
+                        ActivePregnancyProgress(
+                            lastPeriodDate = LocalDate.of(2026, 3, 1),
+                            estimatedDueDate = LocalDate.of(2026, 12, 6),
+                            gestationalAge = GestationalAge(24, 3, 171),
+                            phase = PregnancyPhase.Ongoing,
+                            dueDateRelation = DueDateRelation.Upcoming(109),
+                        ),
                     ),
                     weekContent = WeekContent(
                         week = 24,
@@ -530,3 +631,6 @@ private fun DashboardScreenPreview() {
         }
     }
 }
+
+private val DashboardMetricBandHeight = 48.dp
+private val DashboardMetricCardMinHeight = 112.dp

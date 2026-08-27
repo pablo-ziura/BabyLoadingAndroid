@@ -10,6 +10,7 @@ data class SettingsUiState(
     val minimumDate: LocalDate = LocalDate.MIN,
     val maximumDate: LocalDate = LocalDate.MIN,
     val estimatedDueDate: LocalDate? = null,
+    val hasStoredFutureDate: Boolean = false,
     val isSaving: Boolean = false,
     val saveCompleted: Boolean = false,
     val validationError: SettingsValidationError? = null,

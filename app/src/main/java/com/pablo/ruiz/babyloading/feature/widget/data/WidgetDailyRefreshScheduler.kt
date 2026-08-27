@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetState
 import com.pablo.ruiz.babyloading.feature.widget.presentation.BabyProgressWidgetReceiver
 import java.time.Clock
 
@@ -24,6 +25,14 @@ internal class WidgetDailyRefreshScheduler(
 
     fun cancel() {
         alarmManager.cancel(refreshPendingIntent())
+    }
+
+    fun scheduleFor(state: BabyProgressWidgetState) {
+        if (state.requiresDailyRefresh) {
+            scheduleNextRefresh()
+        } else {
+            cancel()
+        }
     }
 
     private fun refreshPendingIntent(): PendingIntent {

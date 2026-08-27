@@ -85,7 +85,7 @@ private fun JourneyContent(
             uiState.isLoading -> CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
             )
-            uiState.currentWeek == null -> Text(
+            !uiState.isConfigured -> Text(
                 text = stringResource(R.string.journey_missing_setup),
                 modifier = Modifier
                     .align(Alignment.Center)
@@ -131,7 +131,7 @@ private fun JourneyTimeline(
         ) { week ->
             JourneyWeekRow(
                 week = week,
-                currentWeek = checkNotNull(uiState.currentWeek),
+                currentWeek = uiState.currentWeek,
                 currentDay = uiState.currentDay,
             )
         }
@@ -141,7 +141,7 @@ private fun JourneyTimeline(
 @Composable
 private fun JourneyWeekRow(
     week: JourneyWeekUiModel,
-    currentWeek: Int,
+    currentWeek: Int?,
     currentDay: Int,
 ) {
     val isCurrent = week.status == JourneyWeekStatus.Current
@@ -262,7 +262,7 @@ private fun JourneyBabySizeImage(babySize: BabySize) {
 @Composable
 private fun JourneyTimelineMarker(
     week: Int,
-    currentWeek: Int,
+    currentWeek: Int?,
     currentDay: Int,
     isCurrent: Boolean,
     modifier: Modifier = Modifier,
@@ -281,7 +281,7 @@ private fun JourneyTimelineMarker(
             drawTimelineDay(
                 centerX = centerX,
                 centerY = centerY * (index + 1) / 4,
-                highlighted = week == currentWeek + 1 && currentDay - 4 == index,
+                highlighted = currentWeek != null && week == currentWeek + 1 && currentDay - 4 == index,
                 accent = BabyAccentPink,
             )
         }
@@ -307,7 +307,7 @@ private fun JourneyTimelineMarker(
             drawTimelineDay(
                 centerX = centerX,
                 centerY = centerY + (centerY * (index + 1) / 4),
-                highlighted = week == currentWeek && currentDay == index,
+                highlighted = currentWeek != null && week == currentWeek && currentDay == index,
                 accent = BabyAccentPink,
             )
         }
@@ -349,6 +349,7 @@ private fun JourneyScreenPreview() {
             JourneyContent(
                 uiState = JourneyUiState(
                     isLoading = false,
+                    isConfigured = true,
                     currentWeek = 20,
                     currentDay = 3,
                     weeks = listOf(
