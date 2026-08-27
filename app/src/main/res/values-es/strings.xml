@@ -25,9 +25,7 @@
     <string name="dashboard_due_date_metric">Fecha estimada de parto</string>
     <string name="dashboard_days_since_due_date">Días desde la fecha estimada de parto</string>
     <string name="dashboard_due_date">🎀&#160; Fecha probable de parto</string>
-    <string name="pregnancy_status_due_date_upcoming">%1$d días hasta tu fecha estimada de parto</string>
     <string name="pregnancy_status_due_date_today">Fecha estimada hoy</string>
-    <string name="pregnancy_status_due_date_elapsed">%1$d días desde tu fecha estimada de parto</string>
     <string name="pregnancy_status_invalid_date_title">Revisa tu fecha</string>
     <string name="pregnancy_status_invalid_date_message">Revisa tu fecha de última menstruación en Ajustes.</string>
     <string name="pregnancy_status_late_term_title">Término tardío</string>

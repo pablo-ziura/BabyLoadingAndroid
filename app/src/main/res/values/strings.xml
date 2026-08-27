@@ -24,9 +24,7 @@
     <string name="dashboard_due_date_metric">Estimated due date</string>
     <string name="dashboard_days_since_due_date">Days since estimated due date</string>
     <string name="dashboard_due_date">🎀&#160; Estimated due date</string>
-    <string name="pregnancy_status_due_date_upcoming">%1$d days until your estimated due date</string>
     <string name="pregnancy_status_due_date_today">Due today</string>
-    <string name="pregnancy_status_due_date_elapsed">%1$d days since your estimated due date</string>
     <string name="pregnancy_status_invalid_date_title">Review your date</string>
     <string name="pregnancy_status_invalid_date_message">Review your last period date in Settings.</string>
     <string name="pregnancy_status_late_term_title">Late term</string>

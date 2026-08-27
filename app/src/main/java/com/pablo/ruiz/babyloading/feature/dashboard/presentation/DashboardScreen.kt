@@ -134,7 +134,7 @@ private fun DashboardProgress(
                 if (activeProgress.phase != PregnancyPhase.Ongoing) {
                     item {
                         PregnancyProgressStatusCard(
-                            progress = activeProgress,
+                            phase = activeProgress.phase,
                         )
                     }
                 }
@@ -162,13 +162,13 @@ private fun DashboardProgress(
 }
 
 @Composable
-private fun PregnancyProgressStatusCard(progress: ActivePregnancyProgress) {
-    val title = when (progress.phase) {
+private fun PregnancyProgressStatusCard(phase: PregnancyPhase) {
+    val title = when (phase) {
         PregnancyPhase.Ongoing -> return
         PregnancyPhase.LateTerm -> R.string.pregnancy_status_late_term_title
         PregnancyPhase.PostTerm -> R.string.pregnancy_status_post_term_title
     }
-    val message = when (progress.phase) {
+    val message = when (phase) {
         PregnancyPhase.Ongoing -> return
         PregnancyPhase.LateTerm -> R.string.pregnancy_status_late_term_message
         PregnancyPhase.PostTerm -> R.string.pregnancy_status_post_term_message
@@ -189,12 +189,6 @@ private fun PregnancyProgressStatusCard(progress: ActivePregnancyProgress) {
             text = stringResource(message),
             modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = dueDateRelationText(progress.dueDateRelation),
-            modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
-            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
@@ -451,20 +445,6 @@ private fun DashboardStatCard(
             )
         }
     }
-}
-
-@Composable
-private fun dueDateRelationText(relation: DueDateRelation): String = when (relation) {
-    is DueDateRelation.Upcoming -> stringResource(
-        R.string.pregnancy_status_due_date_upcoming,
-        relation.days,
-    )
-
-    DueDateRelation.Today -> stringResource(R.string.pregnancy_status_due_date_today)
-    is DueDateRelation.Elapsed -> stringResource(
-        R.string.pregnancy_status_due_date_elapsed,
-        relation.days,
-    )
 }
 
 @Composable
