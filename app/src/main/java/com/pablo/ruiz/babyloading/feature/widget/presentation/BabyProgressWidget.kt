@@ -51,6 +51,7 @@ import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekConten
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.content.presentation.drawableResource
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.DueDateRelation
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetState
 import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetStateFactory
@@ -82,23 +83,24 @@ class BabyProgressWidget : GlanceAppWidget() {
                 currentDate = LocalDate.now(dependencies.clock()),
             )
         }.getOrDefault(BabyProgressWidgetState.NeedsSetup)
-        val weekContent = (state as? BabyProgressWidgetState.Progress)?.let { progress ->
+        WidgetDailyRefreshScheduler(context).scheduleFor(state)
+        val weekContent = (state as? BabyProgressWidgetState.Ongoing)?.let { ongoing ->
             runCatching {
                 dependencies.pregnancyContentRepository().contentForWeek(
-                    week = progress.completedWeeks,
+                    week = ongoing.progress.gestationalAge.completedWeeks,
                     language = dependencies.appLanguageProvider().currentLanguage(),
                 )
             }.getOrNull()
         }
         val strings = BabyProgressWidgetStrings.create(context, state, weekContent)
-        val babySizeProgressImage = (state as? BabyProgressWidgetState.Progress)
-            ?.let { progress ->
+        val babySizeProgressImage = (state as? BabyProgressWidgetState.Ongoing)
+            ?.let { ongoing ->
                 weekContent?.let { content ->
                     ImageProvider(
                         BabySizeProgressImageRenderer.create(
                             context = context,
                             drawableRes = content.babySize.drawableResource(),
-                            progress = progress.completedFraction,
+                            progress = ongoing.progress.completionFraction(),
                         ),
                     )
                 }
@@ -119,7 +121,6 @@ class BabyProgressWidgetReceiver : GlanceAppWidgetReceiver() {
 
     override fun onEnabled(context: Context) {
         super.onEnabled(context)
-        WidgetDailyRefreshScheduler(context).scheduleNextRefresh()
     }
 
     override fun onUpdate(
@@ -128,7 +129,6 @@ class BabyProgressWidgetReceiver : GlanceAppWidgetReceiver() {
         appWidgetIds: IntArray,
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
-        WidgetDailyRefreshScheduler(context).scheduleNextRefresh()
     }
 
     override fun onDisabled(context: Context) {
@@ -144,7 +144,6 @@ class BabyProgressWidgetReceiver : GlanceAppWidgetReceiver() {
             Intent.ACTION_TIMEZONE_CHANGED,
             -> {
                 if (hasWidgets(context)) {
-                    WidgetDailyRefreshScheduler(context).scheduleNextRefresh()
                     refreshWidgets(context)
                 }
             }
@@ -188,10 +187,17 @@ private fun BabyProgressWidgetContent(
     ) {
         when (state) {
             BabyProgressWidgetState.NeedsSetup -> NeedsSetupContent(strings)
-            is BabyProgressWidgetState.Progress -> ProgressContent(
+            BabyProgressWidgetState.InvalidFutureLastPeriodDate -> InvalidDateContent(strings)
+            is BabyProgressWidgetState.Ongoing -> OngoingContent(
                 state = state,
                 strings = strings,
                 babySizeProgressImage = babySizeProgressImage,
+            )
+            is BabyProgressWidgetState.LateTerm -> PhaseContent(
+                strings = strings,
+            )
+            is BabyProgressWidgetState.PostTerm -> PhaseContent(
+                strings = strings,
             )
         }
     }
@@ -218,8 +224,8 @@ private fun NeedsSetupContent(strings: BabyProgressWidgetStrings) {
 }
 
 @Composable
-private fun ProgressContent(
-    state: BabyProgressWidgetState.Progress,
+private fun OngoingContent(
+    state: BabyProgressWidgetState.Ongoing,
     strings: BabyProgressWidgetStrings,
     babySizeProgressImage: ImageProvider?,
 ) {
@@ -266,28 +272,18 @@ private fun ProgressContent(
                 maxLines = 3,
             )
             Spacer(GlanceModifier.defaultWeight())
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    text = state.daysRemaining.toString(),
-                    style = TextStyle(
-                        color = WidgetContent,
-                        fontSize = 34.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
-                )
-                Spacer(GlanceModifier.width(4.dp))
-                Text(
-                    text = strings.days,
-                    style = TextStyle(
-                        color = WidgetContent,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                    ),
-                )
-            }
+            Text(
+                text = strings.dueDateRelation,
+                style = TextStyle(
+                    color = WidgetContent,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                maxLines = 2,
+            )
             Spacer(GlanceModifier.height(4.dp))
             LinearProgressIndicator(
-                progress = state.completedFraction,
+                progress = state.progress.completionFraction(),
                 modifier = GlanceModifier
                     .fillMaxWidth()
                     .height(4.dp),
@@ -298,12 +294,94 @@ private fun ProgressContent(
     }
 }
 
+@Composable
+private fun InvalidDateContent(strings: BabyProgressWidgetStrings) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Image(
+            provider = ImageProvider(R.drawable.ic_widget_calendar),
+            contentDescription = null,
+            modifier = GlanceModifier.size(36.dp),
+        )
+        Spacer(GlanceModifier.width(12.dp))
+        Text(
+            text = strings.invalidDateMessage,
+            style = TextStyle(
+                color = WidgetContentMuted,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+            ),
+            maxLines = 3,
+        )
+    }
+}
+
+@Composable
+private fun PhaseContent(
+    strings: BabyProgressWidgetStrings,
+) {
+    Row(
+        modifier = GlanceModifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(
+            provider = ImageProvider(R.drawable.ic_widget_calendar_alert),
+            contentDescription = null,
+            modifier = GlanceModifier.size(32.dp),
+        )
+        Spacer(GlanceModifier.width(12.dp))
+        Column(modifier = GlanceModifier.width(PHASE_TEXT_WIDTH_DP.dp)) {
+            Text(
+                text = strings.phaseTitle,
+                style = TextStyle(
+                    color = WidgetContent,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+            )
+            Spacer(GlanceModifier.height(4.dp))
+            Text(
+                text = strings.gestationalAge,
+                style = TextStyle(
+                    color = WidgetContent,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+            )
+            Spacer(GlanceModifier.height(4.dp))
+            Text(
+                text = strings.dueDateRelation,
+                style = TextStyle(
+                    color = WidgetContentMuted,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                ),
+                maxLines = 2,
+            )
+            Spacer(GlanceModifier.height(4.dp))
+            Text(
+                text = strings.reviewDateMessage,
+                style = TextStyle(
+                    color = WidgetContentMuted,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium,
+                ),
+                maxLines = 2,
+            )
+        }
+    }
+}
+
 private data class BabyProgressWidgetStrings(
     val setupMessage: String,
+    val invalidDateMessage: String,
     val week: String,
     val babySize: String,
     val babySizeContentDescription: String?,
-    val days: String,
+    val dueDateRelation: String,
+    val gestationalAge: String,
+    val phaseTitle: String,
+    val reviewDateMessage: String,
 ) {
     companion object {
         fun create(
@@ -311,31 +389,104 @@ private data class BabyProgressWidgetStrings(
             state: BabyProgressWidgetState,
             weekContent: WeekContent?,
         ): BabyProgressWidgetStrings {
-            if (state !is BabyProgressWidgetState.Progress) {
-                return BabyProgressWidgetStrings(
+            return when (state) {
+                BabyProgressWidgetState.NeedsSetup -> empty(
                     setupMessage = context.getString(R.string.widget_setup_message),
-                    week = "",
-                    babySize = "",
-                    babySizeContentDescription = null,
-                    days = "",
+                )
+
+                BabyProgressWidgetState.InvalidFutureLastPeriodDate -> empty(
+                    invalidDateMessage = context.getString(R.string.widget_invalid_date),
+                )
+
+                is BabyProgressWidgetState.Ongoing -> {
+                    val babySizeLabel = weekContent?.babySizeLabel
+                        ?: context.getString(R.string.widget_unknown_size)
+                    BabyProgressWidgetStrings(
+                        setupMessage = "",
+                        invalidDateMessage = "",
+                        week = context.getString(
+                            R.string.widget_week,
+                            state.progress.gestationalAge.completedWeeks,
+                        ),
+                        babySize = context.getString(
+                            R.string.widget_baby_size,
+                            babySizeLabel,
+                        ),
+                        babySizeContentDescription = weekContent?.let {
+                            context.getString(R.string.widget_baby_size_description, babySizeLabel)
+                        },
+                        dueDateRelation = dueDateRelationText(
+                            context,
+                            state.progress.dueDateRelation,
+                        ),
+                        gestationalAge = "",
+                        phaseTitle = "",
+                        reviewDateMessage = "",
+                    )
+                }
+
+                is BabyProgressWidgetState.LateTerm -> phaseStrings(
+                    context = context,
+                    phaseTitle = context.getString(R.string.widget_late_term),
+                    progress = state.progress,
+                )
+
+                is BabyProgressWidgetState.PostTerm -> phaseStrings(
+                    context = context,
+                    phaseTitle = context.getString(R.string.widget_post_term),
+                    progress = state.progress,
                 )
             }
-            val babySizeLabel = weekContent?.babySizeLabel
-                ?: context.getString(R.string.widget_unknown_size)
-            return BabyProgressWidgetStrings(
-                setupMessage = "",
-                week = context.getString(
-                    R.string.widget_week,
-                    state.completedWeeks,
-                ),
-                babySize = context.getString(
-                    R.string.widget_baby_size,
-                    babySizeLabel,
-                ),
-                babySizeContentDescription = weekContent?.let {
-                    context.getString(R.string.widget_baby_size_description, babySizeLabel)
-                },
-                days = context.getString(R.string.widget_days),
+        }
+
+        private fun empty(
+            setupMessage: String = "",
+            invalidDateMessage: String = "",
+        ) = BabyProgressWidgetStrings(
+            setupMessage = setupMessage,
+            invalidDateMessage = invalidDateMessage,
+            week = "",
+            babySize = "",
+            babySizeContentDescription = null,
+            dueDateRelation = "",
+            gestationalAge = "",
+            phaseTitle = "",
+            reviewDateMessage = "",
+        )
+
+        private fun phaseStrings(
+            context: Context,
+            phaseTitle: String,
+            progress: com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetDetails,
+        ) = BabyProgressWidgetStrings(
+            setupMessage = "",
+            invalidDateMessage = "",
+            week = "",
+            babySize = "",
+            babySizeContentDescription = null,
+            dueDateRelation = dueDateRelationText(context, progress.dueDateRelation),
+            gestationalAge = context.getString(
+                R.string.widget_gestational_age,
+                progress.gestationalAge.completedWeeks,
+                progress.gestationalAge.daysIntoWeek,
+            ),
+            phaseTitle = phaseTitle,
+            reviewDateMessage = context.getString(R.string.widget_review_date),
+        )
+
+        private fun dueDateRelationText(
+            context: Context,
+            relation: DueDateRelation,
+        ): String = when (relation) {
+            is DueDateRelation.Upcoming -> context.getString(
+                R.string.widget_days_until_due_date,
+                relation.days,
+            )
+
+            DueDateRelation.Today -> context.getString(R.string.widget_due_date_today)
+            is DueDateRelation.Elapsed -> context.getString(
+                R.string.widget_days_since_due_date,
+                relation.days,
             )
         }
     }
@@ -360,6 +511,17 @@ private val WidgetContentMuted = ColorProvider(R.color.widget_content_muted)
 private val WidgetRingSurface = ColorProvider(R.color.widget_ring_surface)
 private val WidgetProgressTrack = ColorProvider(R.color.widget_progress_track)
 private const val WIDGET_RING_SIZE_DP = 100
+private const val PHASE_TEXT_WIDTH_DP = 184
+
+private fun com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetDetails
+    .completionFraction(): Float {
+    return (
+        gestationalAge.completedWeeks.toFloat() +
+            gestationalAge.daysIntoWeek.toFloat() / PregnancyCalculator.DAYS_PER_WEEK
+        ).div(TOTAL_PREGNANCY_WEEKS).coerceIn(0f, 1f)
+}
+
+private const val TOTAL_PREGNANCY_WEEKS = 40f
 
 private object BabySizeProgressImageRenderer {
     fun create(

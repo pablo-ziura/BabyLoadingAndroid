@@ -21,10 +21,10 @@ class LocalPregnancyContentRepositoryTest {
     }
 
     @Test
-    fun earlyWeeksHaveNoEditorialContentAndLateWeeksReuseWeekForty() {
+    fun onlyCoveredWeeksHaveEditorialContent() {
         assertNull(repository.contentForWeek(5, AppLanguage.English))
-        assertEquals(40, repository.contentForWeek(41, AppLanguage.English)?.week)
-        assertEquals(40, repository.contentForWeek(42, AppLanguage.English)?.week)
+        assertNull(repository.contentForWeek(41, AppLanguage.English))
+        assertNull(repository.contentForWeek(42, AppLanguage.English))
     }
 
     @Test

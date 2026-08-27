@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 
@@ -48,6 +49,19 @@ class GuidedTrackingViewModelTest {
         assertEquals(23, galleryRepository.savedWeek)
         assertEquals(GuidedTrackingSaveOutcome.PrivateAndPublic, viewModel.uiState.value.saveOutcome)
         assertFalse(viewModel.uiState.value.isSaving)
+    }
+
+    @Test
+    fun futureStoredDateDoesNotAssociateTheCaptureWithAPregnancyWeek() = runTest {
+        pregnancyRepository.lastPeriodDate.value = LocalDate.of(2026, 8, 16)
+        val viewModel = createViewModel()
+
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.pregnancyWeek)
+        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(byteArrayOf(1)))
+        advanceUntilIdle()
+        assertNull(galleryRepository.savedWeek)
     }
 
     @Test

@@ -1,8 +1,10 @@
 package com.pablo.ruiz.babyloading.core.pregnancy.domain
 
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.ActivePregnancyProgress
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.DueDateRelation
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.GestationalAge
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyPhase
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
-import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyStage
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -31,37 +33,45 @@ class PregnancyCalculator {
         lastPeriodDate: LocalDate,
         currentDate: LocalDate,
     ): PregnancyProgress {
+        if (lastPeriodDate.isAfter(currentDate)) {
+            return PregnancyProgress.InvalidFutureLastPeriodDate(lastPeriodDate)
+        }
+
         val gestationalAge = gestationalAge(lastPeriodDate, currentDate)
         val dueDate = estimatedDueDate(lastPeriodDate)
-        val daysRemaining = ChronoUnit.DAYS
-            .between(currentDate, dueDate)
-            .coerceAtLeast(0)
-            .toInt()
-
-        return PregnancyProgress(
+        return PregnancyProgress.Active(
+            ActivePregnancyProgress(
             lastPeriodDate = lastPeriodDate,
             estimatedDueDate = dueDate,
             gestationalAge = gestationalAge,
-            daysRemaining = daysRemaining,
-            completedFraction = (gestationalAge.elapsedDays.toFloat() / STANDARD_PREGNANCY_DAYS)
-                .coerceIn(0f, 1f),
-            stage = stageFor(gestationalAge.completedWeeks),
+            phase = phaseFor(gestationalAge),
+            dueDateRelation = dueDateRelation(dueDate, currentDate),
+            ),
         )
     }
 
-    fun stageFor(completedWeeks: Int): PregnancyStage = when {
-        completedWeeks >= REVIEW_START_WEEK -> PregnancyStage.NeedsReview
-        completedWeeks >= POST_TERM_START_WEEK -> PregnancyStage.PostTerm
-        completedWeeks >= ACTIVE_START_WEEK -> PregnancyStage.Active
-        else -> PregnancyStage.Early
+    fun dueDateRelation(
+        dueDate: LocalDate,
+        currentDate: LocalDate,
+    ): DueDateRelation {
+        val dayDifference = ChronoUnit.DAYS.between(currentDate, dueDate).toInt()
+        return when {
+            dayDifference > 0 -> DueDateRelation.Upcoming(dayDifference)
+            dayDifference == 0 -> DueDateRelation.Today
+            else -> DueDateRelation.Elapsed(-dayDifference)
+        }
+    }
+
+    fun phaseFor(gestationalAge: GestationalAge): PregnancyPhase = when {
+        gestationalAge.elapsedDays >= POST_TERM_START_DAY -> PregnancyPhase.PostTerm
+        gestationalAge.elapsedDays >= LATE_TERM_START_DAY -> PregnancyPhase.LateTerm
+        else -> PregnancyPhase.Ongoing
     }
 
     companion object {
         const val DAYS_PER_WEEK = 7
         const val STANDARD_PREGNANCY_DAYS = 280
-        const val ACTIVE_START_WEEK = 6
-        const val POST_TERM_START_WEEK = 41
-        const val REVIEW_START_WEEK = 43
-        const val LAST_JOURNEY_WEEK = 42
+        const val LATE_TERM_START_DAY = 41 * DAYS_PER_WEEK
+        const val POST_TERM_START_DAY = 42 * DAYS_PER_WEEK
     }
 }

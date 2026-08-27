@@ -7,6 +7,7 @@ import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidation
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidator
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.SavePregnancyDateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,13 +44,34 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             repository.lastPeriodDate.collectLatest { savedDate ->
                 _uiState.update { state ->
-                    val selectedDate = state.selectedDate ?: savedDate
-                    state.copy(
-                        isLoading = false,
-                        savedDate = savedDate,
-                        selectedDate = selectedDate,
-                        estimatedDueDate = selectedDate?.let(calculator::estimatedDueDate),
-                    )
+                    when (savedDate?.let { date -> calculator.progress(date, currentDate) }) {
+                        is PregnancyProgress.InvalidFutureLastPeriodDate -> state.copy(
+                            isLoading = false,
+                            savedDate = savedDate,
+                            selectedDate = state.maximumDate,
+                            estimatedDueDate = null,
+                            hasStoredFutureDate = true,
+                        )
+
+                        is PregnancyProgress.Active -> {
+                            val selectedDate = state.selectedDate ?: savedDate
+                            state.copy(
+                                isLoading = false,
+                                savedDate = savedDate,
+                                selectedDate = selectedDate,
+                                estimatedDueDate = calculator.estimatedDueDate(selectedDate),
+                                hasStoredFutureDate = false,
+                            )
+                        }
+
+                        null -> state.copy(
+                            isLoading = false,
+                            savedDate = null,
+                            selectedDate = null,
+                            estimatedDueDate = null,
+                            hasStoredFutureDate = false,
+                        )
+                    }
                 }
             }
         }

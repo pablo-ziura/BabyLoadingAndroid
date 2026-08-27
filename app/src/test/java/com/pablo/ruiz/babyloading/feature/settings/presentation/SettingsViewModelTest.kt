@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -85,6 +86,27 @@ class SettingsViewModelTest {
 
         assertEquals(LocalDate.of(2026, 5, 10), repository.date.value)
         assertEquals(SettingsValidationError.FutureDate, viewModel.uiState.value.validationError)
+    }
+
+    @Test
+    fun storedFutureDateIsPreparedForCorrection() = runTest {
+        repository.date.value = LocalDate.of(2026, 8, 16)
+        val viewModel = createViewModel()
+
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.hasStoredFutureDate)
+        assertEquals(LocalDate.of(2026, 8, 15), state.selectedDate)
+        assertNull(state.estimatedDueDate)
+
+        viewModel.onEvent(SettingsEvent.DateSelected(LocalDate.of(2026, 8, 14)))
+        assertTrue(viewModel.uiState.value.hasStoredFutureDate)
+        viewModel.onEvent(SettingsEvent.SaveDate)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.hasStoredFutureDate)
+        assertEquals(LocalDate.of(2026, 8, 14), repository.date.value)
     }
 
     private fun createViewModel(): SettingsViewModel {
