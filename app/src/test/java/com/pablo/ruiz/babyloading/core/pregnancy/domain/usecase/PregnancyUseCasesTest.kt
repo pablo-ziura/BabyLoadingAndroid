@@ -3,6 +3,7 @@ package com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidation
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidator
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import java.time.Clock
 import java.time.Instant
@@ -26,10 +27,10 @@ class PregnancyUseCasesTest {
     fun calculateProgressUsesInjectedClock() {
         val useCase = CalculatePregnancyProgressUseCase(PregnancyCalculator(), clock)
 
-        val progress = useCase(LocalDate.of(2026, 8, 1))
+        val progress = useCase(LocalDate.of(2026, 8, 1)) as PregnancyProgress.Active
 
-        assertEquals(2, progress.gestationalAge.completedWeeks)
-        assertEquals(0, progress.gestationalAge.daysIntoWeek)
+        assertEquals(2, progress.progress.gestationalAge.completedWeeks)
+        assertEquals(0, progress.progress.gestationalAge.daysIntoWeek)
     }
 
     @Test

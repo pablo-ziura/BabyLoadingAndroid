@@ -1,6 +1,8 @@
 package com.pablo.ruiz.babyloading.core.pregnancy.domain
 
-import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyStage
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.DueDateRelation
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyPhase
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -13,9 +15,10 @@ class PregnancyCalculatorTest {
     fun dueDateIsExactlyTwoHundredEightyDaysAfterLastPeriod() {
         val lastPeriodDate = LocalDate.of(2025, 5, 10)
 
-        val dueDate = calculator.estimatedDueDate(lastPeriodDate)
-
-        assertEquals(LocalDate.of(2026, 2, 14), dueDate)
+        assertEquals(
+            LocalDate.of(2026, 2, 14),
+            calculator.estimatedDueDate(lastPeriodDate),
+        )
     }
 
     @Test
@@ -33,41 +36,49 @@ class PregnancyCalculatorTest {
     }
 
     @Test
-    fun futureLastPeriodIsClampedToWeekZero() {
+    fun futureLastPeriodProducesAnInvalidProgressState() {
         val currentDate = LocalDate.of(2026, 1, 1)
+        val futureDate = currentDate.plusDays(1)
 
-        val age = calculator.gestationalAge(
-            lastPeriodDate = currentDate.plusDays(1),
-            currentDate = currentDate,
+        assertEquals(
+            PregnancyProgress.InvalidFutureLastPeriodDate(futureDate),
+            calculator.progress(futureDate, currentDate),
         )
-
-        assertEquals(0, age.completedWeeks)
-        assertEquals(0, age.daysIntoWeek)
-        assertEquals(0, age.elapsedDays)
     }
 
     @Test
-    fun stageBoundariesMatchProductRules() {
-        assertEquals(PregnancyStage.Early, calculator.stageFor(0))
-        assertEquals(PregnancyStage.Early, calculator.stageFor(5))
-        assertEquals(PregnancyStage.Active, calculator.stageFor(6))
-        assertEquals(PregnancyStage.Active, calculator.stageFor(40))
-        assertEquals(PregnancyStage.PostTerm, calculator.stageFor(41))
-        assertEquals(PregnancyStage.PostTerm, calculator.stageFor(42))
-        assertEquals(PregnancyStage.NeedsReview, calculator.stageFor(43))
+    fun phaseBoundariesMatchTheSharedClinicalContract() {
+        val lastPeriodDate = LocalDate.of(2026, 1, 1)
+
+        assertEquals(PregnancyPhase.Ongoing, phaseAt(lastPeriodDate, 279))
+        assertEquals(PregnancyPhase.Ongoing, phaseAt(lastPeriodDate, 280))
+        assertEquals(PregnancyPhase.Ongoing, phaseAt(lastPeriodDate, 286))
+        assertEquals(PregnancyPhase.LateTerm, phaseAt(lastPeriodDate, 287))
+        assertEquals(PregnancyPhase.LateTerm, phaseAt(lastPeriodDate, 293))
+        assertEquals(PregnancyPhase.PostTerm, phaseAt(lastPeriodDate, 294))
     }
 
     @Test
-    fun completedProgressAndRemainingDaysAreClamped() {
-        val lastPeriodDate = LocalDate.of(2025, 1, 1)
+    fun dueDateRelationPreservesUpcomingTodayAndElapsedDays() {
+        val dueDate = LocalDate.of(2026, 10, 8)
 
-        val progress = calculator.progress(
-            lastPeriodDate = lastPeriodDate,
-            currentDate = lastPeriodDate.plusDays(301),
+        assertEquals(
+            DueDateRelation.Upcoming(1),
+            calculator.dueDateRelation(dueDate, dueDate.minusDays(1)),
         )
+        assertEquals(
+            DueDateRelation.Today,
+            calculator.dueDateRelation(dueDate, dueDate),
+        )
+        assertEquals(
+            DueDateRelation.Elapsed(1),
+            calculator.dueDateRelation(dueDate, dueDate.plusDays(1)),
+        )
+    }
 
-        assertEquals(0, progress.daysRemaining)
-        assertEquals(1f, progress.completedFraction)
-        assertTrue(progress.stage == PregnancyStage.NeedsReview)
+    private fun phaseAt(lastPeriodDate: LocalDate, elapsedDays: Long): PregnancyPhase {
+        val progress = calculator.progress(lastPeriodDate, lastPeriodDate.plusDays(elapsedDays))
+        assertTrue(progress is PregnancyProgress.Active)
+        return (progress as PregnancyProgress.Active).progress.phase
     }
 }

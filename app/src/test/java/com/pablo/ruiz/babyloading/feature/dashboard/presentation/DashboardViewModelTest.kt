@@ -7,7 +7,8 @@ import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
-import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyStage
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyPhase
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.CalculatePregnancyProgressUseCase
 import com.pablo.ruiz.babyloading.test.MainDispatcherRule
@@ -49,8 +50,9 @@ class DashboardViewModelTest {
 
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
-        assertEquals(20, state.progress?.gestationalAge?.completedWeeks)
-        assertEquals(PregnancyStage.Active, state.progress?.stage)
+        val progress = state.progress as PregnancyProgress.Active
+        assertEquals(20, progress.progress.gestationalAge.completedWeeks)
+        assertEquals(PregnancyPhase.Ongoing, progress.progress.phase)
         assertEquals(20, state.weekContent?.week)
         assertEquals(AppLanguage.Spanish, contentRepository.requestedLanguages.last())
     }
@@ -77,28 +79,46 @@ class DashboardViewModelTest {
     }
 
     @Test
-    fun earlyPregnancyHasNoWeeklyEditorialEntry() = runTest {
+    fun ongoingPregnancyBeforeWeekSixHasNoWeeklyEditorialEntry() = runTest {
         pregnancyRepository.date.value = currentDate.minusWeeks(5)
         val viewModel = createViewModel()
 
         advanceUntilIdle()
 
-        assertEquals(PregnancyStage.Early, viewModel.uiState.value.progress?.stage)
+        val progress = viewModel.uiState.value.progress as PregnancyProgress.Active
+        assertEquals(PregnancyPhase.Ongoing, progress.progress.phase)
         assertNull(viewModel.uiState.value.weekContent)
     }
 
     @Test
-    fun postTermAndReviewStagesRemainDistinct() = runTest {
+    fun lateAndPostTermProgressDoNotLoadEditorialContent() = runTest {
         pregnancyRepository.date.value = currentDate.minusWeeks(41)
         val viewModel = createViewModel()
         advanceUntilIdle()
-        assertEquals(PregnancyStage.PostTerm, viewModel.uiState.value.progress?.stage)
-        assertEquals(40, viewModel.uiState.value.weekContent?.week)
+        val lateTerm = viewModel.uiState.value.progress as PregnancyProgress.Active
+        assertEquals(PregnancyPhase.LateTerm, lateTerm.progress.phase)
+        assertNull(viewModel.uiState.value.weekContent)
 
-        pregnancyRepository.date.value = currentDate.minusWeeks(43)
+        pregnancyRepository.date.value = currentDate.minusWeeks(42)
         advanceUntilIdle()
-        assertEquals(PregnancyStage.NeedsReview, viewModel.uiState.value.progress?.stage)
-        assertEquals(40, viewModel.uiState.value.weekContent?.week)
+        val postTerm = viewModel.uiState.value.progress as PregnancyProgress.Active
+        assertEquals(PregnancyPhase.PostTerm, postTerm.progress.phase)
+        assertNull(viewModel.uiState.value.weekContent)
+        assertEquals(emptyList<AppLanguage>(), contentRepository.requestedLanguages)
+    }
+
+    @Test
+    fun historicalFutureDateProducesAnInvalidProgressWithoutEditorialContent() = runTest {
+        pregnancyRepository.date.value = currentDate.plusDays(1)
+        val viewModel = createViewModel()
+
+        advanceUntilIdle()
+
+        assertEquals(
+            PregnancyProgress.InvalidFutureLastPeriodDate(currentDate.plusDays(1)),
+            viewModel.uiState.value.progress,
+        )
+        assertNull(viewModel.uiState.value.weekContent)
     }
 
     private fun createViewModel(
@@ -133,8 +153,8 @@ class DashboardViewModelTest {
 
         override fun contentForWeek(week: Int, language: AppLanguage): WeekContent? {
             requestedLanguages += language
-            if (week < 6) return null
-            val contentWeek = week.coerceAtMost(40)
+            if (week !in 6..40) return null
+            val contentWeek = week
             return WeekContent(
                 week = contentWeek,
                 babySize = BabySize.Lentil,

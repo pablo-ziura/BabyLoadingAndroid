@@ -35,7 +35,18 @@ class DashboardCopyTest {
     @Test
     fun statisticsCopyMatchesIosInSupportedLocales() {
         assertEquals("Week", localizedString(Locale.US, R.string.dashboard_week))
-        assertEquals("Days remaining", localizedString(Locale.US, R.string.dashboard_days_remaining))
+        assertEquals(
+            "Days until estimated due date",
+            localizedString(Locale.US, R.string.dashboard_days_until_due_date),
+        )
+        assertEquals(
+            "Estimated due date",
+            localizedString(Locale.US, R.string.dashboard_due_date_metric),
+        )
+        assertEquals(
+            "Days since estimated due date",
+            localizedString(Locale.US, R.string.dashboard_days_since_due_date),
+        )
         assertEquals(
             "🎀\u00A0 Estimated due date",
             localizedString(Locale.US, R.string.dashboard_due_date),
@@ -44,8 +55,16 @@ class DashboardCopyTest {
         val spanishLocale = Locale.forLanguageTag("es-ES")
         assertEquals("Semana", localizedString(spanishLocale, R.string.dashboard_week))
         assertEquals(
-            "Días restantes",
-            localizedString(spanishLocale, R.string.dashboard_days_remaining),
+            "Días hasta la fecha estimada de parto",
+            localizedString(spanishLocale, R.string.dashboard_days_until_due_date),
+        )
+        assertEquals(
+            "Fecha estimada de parto",
+            localizedString(spanishLocale, R.string.dashboard_due_date_metric),
+        )
+        assertEquals(
+            "Días desde la fecha estimada de parto",
+            localizedString(spanishLocale, R.string.dashboard_days_since_due_date),
         )
         assertEquals(
             "🎀\u00A0 Fecha probable de parto",

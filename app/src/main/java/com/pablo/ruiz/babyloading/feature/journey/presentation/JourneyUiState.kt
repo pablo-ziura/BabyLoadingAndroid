@@ -3,6 +3,7 @@ package com.pablo.ruiz.babyloading.feature.journey.presentation
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
 data class JourneyUiState(
     val isLoading: Boolean = true,
+    val isConfigured: Boolean = false,
     val currentWeek: Int? = null,
     val currentDay: Int = 0,
     val weeks: List<JourneyWeekUiModel> = emptyList(),
