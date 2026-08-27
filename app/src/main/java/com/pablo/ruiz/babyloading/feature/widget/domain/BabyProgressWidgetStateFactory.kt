@@ -1,6 +1,9 @@
 package com.pablo.ruiz.babyloading.feature.widget.domain
 
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.ActivePregnancyProgress
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyPhase
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
 import java.time.LocalDate
 
 class BabyProgressWidgetStateFactory(
@@ -11,19 +14,24 @@ class BabyProgressWidgetStateFactory(
         currentDate: LocalDate,
     ): BabyProgressWidgetState {
         if (lastPeriodDate == null) return BabyProgressWidgetState.NeedsSetup
-        val progress = calculator.progress(lastPeriodDate, currentDate)
-        return BabyProgressWidgetState.Progress(
-            completedWeeks = progress.gestationalAge.completedWeeks,
-            daysIntoWeek = progress.gestationalAge.daysIntoWeek,
-            daysRemaining = progress.daysRemaining,
-            completedFraction = (
-                progress.gestationalAge.completedWeeks.toFloat() / TOTAL_PREGNANCY_WEEKS
-                ).coerceIn(0f, 1f),
-            estimatedDueDate = progress.estimatedDueDate,
-        )
+        return when (val progress = calculator.progress(lastPeriodDate, currentDate)) {
+            is PregnancyProgress.InvalidFutureLastPeriodDate -> {
+                BabyProgressWidgetState.InvalidFutureLastPeriodDate
+            }
+
+            is PregnancyProgress.Active -> stateFor(progress.progress)
+        }
     }
 
-    private companion object {
-        const val TOTAL_PREGNANCY_WEEKS = 40f
+    private fun stateFor(progress: ActivePregnancyProgress): BabyProgressWidgetState {
+        val details = BabyProgressWidgetDetails(
+            gestationalAge = progress.gestationalAge,
+            dueDateRelation = progress.dueDateRelation,
+        )
+        return when (progress.phase) {
+            PregnancyPhase.Ongoing -> BabyProgressWidgetState.Ongoing(details)
+            PregnancyPhase.LateTerm -> BabyProgressWidgetState.LateTerm(details)
+            PregnancyPhase.PostTerm -> BabyProgressWidgetState.PostTerm(details)
+        }
     }
 }

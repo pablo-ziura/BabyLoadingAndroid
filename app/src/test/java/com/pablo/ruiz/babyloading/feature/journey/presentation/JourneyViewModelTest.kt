@@ -48,6 +48,7 @@ class JourneyViewModelTest {
 
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
+        assertEquals(true, state.isConfigured)
         assertEquals((6..40).toList(), state.weeks.map(JourneyWeekUiModel::week))
         assertEquals(3, state.currentDay)
         assertEquals(JourneyWeekStatus.Completed, state.weeks.first { it.week == 19 }.status)
@@ -69,15 +70,35 @@ class JourneyViewModelTest {
     }
 
     @Test
-    fun weeksPastTheGuideMarkEveryEditorialWeekCompleted() = runTest {
-        pregnancyRepository.date.value = currentDate.minusWeeks(43)
+    fun lateAndPostTermProgressClearTheCurrentTimelineMarker() = runTest {
+        pregnancyRepository.date.value = currentDate.minusWeeks(41)
         val viewModel = createViewModel()
 
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals(35, state.weeks.count { it.status == JourneyWeekStatus.Completed })
+        assertEquals(null, state.currentWeek)
+        assertEquals(0, state.currentDay)
         assertEquals(0, state.weeks.count { it.status == JourneyWeekStatus.Current })
+
+        pregnancyRepository.date.value = currentDate.minusWeeks(42)
+        advanceUntilIdle()
+
+        assertEquals(null, viewModel.uiState.value.currentWeek)
+        assertEquals(0, viewModel.uiState.value.currentDay)
+    }
+
+    @Test
+    fun futureStoredDateKeepsTheTimelineConfiguredWithoutCurrentMarkers() = runTest {
+        pregnancyRepository.date.value = currentDate.plusDays(1)
+        val viewModel = createViewModel()
+
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(true, state.isConfigured)
+        assertEquals(null, state.currentWeek)
+        assertEquals(0, state.currentDay)
     }
 
     private fun createViewModel(): JourneyViewModel {

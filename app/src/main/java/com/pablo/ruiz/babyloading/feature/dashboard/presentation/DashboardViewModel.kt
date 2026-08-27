@@ -6,6 +6,8 @@ import com.pablo.ruiz.babyloading.core.coroutines.IoDispatcher
 import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
 import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyPhase
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.CalculatePregnancyProgressUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -61,13 +63,18 @@ class DashboardViewModel @Inject constructor(
 
         val state = withContext(ioDispatcher) {
             val progress = calculateProgress(date)
+            val activeProgress = (progress as? PregnancyProgress.Active)?.progress
             DashboardUiState(
                 isLoading = false,
                 progress = progress,
-                weekContent = contentRepository.contentForWeek(
-                    week = progress.gestationalAge.completedWeeks,
-                    language = languageProvider.currentLanguage(),
-                ),
+                weekContent = activeProgress
+                    ?.takeIf { active -> active.phase == PregnancyPhase.Ongoing }
+                    ?.let { active ->
+                        contentRepository.contentForWeek(
+                            week = active.gestationalAge.completedWeeks,
+                            language = languageProvider.currentLanguage(),
+                        )
+                    },
             )
         }
         _uiState.value = state

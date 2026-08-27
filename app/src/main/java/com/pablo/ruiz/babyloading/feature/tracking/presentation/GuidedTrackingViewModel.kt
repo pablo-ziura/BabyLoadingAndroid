@@ -3,6 +3,7 @@ package com.pablo.ruiz.babyloading.feature.tracking.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.CalculatePregnancyProgressUseCase
 import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.GalleryRepository
 import com.pablo.ruiz.babyloading.feature.tracking.domain.usecase.SaveGuidedTrackingPhotoUseCase
@@ -29,7 +30,12 @@ class GuidedTrackingViewModel @Inject constructor(
             pregnancyRepository.lastPeriodDate.collect { date ->
                 _uiState.update { state ->
                     state.copy(
-                        pregnancyWeek = date?.let { calculateProgress(it).gestationalAge.completedWeeks },
+                        pregnancyWeek = (date
+                            ?.let { lastPeriodDate -> calculateProgress(lastPeriodDate) }
+                            as? PregnancyProgress.Active)
+                            ?.progress
+                            ?.gestationalAge
+                            ?.completedWeeks,
                     )
                 }
             }

@@ -129,6 +129,8 @@ La escala base es de 4 puntos. Evita valores locales si existe un token o un com
 | Marcador de día actual | Círculo rosa de 7 con borde blanco de 1; los no actuales son de 4. |
 | Imagen de tamaño del bebé | Contenedor circular de 40; recorte circular de 34; borde rosa al 20 % de 1.5. |
 | Badge «Aquí estás» / «You are here» | Cápsula con gradiente de selección; texto blanco Bold de caption2; padding horizontal 10 y vertical 4. |
+| Tarjetas métricas del panel | Las tarjetas de una misma fila alinean icono, cifra y etiqueta en bandas verticales iguales. La etiqueta reserva 48 puntos antes del inset compartido de la tarjeta y puede crecer con el escalado de texto. |
+| Aviso de término tardío y postérmino | Reutiliza la superficie secundaria de `BabyLoadingCard` con título Bold, texto explicativo Regular y relación con la fecha estimada de parto. Es informativo, no interactivo, y no reutiliza imagen fetal ni anillo de progreso. |
 
 ## Componentes, estados y accesibilidad
 
@@ -139,6 +141,7 @@ La escala base es de 4 puntos. Evita valores locales si existe un token o un com
 - Respeta Dynamic Type en iOS y el escalado de texto del sistema en Android; no bloquees el tamaño de fuentes en pantallas de app.
 - Mantén contraste legible entre texto y superficie. La selección rosa se acompaña de una etiqueta o semántica, nunca solo color.
 - Los objetivos interactivos respetan el mínimo recomendado por cada plataforma. Los encabezados se marcan como tales y siguen una jerarquía consistente.
+- Para término tardío (41+0 a 41+6) y postérmino (42+0 en adelante), muestra en ambas plataformas el mismo estado informativo: etiqueta de fase y relación con la fecha estimada de parto. El widget usa esta terminología compacta y dirige a revisar la fecha en la app.
 
 ## Gobernanza y sincronización entre plataformas
 
