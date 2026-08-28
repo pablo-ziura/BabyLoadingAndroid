@@ -1,7 +1,7 @@
 package com.pablo.ruiz.babyloading.app.lifecycle
 
 import com.pablo.ruiz.babyloading.core.localization.AppLanguage
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDataChangeNotifier
 import com.pablo.ruiz.babyloading.test.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,37 +20,39 @@ class AppLanguageForegroundRefreshViewModelTest {
 
     @Test
     fun foregroundLanguageChangeRefreshesWidgets() = runTest {
-        val languageChanges = FakeLanguageChanges(languageChanged = true)
+        val languageRepository = FakeLanguageRepository(languageChanged = true)
         val widgetNotifier = RecordingWidgetNotifier()
-        val viewModel = AppLanguageForegroundRefreshViewModel(languageChanges, widgetNotifier)
+        val viewModel = AppLanguageForegroundRefreshViewModel(languageRepository, widgetNotifier)
 
         viewModel.onAppForeground()
         advanceUntilIdle()
 
-        assertEquals(1, languageChanges.refreshCalls)
+        assertEquals(1, languageRepository.refreshCalls)
         assertEquals(1, widgetNotifier.refreshCalls)
     }
 
     @Test
     fun unchangedForegroundLanguageRefreshesWidgets() = runTest {
-        val languageChanges = FakeLanguageChanges(languageChanged = false)
+        val languageRepository = FakeLanguageRepository(languageChanged = false)
         val widgetNotifier = RecordingWidgetNotifier()
-        val viewModel = AppLanguageForegroundRefreshViewModel(languageChanges, widgetNotifier)
+        val viewModel = AppLanguageForegroundRefreshViewModel(languageRepository, widgetNotifier)
 
         viewModel.onAppForeground()
         advanceUntilIdle()
 
-        assertEquals(1, languageChanges.refreshCalls)
+        assertEquals(1, languageRepository.refreshCalls)
         assertEquals(1, widgetNotifier.refreshCalls)
     }
 
-    private class FakeLanguageChanges(
+    private class FakeLanguageRepository(
         private val languageChanged: Boolean,
-    ) : AppLanguageChanges {
+    ) : AppLanguageRepository {
         var refreshCalls = 0
         override val changes: Flow<AppLanguage> = emptyFlow()
 
-        override suspend fun refreshIfLanguageChanged(): Boolean {
+        override fun currentLanguage(): AppLanguage = AppLanguage.English
+
+        override suspend fun refreshIfChanged(): Boolean {
             refreshCalls += 1
             return languageChanged
         }

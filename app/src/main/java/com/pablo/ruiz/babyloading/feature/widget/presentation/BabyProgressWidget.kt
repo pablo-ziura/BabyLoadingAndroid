@@ -47,7 +47,7 @@ import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.pablo.ruiz.babyloading.MainActivity
 import com.pablo.ruiz.babyloading.R
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.content.presentation.drawableResource
@@ -89,7 +89,7 @@ class BabyProgressWidget : GlanceAppWidget() {
             runCatching {
                 dependencies.pregnancyContentRepository().contentForWeek(
                     week = ongoing.progress.gestationalAge.completedWeeks,
-                    language = dependencies.appLanguageProvider().currentLanguage(),
+                    language = dependencies.appLanguageRepository().currentLanguage(),
                 )
             }.getOrNull()
         }
@@ -514,7 +514,7 @@ interface BabyProgressWidgetDependencies {
 
     fun pregnancyContentRepository(): PregnancyContentRepository
 
-    fun appLanguageProvider(): AppLanguageProvider
+    fun appLanguageRepository(): AppLanguageRepository
 
     fun clock(): Clock
 }

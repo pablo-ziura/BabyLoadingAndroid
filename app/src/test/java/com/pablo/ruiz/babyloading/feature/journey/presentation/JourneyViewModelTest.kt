@@ -1,8 +1,7 @@
 package com.pablo.ruiz.babyloading.feature.journey.presentation
 
 import com.pablo.ruiz.babyloading.core.localization.AppLanguage
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
@@ -106,10 +105,7 @@ class JourneyViewModelTest {
             pregnancyRepository = pregnancyRepository,
             contentRepository = contentRepository,
             calculateProgress = CalculatePregnancyProgressUseCase(PregnancyCalculator(), clock),
-            languageProvider = object : AppLanguageProvider {
-                override fun currentLanguage(): AppLanguage = AppLanguage.English
-            },
-            languageChanges = NoOpLanguageChanges(),
+            languageRepository = NoOpLanguageRepository(),
             ioDispatcher = mainDispatcherRule.testDispatcher,
         )
     }
@@ -143,9 +139,11 @@ class JourneyViewModelTest {
         }
     }
 
-    private class NoOpLanguageChanges : AppLanguageChanges {
+    private class NoOpLanguageRepository : AppLanguageRepository {
         override val changes: Flow<AppLanguage> = MutableSharedFlow()
 
-        override suspend fun refreshIfLanguageChanged(): Boolean = false
+        override fun currentLanguage(): AppLanguage = AppLanguage.English
+
+        override suspend fun refreshIfChanged(): Boolean = false
     }
 }

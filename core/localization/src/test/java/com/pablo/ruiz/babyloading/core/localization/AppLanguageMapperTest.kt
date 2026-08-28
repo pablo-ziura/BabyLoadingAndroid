@@ -4,14 +4,14 @@ import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class AppLanguageResolverTest {
-    private val resolver = AppLanguageResolver()
+class AppLanguageMapperTest {
+    private val mapper = AppLanguageMapper()
 
     @Test
     fun perAppLanguageTakesPriorityOverTheDeviceLanguage() {
         assertEquals(
             AppLanguage.Spanish,
-            resolver.resolve(
+            mapper.map(
                 applicationLocales = listOf(Locale.forLanguageTag("es-ES")),
                 deviceLocales = listOf(Locale.ENGLISH),
             ),
@@ -22,7 +22,7 @@ class AppLanguageResolverTest {
     fun deviceLanguageIsUsedWhenAndroidHasNoPerAppLanguage() {
         assertEquals(
             AppLanguage.Spanish,
-            resolver.resolve(
+            mapper.map(
                 applicationLocales = emptyList(),
                 deviceLocales = listOf(Locale.forLanguageTag("es-MX")),
             ),
@@ -33,7 +33,7 @@ class AppLanguageResolverTest {
     fun unsupportedLanguagesFallBackToEnglish() {
         assertEquals(
             AppLanguage.English,
-            resolver.resolve(
+            mapper.map(
                 applicationLocales = listOf(Locale.FRENCH),
                 deviceLocales = listOf(Locale.GERMAN),
             ),

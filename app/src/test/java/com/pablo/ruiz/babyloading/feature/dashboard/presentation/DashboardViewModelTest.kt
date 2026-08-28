@@ -1,8 +1,7 @@
 package com.pablo.ruiz.babyloading.feature.dashboard.presentation
 
 import com.pablo.ruiz.babyloading.core.localization.AppLanguage
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
@@ -60,15 +59,14 @@ class DashboardViewModelTest {
     @Test
     fun foregroundLanguageChangeReloadsWeeklyContent() = runTest {
         pregnancyRepository.date.value = currentDate.minusWeeks(20)
-        val languageProvider = MutableLanguageProvider(AppLanguage.English)
-        val languageChanges = MutableLanguageChanges()
-        val viewModel = createViewModel(languageProvider, languageChanges)
+        val languageRepository = MutableLanguageRepository(AppLanguage.English)
+        val viewModel = createViewModel(languageRepository)
 
         advanceUntilIdle()
         assertEquals("a lentil", viewModel.uiState.value.weekContent?.babySizeLabel)
 
-        languageProvider.language = AppLanguage.Spanish
-        languageChanges.emit(AppLanguage.Spanish)
+        languageRepository.language = AppLanguage.Spanish
+        languageRepository.emit(AppLanguage.Spanish)
         advanceUntilIdle()
 
         assertEquals("una lenteja", viewModel.uiState.value.weekContent?.babySizeLabel)
@@ -122,15 +120,13 @@ class DashboardViewModelTest {
     }
 
     private fun createViewModel(
-        languageProvider: AppLanguageProvider = MutableLanguageProvider(AppLanguage.Spanish),
-        languageChanges: AppLanguageChanges = MutableLanguageChanges(),
+        languageRepository: AppLanguageRepository = MutableLanguageRepository(AppLanguage.Spanish),
     ): DashboardViewModel {
         return DashboardViewModel(
             pregnancyRepository = pregnancyRepository,
             contentRepository = contentRepository,
             calculateProgress = CalculatePregnancyProgressUseCase(PregnancyCalculator(), clock),
-            languageProvider = languageProvider,
-            languageChanges = languageChanges,
+            languageRepository = languageRepository,
             ioDispatcher = mainDispatcherRule.testDispatcher,
         )
     }
@@ -170,17 +166,15 @@ class DashboardViewModelTest {
         override fun allContent(language: AppLanguage): List<WeekContent> = emptyList()
     }
 
-    private class MutableLanguageProvider(
+    private class MutableLanguageRepository(
         var language: AppLanguage,
-    ) : AppLanguageProvider {
-        override fun currentLanguage(): AppLanguage = language
-    }
-
-    private class MutableLanguageChanges : AppLanguageChanges {
+    ) : AppLanguageRepository {
         private val mutableChanges = MutableSharedFlow<AppLanguage>()
         override val changes: Flow<AppLanguage> = mutableChanges
 
-        override suspend fun refreshIfLanguageChanged(): Boolean = false
+        override fun currentLanguage(): AppLanguage = language
+
+        override suspend fun refreshIfChanged(): Boolean = false
 
         suspend fun emit(language: AppLanguage) {
             mutableChanges.emit(language)

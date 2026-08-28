@@ -3,8 +3,7 @@ package com.pablo.ruiz.babyloading.feature.dashboard.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pablo.ruiz.babyloading.core.coroutines.IoDispatcher
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyPhase
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
@@ -26,8 +25,7 @@ class DashboardViewModel @Inject constructor(
     private val pregnancyRepository: PregnancyRepository,
     private val contentRepository: PregnancyContentRepository,
     private val calculateProgress: CalculatePregnancyProgressUseCase,
-    private val languageProvider: AppLanguageProvider,
-    private val languageChanges: AppLanguageChanges,
+    private val languageRepository: AppLanguageRepository,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -43,7 +41,7 @@ class DashboardViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            languageChanges.changes.collectLatest {
+            languageRepository.changes.collectLatest {
                 load(lastPeriodDate)
             }
         }
@@ -72,7 +70,7 @@ class DashboardViewModel @Inject constructor(
                     ?.let { active ->
                         contentRepository.contentForWeek(
                             week = active.gestationalAge.completedWeeks,
-                            language = languageProvider.currentLanguage(),
+                            language = languageRepository.currentLanguage(),
                         )
                     },
             )
