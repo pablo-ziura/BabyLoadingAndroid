@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Environment
 import android.provider.MediaStore
 import com.pablo.ruiz.babyloading.core.coroutines.IoDispatcher
+import com.pablo.ruiz.babyloading.core.storage.AppStorageNames
 import com.pablo.ruiz.babyloading.feature.tracking.domain.repository.TrackingPhotoExporter
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
@@ -30,13 +31,13 @@ class MediaStoreTrackingPhotoExporter @Inject constructor(
         val values = ContentValues().apply {
             put(
                 MediaStore.Images.Media.DISPLAY_NAME,
-                "BabyLoading_${FILE_NAME_FORMATTER.format(capturedAt)}.jpg",
+                "${AppStorageNames.current.mediaStoreFilePrefix}_${FILE_NAME_FORMATTER.format(capturedAt)}.jpg",
             )
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
             put(MediaStore.Images.Media.DATE_TAKEN, capturedAt.toEpochMilli())
             put(
                 MediaStore.Images.Media.RELATIVE_PATH,
-                "${Environment.DIRECTORY_PICTURES}/$MEDIA_STORE_DIRECTORY",
+                "${Environment.DIRECTORY_PICTURES}/${AppStorageNames.current.mediaStoreDirectory}",
             )
             put(MediaStore.Images.Media.IS_PENDING, 1)
         }
@@ -60,7 +61,6 @@ class MediaStoreTrackingPhotoExporter @Inject constructor(
     }
 
     private companion object {
-        const val MEDIA_STORE_DIRECTORY = "Baby Loading"
         val FILE_NAME_FORMATTER: DateTimeFormatter = DateTimeFormatter
             .ofPattern("yyyyMMdd_HHmmss_SSS")
             .withZone(ZoneOffset.UTC)
