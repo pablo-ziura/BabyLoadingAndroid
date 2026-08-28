@@ -3,8 +3,7 @@ package com.pablo.ruiz.babyloading.feature.journey.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pablo.ruiz.babyloading.core.coroutines.IoDispatcher
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyPhase
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
@@ -26,8 +25,7 @@ class JourneyViewModel @Inject constructor(
     private val pregnancyRepository: PregnancyRepository,
     private val contentRepository: PregnancyContentRepository,
     private val calculateProgress: CalculatePregnancyProgressUseCase,
-    private val languageProvider: AppLanguageProvider,
-    private val languageChanges: AppLanguageChanges,
+    private val languageRepository: AppLanguageRepository,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(JourneyUiState())
@@ -43,7 +41,7 @@ class JourneyViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            languageChanges.changes.collectLatest {
+            languageRepository.changes.collectLatest {
                 load(lastPeriodDate)
             }
         }
@@ -64,7 +62,7 @@ class JourneyViewModel @Inject constructor(
         _uiState.value = withContext(ioDispatcher) {
             val progress = calculateProgress(date)
             val weeklyContent = contentRepository
-                .allContent(languageProvider.currentLanguage())
+                .allContent(languageRepository.currentLanguage())
                 .sortedBy { content -> content.week }
             val activeProgress = (progress as? PregnancyProgress.Active)?.progress
             val timelineProgress = activeProgress?.takeIf { progress ->

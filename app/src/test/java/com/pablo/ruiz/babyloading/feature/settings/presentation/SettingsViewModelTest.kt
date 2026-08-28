@@ -2,8 +2,7 @@ package com.pablo.ruiz.babyloading.feature.settings.presentation
 
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
 import com.pablo.ruiz.babyloading.core.localization.AppLanguage
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageChanges
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageProvider
+import com.pablo.ruiz.babyloading.core.localization.AppLanguageRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.SavePregnancyDateUseCase
@@ -114,10 +113,7 @@ class SettingsViewModelTest {
             repository = repository,
             savePregnancyDate = saveUseCase,
             calculator = calculator,
-            languageProvider = object : AppLanguageProvider {
-                override fun currentLanguage(): AppLanguage = AppLanguage.English
-            },
-            languageChanges = NoOpLanguageChanges(),
+            languageRepository = NoOpLanguageRepository(),
             clock = clock,
         )
     }
@@ -135,9 +131,11 @@ class SettingsViewModelTest {
         }
     }
 
-    private class NoOpLanguageChanges : AppLanguageChanges {
+    private class NoOpLanguageRepository : AppLanguageRepository {
         override val changes: Flow<AppLanguage> = MutableSharedFlow()
 
-        override suspend fun refreshIfLanguageChanged(): Boolean = false
+        override fun currentLanguage(): AppLanguage = AppLanguage.English
+
+        override suspend fun refreshIfChanged(): Boolean = false
     }
 }
