@@ -27,6 +27,7 @@ import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingUiSt
 import com.pablo.ruiz.babyloading.feature.onboarding.R as OnboardingR
 import com.pablo.ruiz.babyloading.feature.dashboard.R as DashboardR
 import com.pablo.ruiz.babyloading.feature.journey.R as JourneyR
+import com.pablo.ruiz.babyloading.feature.settings.R as SettingsR
 import java.time.LocalDate
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -144,7 +145,7 @@ class NavigationIntegrationTest {
                     guidedTrackingContent = {},
                     settingsContent = {
                         Text(
-                            text = stringResource(R.string.settings_title),
+                            text = stringResource(SettingsR.string.settings_title),
                             modifier = Modifier.testTag("settings_screen"),
                         )
                     },

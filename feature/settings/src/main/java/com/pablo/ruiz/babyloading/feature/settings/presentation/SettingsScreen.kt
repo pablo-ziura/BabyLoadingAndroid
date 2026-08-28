@@ -66,8 +66,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.pablo.ruiz.babyloading.BuildConfig
-import com.pablo.ruiz.babyloading.R
 import com.pablo.ruiz.babyloading.core.designsystem.R as DesignSystemR
 import com.pablo.ruiz.babyloading.core.localization.AppLanguage
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
@@ -77,6 +75,7 @@ import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyAccentPink
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyAccentPurple
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingSpacing
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
+import com.pablo.ruiz.babyloading.feature.settings.R
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -84,6 +83,7 @@ import java.util.Locale
 
 @Composable
 fun SettingsScreen(
+    versionName: String,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -100,6 +100,7 @@ fun SettingsScreen(
                 ),
             )
         },
+        versionName = versionName,
         modifier = modifier,
     )
 }
@@ -109,6 +110,7 @@ private fun SettingsContent(
     uiState: SettingsUiState,
     onEvent: (SettingsEvent) -> Unit,
     onOpenLanguageSettings: () -> Unit,
+    versionName: String,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -136,6 +138,7 @@ private fun SettingsContent(
                     onSaveDate = { onEvent(SettingsEvent.SaveDate) },
                     onDateSelected = { date -> onEvent(SettingsEvent.DateSelected(date)) },
                     onOpenLanguageSettings = onOpenLanguageSettings,
+                    versionName = versionName,
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
             }
@@ -149,6 +152,7 @@ private fun SettingsList(
     onSaveDate: () -> Unit,
     onDateSelected: (LocalDate) -> Unit,
     onOpenLanguageSettings: () -> Unit,
+    versionName: String,
     modifier: Modifier = Modifier,
 ) {
     val locale = LocalConfiguration.current.locales[0] ?: Locale.ENGLISH
@@ -269,7 +273,7 @@ private fun SettingsList(
             }
         }
         item {
-            SettingsInformation()
+            SettingsInformation(versionName)
         }
         item {
             Spacer(modifier = Modifier.height(BabyLoadingSpacing.ExtraLarge))
@@ -533,7 +537,7 @@ private fun appLanguageName(language: AppLanguage): String = stringResource(
 )
 
 @Composable
-private fun SettingsInformation() {
+private fun SettingsInformation(versionName: String) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -557,7 +561,7 @@ private fun SettingsInformation() {
             textAlign = TextAlign.Center,
         )
         Text(
-            text = stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
+            text = stringResource(R.string.settings_version, versionName),
             modifier = Modifier.padding(top = BabyLoadingSpacing.Small),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -598,6 +602,7 @@ private fun SettingsScreenPreview() {
                 ),
                 onEvent = {},
                 onOpenLanguageSettings = {},
+                versionName = "1.0",
             )
         }
     }

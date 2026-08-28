@@ -66,6 +66,7 @@ dependencies {
     implementation(project(":feature:onboarding"))
     implementation(project(":feature:dashboard"))
     implementation(project(":feature:journey"))
+    implementation(project(":feature:settings"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.camera.camera2)
