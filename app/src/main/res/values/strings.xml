@@ -4,8 +4,6 @@
     <string name="journey_tab">My Journey</string>
     <string name="gallery_tab">Gallery</string>
     <string name="settings_tab">Settings</string>
-    <string name="settings_future_date_error">The date cannot be in the future.</string>
-    <string name="settings_old_date_error">Choose a date within the last 42 weeks.</string>
     <string name="dashboard_content_description">Open home</string>
     <string name="journey_content_description">Open my journey</string>
     <string name="gallery_content_description">Open gallery</string>
@@ -74,24 +72,6 @@
         <item quantity="one">%1$d day</item>
         <item quantity="other">%1$d days</item>
     </plurals>
-    <string name="settings_title">Settings</string>
-    <string name="settings_last_period_prompt">When was your last period?</string>
-    <string name="settings_due_date">Estimated due date</string>
-    <string name="settings_invalid_future_last_period_date">The saved date is in the future. Choose a date up to today.</string>
-    <string name="settings_save_date">Set date</string>
-    <string name="settings_date_saved">Pregnancy date updated</string>
-    <string name="settings_language_title">Language</string>
-    <string name="settings_language_current">Current app language: %1$s</string>
-    <string name="settings_language_system_message">Android system settings manage the app language.</string>
-    <string name="settings_language_open_settings">Open Settings</string>
-    <string name="settings_language_open_settings_description">Open app language settings</string>
-    <string name="settings_info">Change the date of your last period to recalculate all your pregnancy information.</string>
-    <string name="settings_language_english">English</string>
-    <string name="settings_language_spanish">Español</string>
-    <string name="settings_previous_month">Previous month</string>
-    <string name="settings_next_month">Next month</string>
-    <string name="settings_selected_date">Selected</string>
-    <string name="settings_version">Version %1$s</string>
     <string name="widget_name">Baby progress</string>
     <string name="widget_description">Your current pregnancy week, baby size, estimated due date, and progress.</string>
     <string name="widget_setup_message">Set the date\nin the app</string>
