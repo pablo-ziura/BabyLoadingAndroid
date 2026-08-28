@@ -6,8 +6,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import com.pablo.ruiz.babyloading.core.storage.AppStorageNames
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
+import com.pablo.ruiz.babyloading.core.storage.AppStorageConfig
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.TrackingCadence
 import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.TrackingPreferencesRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -18,15 +19,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
-private val Context.trackingPreferencesDataStore: DataStore<Preferences> by preferencesDataStore(
-    name = AppStorageNames.current.trackingPreferences,
-)
-
 @Singleton
 class DataStoreTrackingPreferencesRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    storageConfig: AppStorageConfig,
 ) : TrackingPreferencesRepository {
-    override val cadence: Flow<TrackingCadence> = context.trackingPreferencesDataStore.data
+    private val dataStore: DataStore<Preferences> = PreferenceDataStoreFactory.create(
+        produceFile = {
+            context.preferencesDataStoreFile(storageConfig.trackingPreferences)
+        },
+    )
+
+    override val cadence: Flow<TrackingCadence> = dataStore.data
         .catch { error ->
             if (error is IOException) {
                 emit(emptyPreferences())
@@ -41,7 +45,7 @@ class DataStoreTrackingPreferencesRepository @Inject constructor(
         }
 
     override suspend fun setCadence(cadence: TrackingCadence) {
-        context.trackingPreferencesDataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             preferences[TrackingCadenceDaysKey] = cadence.intervalDays
         }
     }

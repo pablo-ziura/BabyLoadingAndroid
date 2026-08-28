@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Environment
 import android.provider.MediaStore
 import com.pablo.ruiz.babyloading.core.coroutines.IoDispatcher
-import com.pablo.ruiz.babyloading.core.storage.AppStorageNames
+import com.pablo.ruiz.babyloading.core.storage.AppStorageConfig
 import com.pablo.ruiz.babyloading.feature.tracking.domain.repository.TrackingPhotoExporter
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 @Singleton
 class MediaStoreTrackingPhotoExporter @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    private val storageConfig: AppStorageConfig,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : TrackingPhotoExporter {
     override suspend fun exportJpeg(
@@ -31,13 +32,13 @@ class MediaStoreTrackingPhotoExporter @Inject constructor(
         val values = ContentValues().apply {
             put(
                 MediaStore.Images.Media.DISPLAY_NAME,
-                "${AppStorageNames.current.mediaStoreFilePrefix}_${FILE_NAME_FORMATTER.format(capturedAt)}.jpg",
+                "${storageConfig.mediaStoreFilePrefix}_${FILE_NAME_FORMATTER.format(capturedAt)}.jpg",
             )
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
             put(MediaStore.Images.Media.DATE_TAKEN, capturedAt.toEpochMilli())
             put(
                 MediaStore.Images.Media.RELATIVE_PATH,
-                "${Environment.DIRECTORY_PICTURES}/${AppStorageNames.current.mediaStoreDirectory}",
+                "${Environment.DIRECTORY_PICTURES}/${storageConfig.mediaStoreDirectory}",
             )
             put(MediaStore.Images.Media.IS_PENDING, 1)
         }

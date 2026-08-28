@@ -2,7 +2,7 @@ package com.pablo.ruiz.babyloading.feature.gallery.di
 
 import android.content.Context
 import androidx.room.Room
-import com.pablo.ruiz.babyloading.core.storage.AppStorageNames
+import com.pablo.ruiz.babyloading.core.storage.AppStorageConfig
 import com.pablo.ruiz.babyloading.feature.gallery.data.DataStoreTrackingPreferencesRepository
 import com.pablo.ruiz.babyloading.feature.gallery.data.OfflineGalleryRepository
 import com.pablo.ruiz.babyloading.feature.gallery.data.local.BabyLoadingDatabase
@@ -48,11 +48,12 @@ object GalleryDatabaseModule {
     @Singleton
     fun provideDatabase(
         @ApplicationContext context: Context,
+        storageConfig: AppStorageConfig,
     ): BabyLoadingDatabase {
         return Room.databaseBuilder(
             context,
             BabyLoadingDatabase::class.java,
-            AppStorageNames.current.galleryDatabase,
+            storageConfig.galleryDatabase,
         ).build()
     }
 

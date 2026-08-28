@@ -3,7 +3,7 @@ package com.pablo.ruiz.babyloading.feature.gallery.data.local
 import android.content.Context
 import androidx.core.net.toUri
 import com.pablo.ruiz.babyloading.core.coroutines.IoDispatcher
-import com.pablo.ruiz.babyloading.core.storage.AppStorageNames
+import com.pablo.ruiz.babyloading.core.storage.AppStorageConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.IOException
@@ -16,10 +16,11 @@ import kotlinx.coroutines.withContext
 @Singleton
 class PrivateGalleryImageStore @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    private val storageConfig: AppStorageConfig,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : GalleryImageStore {
     private val galleryDirectory: File
-        get() = File(context.filesDir, AppStorageNames.current.privateGalleryDirectory).apply { mkdirs() }
+        get() = File(context.filesDir, storageConfig.privateGalleryDirectory).apply { mkdirs() }
 
     override suspend fun importFromUri(uriValue: String): StoredGalleryImage = withContext(ioDispatcher) {
         val uri = uriValue.toUri()
