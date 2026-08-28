@@ -8,6 +8,7 @@ import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.Pregn
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.CalculatePregnancyProgressUseCase
+import com.pablo.ruiz.babyloading.feature.journey.domain.usecase.ObserveJourneyUseCase
 import com.pablo.ruiz.babyloading.test.MainDispatcherRule
 import java.time.Clock
 import java.time.Instant
@@ -100,13 +101,36 @@ class JourneyViewModelTest {
         assertEquals(0, state.currentDay)
     }
 
-    private fun createViewModel(): JourneyViewModel {
+    @Test
+    fun languageAndForegroundSignalsReloadTheTimeline() = runTest {
+        pregnancyRepository.date.value = currentDate.minusWeeks(20)
+        val languageRepository = MutableLanguageRepository(AppLanguage.English)
+        val viewModel = createViewModel(languageRepository)
+        advanceUntilIdle()
+
+        languageRepository.language = AppLanguage.Spanish
+        languageRepository.emit(AppLanguage.Spanish)
+        advanceUntilIdle()
+        viewModel.onEvent(JourneyEvent.Refresh)
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(AppLanguage.English, AppLanguage.Spanish, AppLanguage.Spanish),
+            contentRepository.requestedLanguages,
+        )
+    }
+
+    private fun createViewModel(
+        languageRepository: AppLanguageRepository = MutableLanguageRepository(AppLanguage.English),
+    ): JourneyViewModel {
         return JourneyViewModel(
-            pregnancyRepository = pregnancyRepository,
-            contentRepository = contentRepository,
-            calculateProgress = CalculatePregnancyProgressUseCase(PregnancyCalculator(), clock),
-            languageRepository = NoOpLanguageRepository(),
-            ioDispatcher = mainDispatcherRule.testDispatcher,
+            ObserveJourneyUseCase(
+                pregnancyRepository = pregnancyRepository,
+                contentRepository = contentRepository,
+                calculateProgress = CalculatePregnancyProgressUseCase(PregnancyCalculator(), clock),
+                languageRepository = languageRepository,
+                ioDispatcher = mainDispatcherRule.testDispatcher,
+            ),
         )
     }
 
@@ -124,14 +148,20 @@ class JourneyViewModelTest {
     }
 
     private class FakeContentRepository : PregnancyContentRepository {
+        val requestedLanguages = mutableListOf<AppLanguage>()
+
         override suspend fun contentForWeek(week: Int, language: AppLanguage): WeekContent? = null
 
         override suspend fun allContent(language: AppLanguage): List<WeekContent> {
+            requestedLanguages += language
             return (6..40).map { week ->
                 WeekContent(
                     week = week,
                     babySize = BabySize.Lentil,
-                    babySizeLabel = "a lentil",
+                    babySizeLabel = when (language) {
+                        AppLanguage.English -> "a lentil"
+                        AppLanguage.Spanish -> "una lenteja"
+                    },
                     milestoneTitle = "Week $week",
                     keyEvents = listOf("Event"),
                 )
@@ -139,11 +169,18 @@ class JourneyViewModelTest {
         }
     }
 
-    private class NoOpLanguageRepository : AppLanguageRepository {
-        override val changes: Flow<AppLanguage> = MutableSharedFlow()
+    private class MutableLanguageRepository(
+        var language: AppLanguage,
+    ) : AppLanguageRepository {
+        private val mutableChanges = MutableSharedFlow<AppLanguage>()
+        override val changes: Flow<AppLanguage> = mutableChanges
 
-        override fun currentLanguage(): AppLanguage = AppLanguage.English
+        override fun currentLanguage(): AppLanguage = language
 
         override suspend fun refreshIfChanged(): Boolean = false
+
+        suspend fun emit(language: AppLanguage) {
+            mutableChanges.emit(language)
+        }
     }
 }

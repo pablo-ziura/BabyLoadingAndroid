@@ -11,10 +11,6 @@
     <string name="journey_content_description">Abrir mi viaje</string>
     <string name="gallery_content_description">Abrir galería</string>
     <string name="settings_content_description">Abrir ajustes</string>
-    <string name="journey_title">Tu embarazo semana a semana</string>
-    <string name="journey_missing_setup">Falta la configuración del embarazo. Añade la fecha en Ajustes.</string>
-    <string name="journey_week">Semana %1$d</string>
-    <string name="journey_you_are_here">Aquí estás</string>
     <string name="gallery_title">Galería</string>
     <string name="gallery_subtitle">Guarda tus ecografías y crea una progresión visual guiada de la tripa.</string>
     <string name="gallery_add_photo">Añadir foto</string>

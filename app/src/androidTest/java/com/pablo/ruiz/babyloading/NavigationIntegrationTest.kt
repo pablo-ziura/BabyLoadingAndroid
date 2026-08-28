@@ -26,6 +26,7 @@ import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingScre
 import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingUiState
 import com.pablo.ruiz.babyloading.feature.onboarding.R as OnboardingR
 import com.pablo.ruiz.babyloading.feature.dashboard.R as DashboardR
+import com.pablo.ruiz.babyloading.feature.journey.R as JourneyR
 import java.time.LocalDate
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -130,7 +131,7 @@ class NavigationIntegrationTest {
                     },
                     journeyContent = {
                         Text(
-                            text = stringResource(R.string.journey_title),
+                            text = stringResource(JourneyR.string.journey_title),
                             modifier = Modifier.testTag("journey_screen"),
                         )
                     },
