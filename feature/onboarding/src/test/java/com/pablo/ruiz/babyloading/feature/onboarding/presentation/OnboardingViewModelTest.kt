@@ -3,12 +3,14 @@ package com.pablo.ruiz.babyloading.feature.onboarding.presentation
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDataChangeNotifier
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.ObservePregnancySetupUseCase
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.SavePregnancyDateUseCase
 import com.pablo.ruiz.babyloading.test.MainDispatcherRule
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.io.IOException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +32,7 @@ class OnboardingViewModelTest {
         ZoneOffset.UTC,
     )
     private val repository = FakePregnancyRepository()
+    private val observeSetup = ObservePregnancySetupUseCase(repository)
     private val saveUseCase = SavePregnancyDateUseCase(
         repository = repository,
         validator = PregnancyDateValidator(),
@@ -39,7 +42,7 @@ class OnboardingViewModelTest {
 
     @Test
     fun missingStoredDateRequiresExplicitSelection() = runTest {
-        val viewModel = OnboardingViewModel(repository, saveUseCase, clock)
+        val viewModel = OnboardingViewModel(observeSetup, saveUseCase, clock)
 
         advanceUntilIdle()
 
@@ -50,7 +53,7 @@ class OnboardingViewModelTest {
 
     @Test
     fun continuePersistsSelectedDate() = runTest {
-        val viewModel = OnboardingViewModel(repository, saveUseCase, clock)
+        val viewModel = OnboardingViewModel(observeSetup, saveUseCase, clock)
         val selectedDate = LocalDate.of(2026, 5, 10)
         advanceUntilIdle()
 
@@ -65,7 +68,7 @@ class OnboardingViewModelTest {
 
     @Test
     fun futureDateShowsValidationErrorWithoutPersisting() = runTest {
-        val viewModel = OnboardingViewModel(repository, saveUseCase, clock)
+        val viewModel = OnboardingViewModel(observeSetup, saveUseCase, clock)
         advanceUntilIdle()
 
         viewModel.onEvent(OnboardingEvent.DateSelected(LocalDate.of(2026, 8, 16)))
@@ -81,7 +84,7 @@ class OnboardingViewModelTest {
 
     @Test
     fun dateOlderThanFortyTwoWeeksShowsValidationErrorWithoutPersisting() = runTest {
-        val viewModel = OnboardingViewModel(repository, saveUseCase, clock)
+        val viewModel = OnboardingViewModel(observeSetup, saveUseCase, clock)
         advanceUntilIdle()
 
         viewModel.onEvent(OnboardingEvent.DateSelected(LocalDate.of(2025, 10, 24)))
@@ -95,6 +98,28 @@ class OnboardingViewModelTest {
         )
     }
 
+    @Test
+    fun persistenceFailureRestoresSavingState() = runTest {
+        val failingRepository = FailingPregnancyRepository()
+        val viewModel = OnboardingViewModel(
+            observePregnancySetup = ObservePregnancySetupUseCase(failingRepository),
+            savePregnancyDate = SavePregnancyDateUseCase(
+                repository = failingRepository,
+                validator = PregnancyDateValidator(),
+                clock = clock,
+                changeNotifier = PregnancyDataChangeNotifier { },
+            ),
+            clock = clock,
+        )
+        advanceUntilIdle()
+
+        viewModel.onEvent(OnboardingEvent.DateSelected(LocalDate.of(2026, 5, 10)))
+        viewModel.onEvent(OnboardingEvent.Continue)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.isSaving)
+    }
+
     private class FakePregnancyRepository : PregnancyRepository {
         val storedDate = MutableStateFlow<LocalDate?>(null)
         override val lastPeriodDate: Flow<LocalDate?> = storedDate
@@ -106,5 +131,15 @@ class OnboardingViewModelTest {
         override suspend fun clearLastPeriodDate() {
             storedDate.value = null
         }
+    }
+
+    private class FailingPregnancyRepository : PregnancyRepository {
+        override val lastPeriodDate: Flow<LocalDate?> = MutableStateFlow(null)
+
+        override suspend fun setLastPeriodDate(date: LocalDate) {
+            throw IOException("Preferences unavailable")
+        }
+
+        override suspend fun clearLastPeriodDate() = Unit
     }
 }

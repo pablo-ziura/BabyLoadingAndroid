@@ -63,6 +63,7 @@ dependencies {
     implementation(project(":core:pregnancy"))
     implementation(project(":core:pregnancy-content"))
     implementation(project(":core:storage"))
+    implementation(project(":feature:onboarding"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.camera.camera2)

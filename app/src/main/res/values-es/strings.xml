@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Baby Loading</string>
-    <string name="onboarding_title">Te damos la bienvenida a Baby Loading</string>
-    <string name="onboarding_message">El viaje de tu bebé empieza aquí.</string>
-    <string name="onboarding_date_label">Primer día de tu última menstruación</string>
-    <string name="onboarding_choose_date">Elige una fecha</string>
-    <string name="onboarding_future_date_error">La fecha no puede estar en el futuro.</string>
-    <string name="onboarding_old_date_error">Elige una fecha de las últimas 42 semanas.</string>
-    <string name="onboarding_continue">Continuar</string>
     <string name="dashboard_tab">Inicio</string>
     <string name="journey_tab">Mi viaje</string>
     <string name="gallery_tab">Galería</string>
     <string name="settings_tab">Ajustes</string>
+    <string name="settings_future_date_error">La fecha no puede estar en el futuro.</string>
+    <string name="settings_old_date_error">Elige una fecha de las últimas 42 semanas.</string>
     <string name="dashboard_content_description">Abrir inicio</string>
     <string name="journey_content_description">Abrir mi viaje</string>
     <string name="gallery_content_description">Abrir galería</string>

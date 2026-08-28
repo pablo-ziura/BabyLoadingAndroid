@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidation
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidator
-import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.ObservePregnancySetupUseCase
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.SavePregnancyDateUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
@@ -16,10 +16,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
-    private val repository: PregnancyRepository,
+    private val observePregnancySetup: ObservePregnancySetupUseCase,
     private val savePregnancyDate: SavePregnancyDateUseCase,
     clock: Clock,
 ) : ViewModel() {
@@ -34,7 +35,7 @@ class OnboardingViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            repository.lastPeriodDate.collectLatest { storedDate ->
+            observePregnancySetup().collectLatest { storedDate ->
                 _uiState.update { state ->
                     state.copy(
                         isLoading = false,
@@ -68,20 +69,27 @@ class OnboardingViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, validationError = null) }
-            when (savePregnancyDate(selectedDate)) {
-                PregnancyDateValidation.Valid -> Unit
-                PregnancyDateValidation.FutureDate -> {
-                    _uiState.update { state ->
-                        state.copy(validationError = OnboardingValidationError.FutureDate)
+            try {
+                when (savePregnancyDate(selectedDate)) {
+                    PregnancyDateValidation.Valid -> Unit
+                    PregnancyDateValidation.FutureDate -> {
+                        _uiState.update { state ->
+                            state.copy(validationError = OnboardingValidationError.FutureDate)
+                        }
+                    }
+                    PregnancyDateValidation.DateTooOld -> {
+                        _uiState.update { state ->
+                            state.copy(validationError = OnboardingValidationError.DateTooOld)
+                        }
                     }
                 }
-                PregnancyDateValidation.DateTooOld -> {
-                    _uiState.update { state ->
-                        state.copy(validationError = OnboardingValidationError.DateTooOld)
-                    }
-                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                // Keep the current UI copy and allow another save attempt.
+            } finally {
+                _uiState.update { it.copy(isSaving = false) }
             }
-            _uiState.update { it.copy(isSaving = false) }
         }
     }
 }
