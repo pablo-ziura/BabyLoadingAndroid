@@ -25,6 +25,7 @@ import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingEven
 import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingScreen
 import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingUiState
 import com.pablo.ruiz.babyloading.feature.onboarding.R as OnboardingR
+import com.pablo.ruiz.babyloading.feature.dashboard.R as DashboardR
 import java.time.LocalDate
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -123,7 +124,7 @@ class NavigationIntegrationTest {
                     navController = testNavController,
                     dashboardContent = {
                         Text(
-                            text = stringResource(R.string.dashboard_title),
+                            text = stringResource(DashboardR.string.dashboard_title),
                             modifier = Modifier.testTag("dashboard_screen"),
                         )
                     },

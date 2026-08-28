@@ -2,6 +2,8 @@ package com.pablo.ruiz.babyloading.core.pregnancy.content
 
 import com.pablo.ruiz.babyloading.core.pregnancy.content.data.PregnancyContentParser
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.PregnancyContentDocument
+import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
+import com.pablo.ruiz.babyloading.core.pregnancy.content.presentation.drawableResource
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -45,5 +47,12 @@ class PregnancyContentResourceTest {
         assertThrows(SerializationException::class.java) {
             parser.parse(invalidJson, expectedLocale = "en")
         }
+    }
+
+    @Test
+    fun everyBabySizeMapsToADistinctDrawable() {
+        val resources = BabySize.entries.map(BabySize::drawableResource)
+
+        assertEquals(BabySize.entries.size, resources.distinct().size)
     }
 }

@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.pablo.ruiz.babyloading.R
+import com.pablo.ruiz.babyloading.feature.dashboard.R
 import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Test
