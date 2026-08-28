@@ -4,6 +4,7 @@ import com.pablo.ruiz.babyloading.core.pregnancy.content.data.PregnancyContentPa
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.PregnancyContentDocument
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -14,9 +15,7 @@ class PregnancyContentResourceTest {
     @Test
     fun bundledEnglishAndSpanishDocumentsAreCompleteAndValid() {
         listOf("en", "es").forEach { locale ->
-            val content = requireNotNull(
-                javaClass.classLoader?.getResourceAsStream("pregnancy-content.$locale.json"),
-            ).bufferedReader().use { it.readText() }
+            val content = File("src/main/assets/pregnancy-content.$locale.json").readText()
 
             val document = parser.parse(content, expectedLocale = locale)
 

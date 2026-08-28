@@ -5,7 +5,7 @@ import javax.inject.Inject
 import kotlinx.serialization.json.Json
 
 class PregnancyContentParser @Inject constructor(
-    private val json: Json,
+    @param:PregnancyContentJson private val json: Json,
 ) {
     fun parse(
         content: String,
