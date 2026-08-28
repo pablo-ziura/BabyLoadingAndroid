@@ -6,14 +6,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import com.pablo.ruiz.babyloading.R
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingSpacing
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 
@@ -59,8 +57,8 @@ fun BabyLoadingScreenTitle(
 private fun BabyLoadingScreenTitlePreview() {
     BabyLoadingTheme {
         BabyLoadingScreenTitle(
-            title = stringResource(R.string.dashboard_title),
-            subtitle = stringResource(R.string.dashboard_subtitle),
+            title = "Baby Loading",
+            subtitle = "Your week-by-week adventure",
         )
     }
 }

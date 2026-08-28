@@ -68,6 +68,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pablo.ruiz.babyloading.BuildConfig
 import com.pablo.ruiz.babyloading.R
+import com.pablo.ruiz.babyloading.core.designsystem.R as DesignSystemR
 import com.pablo.ruiz.babyloading.core.localization.AppLanguage
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingCard
@@ -184,7 +185,7 @@ private fun SettingsList(
                         textAlign = TextAlign.Center,
                     )
                     Image(
-                        painter = painterResource(R.drawable.illustration_blossom),
+                        painter = painterResource(DesignSystemR.drawable.illustration_blossom),
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
                     )
@@ -483,7 +484,7 @@ private fun SetDateButton(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
-                    painter = painterResource(R.drawable.illustration_sparkles),
+                    painter = painterResource(DesignSystemR.drawable.illustration_sparkles),
                     contentDescription = null,
                     modifier = Modifier.size(22.dp),
                 )

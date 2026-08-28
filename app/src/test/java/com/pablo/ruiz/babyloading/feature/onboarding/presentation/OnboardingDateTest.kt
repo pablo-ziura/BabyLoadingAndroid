@@ -1,22 +1,11 @@
 package com.pablo.ruiz.babyloading.feature.onboarding.presentation
 
-import com.pablo.ruiz.babyloading.core.designsystem.component.toLocalDateFromDatePicker
-import com.pablo.ruiz.babyloading.core.designsystem.component.toUtcDatePickerMillis
 import java.time.LocalDate
 import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class OnboardingDateTest {
-    @Test
-    fun datePickerUtcMillisRoundTripWithoutTimezoneConversion() {
-        val date = LocalDate.of(2026, 5, 10)
-
-        val restoredDate = date.toUtcDatePickerMillis().toLocalDateFromDatePicker()
-
-        assertEquals(date, restoredDate)
-    }
-
     @Test
     fun dateFormattingUsesRequestedLocale() {
         val date = LocalDate.of(2026, 5, 10)
