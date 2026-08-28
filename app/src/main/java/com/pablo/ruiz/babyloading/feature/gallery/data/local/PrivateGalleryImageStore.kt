@@ -3,6 +3,7 @@ package com.pablo.ruiz.babyloading.feature.gallery.data.local
 import android.content.Context
 import androidx.core.net.toUri
 import com.pablo.ruiz.babyloading.core.coroutines.IoDispatcher
+import com.pablo.ruiz.babyloading.core.storage.AppStorageNames
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.IOException
@@ -18,7 +19,7 @@ class PrivateGalleryImageStore @Inject constructor(
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : GalleryImageStore {
     private val galleryDirectory: File
-        get() = File(context.filesDir, GALLERY_DIRECTORY).apply { mkdirs() }
+        get() = File(context.filesDir, AppStorageNames.current.privateGalleryDirectory).apply { mkdirs() }
 
     override suspend fun importFromUri(uriValue: String): StoredGalleryImage = withContext(ioDispatcher) {
         val uri = uriValue.toUri()
@@ -84,7 +85,6 @@ class PrivateGalleryImageStore @Inject constructor(
     }
 
     private companion object {
-        const val GALLERY_DIRECTORY = "gallery"
         const val MAX_IMAGE_BYTES = 25 * 1024 * 1024
     }
 }
