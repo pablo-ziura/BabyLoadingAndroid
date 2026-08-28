@@ -3,6 +3,7 @@ package com.pablo.ruiz.babyloading.feature.settings.presentation
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -52,6 +53,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -167,15 +169,26 @@ private fun SettingsList(
                 modifier = Modifier.fillMaxWidth(),
                 containerColor = Color.White,
             ) {
-                Text(
-                    text = stringResource(R.string.settings_last_period_prompt),
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .semantics { heading() },
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
+                        .semantics(mergeDescendants = true) { heading() },
+                    horizontalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.ExtraSmall),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_last_period_prompt),
+                        modifier = Modifier.weight(1f, fill = false),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                    Image(
+                        painter = painterResource(R.drawable.illustration_blossom),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
                 if (uiState.hasStoredFutureDate) {
                     Text(
                         text = stringResource(R.string.settings_invalid_future_last_period_date),
@@ -465,11 +478,21 @@ private fun SetDateButton(
                 strokeWidth = 2.dp,
             )
         } else {
-            Text(
-                text = stringResource(R.string.settings_save_date),
-                style = MaterialTheme.typography.labelLarge,
-                color = Color.White,
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Small),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.illustration_sparkles),
+                    contentDescription = null,
+                    modifier = Modifier.size(22.dp),
+                )
+                Text(
+                    text = stringResource(R.string.settings_save_date),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color.White,
+                )
+            }
         }
     }
 }

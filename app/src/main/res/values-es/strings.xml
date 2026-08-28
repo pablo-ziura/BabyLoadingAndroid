@@ -17,14 +17,14 @@
     <string name="gallery_content_description">Abrir galería</string>
     <string name="settings_content_description">Abrir ajustes</string>
     <string name="dashboard_title">Baby Loading…</string>
-    <string name="dashboard_subtitle">Tu aventura semana a semana 🌸</string>
+    <string name="dashboard_subtitle">Tu aventura semana a semana</string>
     <string name="dashboard_missing_setup">Falta la configuración del embarazo. Añade la fecha en Ajustes.</string>
     <string name="dashboard_baby_size">Tu bebé ahora es del tamaño de %1$s</string>
     <string name="dashboard_week">Semana</string>
     <string name="dashboard_days_until_due_date">Días hasta la fecha estimada de parto</string>
     <string name="dashboard_due_date_metric">Fecha estimada de parto</string>
     <string name="dashboard_days_since_due_date">Días desde la fecha estimada de parto</string>
-    <string name="dashboard_due_date">🎀&#160; Fecha probable de parto</string>
+    <string name="dashboard_due_date">Fecha probable de parto</string>
     <string name="pregnancy_status_due_date_today">Fecha estimada hoy</string>
     <string name="pregnancy_status_invalid_date_title">Revisa tu fecha</string>
     <string name="pregnancy_status_invalid_date_message">Revisa tu fecha de última menstruación en Ajustes.</string>
@@ -41,7 +41,7 @@
     <string name="gallery_add_photo">Añadir foto</string>
     <string name="gallery_ultrasound_title">Galería de ecografías</string>
     <string name="gallery_ultrasound_subtitle">Sigue importando cualquier otra foto del embarazo que quieras guardar.</string>
-    <string name="gallery_empty_title">Aquí aparecerán tus ecografías 📸</string>
+    <string name="gallery_empty_title">Aquí aparecerán tus ecografías</string>
     <string name="gallery_empty_message">Toca el + para subir tu primera foto</string>
     <string name="gallery_source_imported">Importada</string>
     <string name="gallery_source_tracking">Seguimiento de barriga</string>
@@ -104,10 +104,10 @@
         <item quantity="other">%1$d días</item>
     </plurals>
     <string name="settings_title">Ajustes</string>
-    <string name="settings_last_period_prompt">¿Cuándo fue tu última menstruación? 🌸</string>
+    <string name="settings_last_period_prompt">¿Cuándo fue tu última menstruación?</string>
     <string name="settings_due_date">Fecha probable de parto</string>
     <string name="settings_invalid_future_last_period_date">La fecha guardada está en el futuro. Elige una fecha hasta hoy.</string>
-    <string name="settings_save_date">Fijar fecha ✨</string>
+    <string name="settings_save_date">Fijar fecha</string>
     <string name="settings_date_saved">Fecha del embarazo actualizada</string>
     <string name="settings_language_title">Idioma</string>
     <string name="settings_language_current">Idioma actual de la aplicación: %1$s</string>
@@ -125,7 +125,7 @@
     <string name="widget_description">Tu semana actual de embarazo, tamaño del bebé, fecha estimada de parto y progreso.</string>
     <string name="widget_setup_message">Configura la fecha\nen la app</string>
     <string name="widget_week">Semana %1$d</string>
-    <string name="widget_baby_size">El bebé 🤰🏽 ahora tiene el tamaño de %1$s</string>
+    <string name="widget_baby_size">El bebé ahora tiene el tamaño de %1$s</string>
     <string name="widget_unknown_size">un misterio</string>
     <string name="widget_baby_size_description">Tamaño del bebé: %1$s</string>
     <string name="widget_days_until_due_date">%1$d días hasta la fecha estimada de parto</string>
@@ -137,6 +137,6 @@
     <string name="widget_post_term">Postérmino</string>
     <string name="widget_review_date">Revisa la fecha en la app</string>
     <string name="widget_preview_week">Semana 24</string>
-    <string name="widget_preview_baby_size">El bebé 🤰🏽 ahora tiene el tamaño de una piña</string>
+    <string name="widget_preview_baby_size">El bebé ahora tiene el tamaño de una piña</string>
     <string name="widget_preview_due_date_relation">109 días hasta la fecha estimada de parto</string>
 </resources>

@@ -48,7 +48,7 @@ class DashboardCopyTest {
             localizedString(Locale.US, R.string.dashboard_days_since_due_date),
         )
         assertEquals(
-            "🎀\u00A0 Estimated due date",
+            "Estimated due date",
             localizedString(Locale.US, R.string.dashboard_due_date),
         )
 
@@ -67,7 +67,7 @@ class DashboardCopyTest {
             localizedString(spanishLocale, R.string.dashboard_days_since_due_date),
         )
         assertEquals(
-            "🎀\u00A0 Fecha probable de parto",
+            "Fecha probable de parto",
             localizedString(spanishLocale, R.string.dashboard_due_date),
         )
     }

@@ -262,15 +262,26 @@ private fun OngoingContent(
                 ),
             )
             Spacer(GlanceModifier.height(2.dp))
-            Text(
-                text = strings.babySize,
-                style = TextStyle(
-                    color = WidgetContentMuted,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                ),
-                maxLines = 3,
-            )
+            Row(verticalAlignment = Alignment.Top) {
+                Image(
+                    provider = ImageProvider(R.drawable.illustration_expecting_parent),
+                    contentDescription = null,
+                    modifier = GlanceModifier
+                        .width(16.dp)
+                        .height(28.dp),
+                )
+                Spacer(GlanceModifier.width(4.dp))
+                Text(
+                    text = strings.babySize,
+                    modifier = GlanceModifier.defaultWeight(),
+                    style = TextStyle(
+                        color = WidgetContentMuted,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                    ),
+                    maxLines = 3,
+                )
+            }
             Spacer(GlanceModifier.defaultWeight())
             Text(
                 text = strings.dueDateRelation,
