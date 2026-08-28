@@ -12,6 +12,7 @@ import android.graphics.Path
 import android.graphics.RectF
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -517,10 +518,10 @@ interface BabyProgressWidgetDependencies {
     fun clock(): Clock
 }
 
-private val WidgetContent = ColorProvider(R.color.widget_content)
-private val WidgetContentMuted = ColorProvider(R.color.widget_content_muted)
-private val WidgetRingSurface = ColorProvider(R.color.widget_ring_surface)
-private val WidgetProgressTrack = ColorProvider(R.color.widget_progress_track)
+private val WidgetContent = ColorProvider(Color(0xFFFFFFFF))
+private val WidgetContentMuted = ColorProvider(Color(0xD9FFFFFF))
+private val WidgetRingSurface = ColorProvider(Color(0x1FFFFFFF))
+private val WidgetProgressTrack = ColorProvider(Color(0x33FFFFFF))
 private const val WIDGET_RING_SIZE_DP = 100
 private const val PHASE_TEXT_WIDTH_DP = 184
 

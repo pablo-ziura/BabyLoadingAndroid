@@ -2,6 +2,7 @@ package com.pablo.ruiz.babyloading.feature.gallery.di
 
 import android.content.Context
 import androidx.room.Room
+import com.pablo.ruiz.babyloading.core.storage.AppStorageNames
 import com.pablo.ruiz.babyloading.feature.gallery.data.DataStoreTrackingPreferencesRepository
 import com.pablo.ruiz.babyloading.feature.gallery.data.OfflineGalleryRepository
 import com.pablo.ruiz.babyloading.feature.gallery.data.local.BabyLoadingDatabase
@@ -51,7 +52,7 @@ object GalleryDatabaseModule {
         return Room.databaseBuilder(
             context,
             BabyLoadingDatabase::class.java,
-            "baby-loading.db",
+            AppStorageNames.current.galleryDatabase,
         ).build()
     }
 
