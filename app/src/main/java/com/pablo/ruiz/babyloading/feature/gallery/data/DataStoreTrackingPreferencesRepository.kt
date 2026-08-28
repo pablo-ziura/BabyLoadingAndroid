@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.pablo.ruiz.babyloading.core.storage.AppStorageNames
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.TrackingCadence
 import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.TrackingPreferencesRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -18,7 +19,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
 private val Context.trackingPreferencesDataStore: DataStore<Preferences> by preferencesDataStore(
-    name = "tracking_preferences",
+    name = AppStorageNames.current.trackingPreferences,
 )
 
 @Singleton

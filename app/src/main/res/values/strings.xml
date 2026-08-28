@@ -61,7 +61,7 @@
     <string name="tracking_total_photos">Tracking photos</string>
     <string name="tracking_next_photo">Next photo</string>
     <string name="tracking_start_now">Start now</string>
-    <string name="tracking_due_now">Ready now</string>
+    <string name="tracking_due_now">Photo overdue</string>
     <string name="tracking_on_track">On track</string>
     <string name="tracking_empty_title">Build a visual timeline of the bump</string>
     <string name="tracking_empty_message">Take the first guided photo and the next capture will show it as a transparent reference.</string>

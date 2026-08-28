@@ -62,7 +62,7 @@
     <string name="tracking_total_photos">Fotos del seguimiento</string>
     <string name="tracking_next_photo">Próxima foto</string>
     <string name="tracking_start_now">Empieza ahora</string>
-    <string name="tracking_due_now">Lista ahora</string>
+    <string name="tracking_due_now">Foto atrasada</string>
     <string name="tracking_on_track">Al día</string>
     <string name="tracking_empty_title">Construye una línea visual de la tripa</string>
     <string name="tracking_empty_message">Haz la primera foto guiada y la siguiente captura la mostrará como referencia transparente.</string>
