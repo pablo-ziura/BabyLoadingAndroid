@@ -27,7 +27,7 @@ Los dos ficheros viven en `app/src/main/res/font/`; la licencia se distribuye co
 - Da preferencia a `bodyLarge` para texto informativo de embarazo y permite varias líneas. Solo limita líneas cuando el diseño necesita una etiqueta breve.
 - Mantén contraste legible con los colores de `MaterialTheme.colorScheme`, objetivos táctiles Material 3 y texto escalable en `sp`. No resuelvas una falta de contraste aumentando el peso.
 - No uses ExtraBold fuera de una cifra o hito principal, ni más de dos pesos en el mismo componente. Medium (500) se reserva para metadatos compactos; no sustituye a SemiBold en controles ni a Bold en títulos.
-- Los iconos `ImageVector`, emoji y controles del sistema no son texto de marca y conservan su representación nativa.
+- Los iconos `ImageVector` y los controles del sistema no son texto de marca y conservan su representación nativa.
 
 ## Equivalencias y ejemplos
 
@@ -138,6 +138,7 @@ La escala base es de 4 puntos. Evita valores locales si existe un token o un com
 - Una tarjeta estática no debe exponerse como botón ni tener chevrons. Si se habilita interacción, documenta el estado, la acción y la semántica en esta guía.
 - Una tarjeta actual debe comunicarlo visualmente y mediante accesibilidad. En Android usa `selected`; en iOS el trait `.isSelected` y el valor localizado.
 - Las imágenes decorativas se ocultan de accesibilidad. Las imágenes informativas requieren una descripción localizada.
+- No uses emoji como texto decorativo. Sustitúyelos por ilustraciones raster originales, sin tintar, con fondo transparente; mantén sus colores pastel, formas suaves y jerarquía secundaria respecto al texto localizado adyacente.
 - Respeta Dynamic Type en iOS y el escalado de texto del sistema en Android; no bloquees el tamaño de fuentes en pantallas de app.
 - Mantén contraste legible entre texto y superficie. La selección rosa se acompaña de una etiqueta o semántica, nunca solo color.
 - Los objetivos interactivos respetan el mínimo recomendado por cada plataforma. Los encabezados se marcan como tales y siguen una jerarquía consistente.

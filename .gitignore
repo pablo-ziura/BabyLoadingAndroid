@@ -11,6 +11,7 @@
 
 # Local configuration
 local.properties
+AGENTS.md
 
 # Gradle / Kotlin
 .gradle/
