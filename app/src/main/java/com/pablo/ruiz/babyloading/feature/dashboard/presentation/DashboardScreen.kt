@@ -122,11 +122,7 @@ private fun DashboardProgress(
         verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.Medium),
     ) {
         item {
-            BabyLoadingScreenTitle(
-                title = stringResource(R.string.dashboard_title),
-                subtitle = stringResource(R.string.dashboard_subtitle),
-                isProminent = true,
-            )
+            DashboardHeader()
         }
         when (progress) {
             is PregnancyProgress.Active -> {
@@ -157,6 +153,36 @@ private fun DashboardProgress(
             is PregnancyProgress.InvalidFutureLastPeriodDate -> item {
                 InvalidDateCard()
             }
+        }
+    }
+}
+
+@Composable
+private fun DashboardHeader() {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        BabyLoadingScreenTitle(
+            title = stringResource(R.string.dashboard_title),
+            isProminent = true,
+        )
+        Row(
+            modifier = Modifier.padding(top = BabyLoadingSpacing.ExtraSmall),
+            horizontalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.ExtraSmall),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.dashboard_subtitle),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f),
+                textAlign = TextAlign.Center,
+            )
+            Image(
+                painter = painterResource(R.drawable.illustration_blossom),
+                contentDescription = null,
+                modifier = Modifier.size(22.dp),
+            )
         }
     }
 }
@@ -471,12 +497,22 @@ private fun DueDateCard(dueDate: String) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.ExtraSmall),
         ) {
-            Text(
-                text = stringResource(R.string.dashboard_due_date),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(BabyLoadingSpacing.ExtraSmall),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.illustration_ribbon),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                )
+                Text(
+                    text = stringResource(R.string.dashboard_due_date),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
             Text(
                 text = dueDate,
                 style = MaterialTheme.typography.titleLarge,
@@ -509,9 +545,10 @@ private fun DevelopmentCard(content: WeekContent) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = "🐣",
-                    style = MaterialTheme.typography.titleLarge,
+                Image(
+                    painter = painterResource(R.drawable.illustration_hatching_chick),
+                    contentDescription = null,
+                    modifier = Modifier.size(30.dp),
                 )
                 Text(
                     text = content.milestoneTitle,
@@ -538,9 +575,10 @@ private fun DevelopmentCard(content: WeekContent) {
                             .semantics(mergeDescendants = true) {},
                         verticalAlignment = Alignment.Top,
                     ) {
-                        Text(
-                            text = "✨",
-                            style = MaterialTheme.typography.bodySmall,
+                        Image(
+                            painter = painterResource(R.drawable.illustration_sparkles),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
                         )
                         Text(
                             text = event,
@@ -562,9 +600,10 @@ private fun DevelopmentCard(content: WeekContent) {
                         .semantics(mergeDescendants = true) {},
                     verticalAlignment = Alignment.Top,
                 ) {
-                    Text(
-                        text = "💕",
-                        style = MaterialTheme.typography.bodyMedium,
+                    Image(
+                        painter = painterResource(R.drawable.illustration_heart_pair),
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
                     )
                     Text(
                         text = impact,
