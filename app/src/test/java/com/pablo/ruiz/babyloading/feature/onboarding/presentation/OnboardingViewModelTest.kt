@@ -1,6 +1,7 @@
 package com.pablo.ruiz.babyloading.feature.onboarding.presentation
 
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidator
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDataChangeNotifier
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.SavePregnancyDateUseCase
 import com.pablo.ruiz.babyloading.test.MainDispatcherRule
@@ -33,6 +34,7 @@ class OnboardingViewModelTest {
         repository = repository,
         validator = PregnancyDateValidator(),
         clock = clock,
+        changeNotifier = PregnancyDataChangeNotifier { },
     )
 
     @Test

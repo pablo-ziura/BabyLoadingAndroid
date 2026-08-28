@@ -6,7 +6,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.pablo.ruiz.babyloading.core.storage.AppStorageConfig
-import com.pablo.ruiz.babyloading.core.pregnancy.data.DataStorePregnancyRepository
+import com.pablo.ruiz.babyloading.core.pregnancy.data.DataStorePregnancyPreferencesDataSource
+import com.pablo.ruiz.babyloading.core.pregnancy.data.DefaultPregnancyRepository
+import com.pablo.ruiz.babyloading.core.pregnancy.data.PregnancyPreferencesDataSource
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import dagger.Binds
 import dagger.Module
@@ -22,8 +24,14 @@ abstract class PregnancyRepositoryModule {
     @Binds
     @Singleton
     abstract fun bindPregnancyRepository(
-        repository: DataStorePregnancyRepository,
+        repository: DefaultPregnancyRepository,
     ): PregnancyRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPregnancyPreferencesDataSource(
+        dataSource: DataStorePregnancyPreferencesDataSource,
+    ): PregnancyPreferencesDataSource
 }
 
 @Module

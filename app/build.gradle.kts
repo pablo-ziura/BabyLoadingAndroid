@@ -61,6 +61,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:localization"))
     implementation(project(":core:network"))
+    implementation(project(":core:pregnancy"))
     implementation(project(":core:storage"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

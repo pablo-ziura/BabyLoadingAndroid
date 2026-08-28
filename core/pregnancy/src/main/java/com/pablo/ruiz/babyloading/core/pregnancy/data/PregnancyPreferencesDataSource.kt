@@ -4,7 +4,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDataChangeNotifier
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import java.io.IOException
 import java.time.LocalDate
@@ -14,11 +13,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
+interface PregnancyPreferencesDataSource {
+    val lastPeriodDate: Flow<LocalDate?>
+
+    suspend fun setLastPeriodDate(date: LocalDate)
+
+    suspend fun clearLastPeriodDate()
+}
+
 @Singleton
-class DataStorePregnancyRepository @Inject constructor(
+class DataStorePregnancyPreferencesDataSource @Inject constructor(
     private val dataStore: DataStore<Preferences>,
-    private val changeNotifier: PregnancyDataChangeNotifier,
-) : PregnancyRepository {
+) : PregnancyPreferencesDataSource {
     override val lastPeriodDate: Flow<LocalDate?> = dataStore.data
         .catch { error ->
             if (error is IOException) {
@@ -37,17 +43,30 @@ class DataStorePregnancyRepository @Inject constructor(
         dataStore.edit { preferences ->
             preferences[LastPeriodDateKey] = date.toString()
         }
-        runCatching { changeNotifier.onPregnancyDataChanged() }
     }
 
     override suspend fun clearLastPeriodDate() {
         dataStore.edit { preferences ->
             preferences.remove(LastPeriodDateKey)
         }
-        runCatching { changeNotifier.onPregnancyDataChanged() }
     }
 
     private companion object {
         val LastPeriodDateKey = stringPreferencesKey("last_period_date")
+    }
+}
+
+@Singleton
+class DefaultPregnancyRepository @Inject constructor(
+    private val preferencesDataSource: PregnancyPreferencesDataSource,
+) : PregnancyRepository {
+    override val lastPeriodDate: Flow<LocalDate?> = preferencesDataSource.lastPeriodDate
+
+    override suspend fun setLastPeriodDate(date: LocalDate) {
+        preferencesDataSource.setLastPeriodDate(date)
+    }
+
+    override suspend fun clearLastPeriodDate() {
+        preferencesDataSource.clearLastPeriodDate()
     }
 }

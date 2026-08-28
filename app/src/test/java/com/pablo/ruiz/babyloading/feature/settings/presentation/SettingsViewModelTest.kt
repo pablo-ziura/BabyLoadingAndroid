@@ -1,6 +1,7 @@
 package com.pablo.ruiz.babyloading.feature.settings.presentation
 
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDataChangeNotifier
 import com.pablo.ruiz.babyloading.core.localization.AppLanguage
 import com.pablo.ruiz.babyloading.core.localization.AppLanguageRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyDateValidator
@@ -39,6 +40,7 @@ class SettingsViewModelTest {
         repository = repository,
         validator = PregnancyDateValidator(),
         clock = clock,
+        changeNotifier = PregnancyDataChangeNotifier { },
     )
 
     @Test
