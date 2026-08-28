@@ -7,29 +7,43 @@ import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.Pregn
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Mutex
 
 @Singleton
 class LocalPregnancyContentRepository @Inject constructor(
-    private val source: PregnancyContentSource,
+    private val dataSource: PregnancyContentDataSource,
 ) : PregnancyContentRepository {
     private val cachedDocuments = ConcurrentHashMap<String, PregnancyContentDocument>()
+    private val cacheMutex = Mutex()
 
-    override fun contentForWeek(week: Int, language: AppLanguage): WeekContent? {
+    override suspend fun contentForWeek(week: Int, language: AppLanguage): WeekContent? {
         if (week !in PregnancyContentDocument.CoveredWeeks) return null
 
         return documentFor(language)?.weeks?.firstOrNull { content -> content.week == week }
     }
 
-    override fun allContent(language: AppLanguage): List<WeekContent> {
+    override suspend fun allContent(language: AppLanguage): List<WeekContent> {
         return documentFor(language)?.weeks.orEmpty()
     }
 
-    private fun documentFor(language: AppLanguage): PregnancyContentDocument? {
+    private suspend fun documentFor(language: AppLanguage): PregnancyContentDocument? {
         val localeCode = language.languageTag
         cachedDocuments[localeCode]?.let { return it }
 
-        return runCatching { source.load(localeCode) }
-            .getOrNull()
-            ?.also { document -> cachedDocuments[localeCode] = document }
+        cacheMutex.lock()
+        return try {
+            cachedDocuments[localeCode] ?: try {
+                dataSource.load(localeCode).also { document ->
+                    cachedDocuments[localeCode] = document
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                null
+            }
+        } finally {
+            cacheMutex.unlock()
+        }
     }
 }

@@ -1,7 +1,7 @@
 package com.pablo.ruiz.babyloading.core.pregnancy.content.presentation
 
 import androidx.annotation.DrawableRes
-import com.pablo.ruiz.babyloading.R
+import com.pablo.ruiz.babyloading.core.pregnancy.content.R
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
 
 @DrawableRes

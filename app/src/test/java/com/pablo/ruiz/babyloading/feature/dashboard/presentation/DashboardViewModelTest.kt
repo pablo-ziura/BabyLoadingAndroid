@@ -147,7 +147,7 @@ class DashboardViewModelTest {
     private class FakeContentRepository : PregnancyContentRepository {
         val requestedLanguages = mutableListOf<AppLanguage>()
 
-        override fun contentForWeek(week: Int, language: AppLanguage): WeekContent? {
+        override suspend fun contentForWeek(week: Int, language: AppLanguage): WeekContent? {
             requestedLanguages += language
             if (week !in 6..40) return null
             val contentWeek = week
@@ -163,7 +163,7 @@ class DashboardViewModelTest {
             )
         }
 
-        override fun allContent(language: AppLanguage): List<WeekContent> = emptyList()
+        override suspend fun allContent(language: AppLanguage): List<WeekContent> = emptyList()
     }
 
     private class MutableLanguageRepository(

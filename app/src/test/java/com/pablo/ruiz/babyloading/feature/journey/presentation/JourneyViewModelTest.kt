@@ -124,9 +124,9 @@ class JourneyViewModelTest {
     }
 
     private class FakeContentRepository : PregnancyContentRepository {
-        override fun contentForWeek(week: Int, language: AppLanguage): WeekContent? = null
+        override suspend fun contentForWeek(week: Int, language: AppLanguage): WeekContent? = null
 
-        override fun allContent(language: AppLanguage): List<WeekContent> {
+        override suspend fun allContent(language: AppLanguage): List<WeekContent> {
             return (6..40).map { week ->
                 WeekContent(
                     week = week,

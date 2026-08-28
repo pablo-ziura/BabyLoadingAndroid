@@ -53,7 +53,6 @@ android {
         buildConfig = true
         compose = true
     }
-    sourceSets.getByName("test").resources.directories.add("src/main/assets")
 }
 
 dependencies {
@@ -62,6 +61,7 @@ dependencies {
     implementation(project(":core:localization"))
     implementation(project(":core:network"))
     implementation(project(":core:pregnancy"))
+    implementation(project(":core:pregnancy-content"))
     implementation(project(":core:storage"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
