@@ -26,3 +26,4 @@ rootProject.name = "Baby Loading"
 include(":app")
 include(":core:network")
 include(":core:storage")
+include(":core:coroutines")
