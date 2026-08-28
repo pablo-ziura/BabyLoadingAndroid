@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.pablo.ruiz.babyloading.R
+import com.pablo.ruiz.babyloading.core.designsystem.R
 
 @OptIn(ExperimentalTextApi::class)
 private fun nunitoSansFont(

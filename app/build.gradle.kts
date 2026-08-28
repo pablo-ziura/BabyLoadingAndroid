@@ -58,6 +58,7 @@ android {
 
 dependencies {
     implementation(project(":core:coroutines"))
+    implementation(project(":core:designsystem"))
     implementation(project(":core:network"))
     implementation(project(":core:storage"))
     implementation(platform(libs.androidx.compose.bom))

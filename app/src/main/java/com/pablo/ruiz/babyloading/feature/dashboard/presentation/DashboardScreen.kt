@@ -48,6 +48,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pablo.ruiz.babyloading.R
+import com.pablo.ruiz.babyloading.core.designsystem.R as DesignSystemR
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingCard
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingScreenTitle
@@ -179,7 +180,7 @@ private fun DashboardHeader() {
                 textAlign = TextAlign.Center,
             )
             Image(
-                painter = painterResource(R.drawable.illustration_blossom),
+                painter = painterResource(DesignSystemR.drawable.illustration_blossom),
                 contentDescription = null,
                 modifier = Modifier.size(22.dp),
             )
@@ -576,7 +577,7 @@ private fun DevelopmentCard(content: WeekContent) {
                         verticalAlignment = Alignment.Top,
                     ) {
                         Image(
-                            painter = painterResource(R.drawable.illustration_sparkles),
+                            painter = painterResource(DesignSystemR.drawable.illustration_sparkles),
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
                         )
