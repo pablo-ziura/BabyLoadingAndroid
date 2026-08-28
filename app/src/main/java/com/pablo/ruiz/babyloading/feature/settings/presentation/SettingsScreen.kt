@@ -214,8 +214,8 @@ private fun SettingsList(
                     Text(
                         text = stringResource(
                             when (error) {
-                                SettingsValidationError.FutureDate -> R.string.onboarding_future_date_error
-                                SettingsValidationError.DateTooOld -> R.string.onboarding_old_date_error
+                                SettingsValidationError.FutureDate -> R.string.settings_future_date_error
+                                SettingsValidationError.DateTooOld -> R.string.settings_old_date_error
                             },
                         ),
                         modifier = Modifier.padding(top = BabyLoadingSpacing.Small),

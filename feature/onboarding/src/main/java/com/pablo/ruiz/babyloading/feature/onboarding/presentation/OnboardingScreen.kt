@@ -31,7 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.pablo.ruiz.babyloading.R
+import com.pablo.ruiz.babyloading.feature.onboarding.R
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingCard
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingDatePickerDialog

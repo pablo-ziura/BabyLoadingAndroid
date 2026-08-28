@@ -82,9 +82,10 @@ class PregnancyUseCasesTest {
     fun setupObservationUsesStoredDatePresenceIncludingHistoricalValues() = runTest {
         val useCase = ObservePregnancySetupUseCase(repository)
 
-        assertFalse(useCase().first())
-        repository.setLastPeriodDate(LocalDate.of(2020, 1, 1))
-        assertTrue(useCase().first())
+        assertNull(useCase().first())
+        val historicalDate = LocalDate.of(2020, 1, 1)
+        repository.setLastPeriodDate(historicalDate)
+        assertEquals(historicalDate, useCase().first())
     }
 
     @Test
