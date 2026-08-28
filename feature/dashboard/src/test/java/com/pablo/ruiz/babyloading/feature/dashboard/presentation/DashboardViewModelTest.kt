@@ -10,6 +10,7 @@ import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyPhase
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.CalculatePregnancyProgressUseCase
+import com.pablo.ruiz.babyloading.feature.dashboard.domain.usecase.ObserveDashboardUseCase
 import com.pablo.ruiz.babyloading.test.MainDispatcherRule
 import java.time.Clock
 import java.time.Instant
@@ -77,6 +78,18 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun foregroundSignalReloadsCurrentContent() = runTest {
+        pregnancyRepository.date.value = currentDate.minusWeeks(20)
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onEvent(DashboardEvent.Refresh)
+        advanceUntilIdle()
+
+        assertEquals(2, contentRepository.requestedLanguages.size)
+    }
+
+    @Test
     fun ongoingPregnancyBeforeWeekSixHasNoWeeklyEditorialEntry() = runTest {
         pregnancyRepository.date.value = currentDate.minusWeeks(5)
         val viewModel = createViewModel()
@@ -123,11 +136,13 @@ class DashboardViewModelTest {
         languageRepository: AppLanguageRepository = MutableLanguageRepository(AppLanguage.Spanish),
     ): DashboardViewModel {
         return DashboardViewModel(
-            pregnancyRepository = pregnancyRepository,
-            contentRepository = contentRepository,
-            calculateProgress = CalculatePregnancyProgressUseCase(PregnancyCalculator(), clock),
-            languageRepository = languageRepository,
-            ioDispatcher = mainDispatcherRule.testDispatcher,
+            ObserveDashboardUseCase(
+                pregnancyRepository = pregnancyRepository,
+                contentRepository = contentRepository,
+                calculateProgress = CalculatePregnancyProgressUseCase(PregnancyCalculator(), clock),
+                languageRepository = languageRepository,
+                ioDispatcher = mainDispatcherRule.testDispatcher,
+            ),
         )
     }
 
