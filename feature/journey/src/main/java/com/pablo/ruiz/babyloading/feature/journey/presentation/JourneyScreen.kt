@@ -49,7 +49,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.pablo.ruiz.babyloading.R
+import com.pablo.ruiz.babyloading.feature.journey.R
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyAccentPink
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyAccentPurple

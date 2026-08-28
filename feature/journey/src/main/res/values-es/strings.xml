@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="journey_title">Tu embarazo semana a semana</string>
+    <string name="journey_missing_setup">Falta la configuración del embarazo. Añade la fecha en Ajustes.</string>
+    <string name="journey_week">Semana %1$d</string>
+    <string name="journey_you_are_here">Aquí estás</string>
+</resources>

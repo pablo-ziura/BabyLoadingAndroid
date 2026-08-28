@@ -10,10 +10,6 @@
     <string name="journey_content_description">Open my journey</string>
     <string name="gallery_content_description">Open gallery</string>
     <string name="settings_content_description">Open settings</string>
-    <string name="journey_title">Your pregnancy week by week</string>
-    <string name="journey_missing_setup">Pregnancy setup is missing. Add your date in Settings.</string>
-    <string name="journey_week">Week %1$d</string>
-    <string name="journey_you_are_here">You are here</string>
     <string name="gallery_title">Gallery</string>
     <string name="gallery_subtitle">Save your ultrasound memories and build a guided visual progression of the bump.</string>
     <string name="gallery_add_photo">Add photo</string>
