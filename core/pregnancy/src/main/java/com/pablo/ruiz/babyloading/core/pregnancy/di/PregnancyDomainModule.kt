@@ -6,7 +6,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import java.time.Clock
 import javax.inject.Singleton
 
 @Module
@@ -19,8 +18,4 @@ object PregnancyDomainModule {
     @Provides
     @Singleton
     fun providePregnancyDateValidator(): PregnancyDateValidator = PregnancyDateValidator()
-
-    @Provides
-    @Singleton
-    fun provideClock(): Clock = Clock.systemDefaultZone()
 }
