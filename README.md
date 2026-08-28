@@ -31,6 +31,23 @@ Guided belly tracking uses CameraX with a consistent alignment overlay, front/ba
 
 The fixed 4×2 Glance home-screen widget shows the current week and day, remaining days, progress, and estimated due date. It opens Baby Loading when tapped, refreshes immediately after date changes, and otherwise relies on Android’s daily widget update without notifications or frequent background work.
 
+## Lab build variant
+
+The `lab` build type installs **Baby Loading Lab** alongside the production app for manual testing. It is a debuggable, non-distributable variant; production `debug` and `release` builds keep their original identity and behavior.
+
+- Application ID: `com.pablo.ruiz.babyloading.lab` (`.lab` suffix).
+- The variant has its own violet launcher icon, made from the production artwork with a uniform `#7C3AED` overlay at 28% opacity.
+- Android application sandboxes are separate by application ID. Lab additionally uses distinct names for its Preferences DataStores, Room database, app-private gallery directory, widget refresh action, and MediaStore exports (`Pictures/Baby Loading Lab`), so it cannot read or write production data.
+- Lab is for local and QA testing only; never distribute it as a production build.
+
+Build, test, lint, or install it with:
+
+```bash
+./gradlew assembleLab
+./gradlew lintLab
+./gradlew installLab
+```
+
 ```text
 Baby Loading
 ├── app/
@@ -79,6 +96,7 @@ Run these commands from the repository root:
 ```bash
 ./gradlew assembleDebug
 ./gradlew check
+./gradlew assembleLab lintLab
 ./gradlew clean assembleDebug assembleRelease testDebugUnitTest testReleaseUnitTest check
 ```
 

@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import com.pablo.ruiz.babyloading.core.storage.AppStorageNames
 import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetState
 import com.pablo.ruiz.babyloading.feature.widget.presentation.BabyProgressWidgetReceiver
 import java.time.Clock
@@ -46,8 +47,8 @@ internal class WidgetDailyRefreshScheduler(
     }
 
     companion object {
-        const val DAILY_REFRESH_ACTION =
-            "com.pablo.ruiz.babyloading.feature.widget.action.DAILY_REFRESH"
+        val DAILY_REFRESH_ACTION: String
+            get() = AppStorageNames.current.widgetDailyRefreshAction
 
         private const val DAILY_REFRESH_REQUEST_CODE = 1
     }
