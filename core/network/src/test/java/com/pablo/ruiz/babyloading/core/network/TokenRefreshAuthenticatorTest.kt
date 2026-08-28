@@ -34,9 +34,9 @@ class TokenRefreshAuthenticatorTest {
 
     @Test
     fun `refreshes token updates store and retries request once`() {
-        val tokenStore = RefreshTestAccessTokenStore("expired-token")
+        val tokenDataSource = RefreshTestAccessTokenDataSource("expired-token")
         val refreshCalls = AtomicInteger()
-        val refresher = AccessTokenRefresher { expiredAccessToken ->
+        val refresher = AccessTokenRefreshDataSource { expiredAccessToken ->
             assertEquals("expired-token", expiredAccessToken)
             refreshCalls.incrementAndGet()
             "fresh-token"
@@ -44,62 +44,62 @@ class TokenRefreshAuthenticatorTest {
         server.enqueue(MockResponse(code = 401))
         server.enqueue(MockResponse(code = 200))
 
-        executeRequest(createAuthenticatedClient(tokenStore, refresher)).use { response ->
+        executeRequest(createAuthenticatedClient(tokenDataSource, refresher)).use { response ->
             assertEquals(200, response.code)
         }
 
         assertEquals("Bearer expired-token", server.takeRequest().headers[AUTHORIZATION_HEADER])
         assertEquals("Bearer fresh-token", server.takeRequest().headers[AUTHORIZATION_HEADER])
-        assertEquals("fresh-token", tokenStore.currentToken())
+        assertEquals("fresh-token", tokenDataSource.currentToken())
         assertEquals(1, refreshCalls.get())
     }
 
     @Test
     fun `does not retry when token refresh fails`() {
-        val tokenStore = RefreshTestAccessTokenStore("expired-token")
+        val tokenDataSource = RefreshTestAccessTokenDataSource("expired-token")
         val refreshCalls = AtomicInteger()
-        val refresher = AccessTokenRefresher {
+        val refresher = AccessTokenRefreshDataSource {
             refreshCalls.incrementAndGet()
             null
         }
         server.enqueue(MockResponse(code = 401))
 
-        executeRequest(createAuthenticatedClient(tokenStore, refresher)).use { response ->
+        executeRequest(createAuthenticatedClient(tokenDataSource, refresher)).use { response ->
             assertEquals(401, response.code)
         }
 
         assertEquals(1, server.requestCount)
-        assertEquals("expired-token", tokenStore.currentToken())
+        assertEquals("expired-token", tokenDataSource.currentToken())
         assertEquals(1, refreshCalls.get())
     }
 
     @Test
     fun `does not retry when token refresher throws`() {
-        val tokenStore = RefreshTestAccessTokenStore("expired-token")
+        val tokenDataSource = RefreshTestAccessTokenDataSource("expired-token")
         val refreshCalls = AtomicInteger()
-        val refresher = AccessTokenRefresher {
+        val refresher = AccessTokenRefreshDataSource {
             refreshCalls.incrementAndGet()
             throw IllegalStateException("Refresh failed")
         }
         server.enqueue(MockResponse(code = 401))
 
-        executeRequest(createAuthenticatedClient(tokenStore, refresher)).use { response ->
+        executeRequest(createAuthenticatedClient(tokenDataSource, refresher)).use { response ->
             assertEquals(401, response.code)
         }
 
         assertEquals(1, server.requestCount)
-        assertEquals("expired-token", tokenStore.currentToken())
+        assertEquals("expired-token", tokenDataSource.currentToken())
         assertEquals(1, refreshCalls.get())
     }
 
     @Test
     fun `allows a later refresh after a failed flight completes`() {
-        val tokenStore = RefreshTestAccessTokenStore("expired-token")
+        val tokenDataSource = RefreshTestAccessTokenDataSource("expired-token")
         val refreshCalls = AtomicInteger()
         val authenticator = TokenRefreshAuthenticator(
-            accessTokenStore = Optional.of(tokenStore),
-            accessTokenRefresher = Optional.of(
-                AccessTokenRefresher {
+            accessTokenDataSource = Optional.of(tokenDataSource),
+            accessTokenRefreshDataSource = Optional.of(
+                AccessTokenRefreshDataSource {
                     if (refreshCalls.incrementAndGet() == 1) null else "fresh-token"
                 },
             ),
@@ -116,41 +116,41 @@ class TokenRefreshAuthenticatorTest {
 
         assertNull(firstRetryRequest)
         assertEquals("Bearer fresh-token", secondRetryRequest?.header(AUTHORIZATION_HEADER))
-        assertEquals("fresh-token", tokenStore.currentToken())
+        assertEquals("fresh-token", tokenDataSource.currentToken())
         assertEquals(2, refreshCalls.get())
     }
 
     @Test
     fun `does not retry when refresher returns same token`() {
-        val tokenStore = RefreshTestAccessTokenStore("expired-token")
+        val tokenDataSource = RefreshTestAccessTokenDataSource("expired-token")
         val refreshCalls = AtomicInteger()
-        val refresher = AccessTokenRefresher {
+        val refresher = AccessTokenRefreshDataSource {
             refreshCalls.incrementAndGet()
             "  expired-token  "
         }
         server.enqueue(MockResponse(code = 401))
 
-        executeRequest(createAuthenticatedClient(tokenStore, refresher)).use { response ->
+        executeRequest(createAuthenticatedClient(tokenDataSource, refresher)).use { response ->
             assertEquals(401, response.code)
         }
 
         assertEquals(1, server.requestCount)
-        assertEquals("expired-token", tokenStore.currentToken())
+        assertEquals("expired-token", tokenDataSource.currentToken())
         assertEquals(1, refreshCalls.get())
     }
 
     @Test
     fun `stops after one authentication retry`() {
-        val tokenStore = RefreshTestAccessTokenStore("expired-token")
+        val tokenDataSource = RefreshTestAccessTokenDataSource("expired-token")
         val refreshCalls = AtomicInteger()
-        val refresher = AccessTokenRefresher {
+        val refresher = AccessTokenRefreshDataSource {
             refreshCalls.incrementAndGet()
             "fresh-token"
         }
         server.enqueue(MockResponse(code = 401))
         server.enqueue(MockResponse(code = 401))
 
-        executeRequest(createAuthenticatedClient(tokenStore, refresher)).use { response ->
+        executeRequest(createAuthenticatedClient(tokenDataSource, refresher)).use { response ->
             assertEquals(401, response.code)
         }
 
@@ -162,12 +162,12 @@ class TokenRefreshAuthenticatorTest {
 
     @Test
     fun `retries with token already refreshed by another request`() {
-        val tokenStore = RefreshTestAccessTokenStore("fresh-token")
+        val tokenDataSource = RefreshTestAccessTokenDataSource("fresh-token")
         val refreshCalls = AtomicInteger()
         val authenticator = TokenRefreshAuthenticator(
-            accessTokenStore = Optional.of(tokenStore),
-            accessTokenRefresher = Optional.of(
-                AccessTokenRefresher {
+            accessTokenDataSource = Optional.of(tokenDataSource),
+            accessTokenRefreshDataSource = Optional.of(
+                AccessTokenRefreshDataSource {
                     refreshCalls.incrementAndGet()
                     "unused-token"
                 },
@@ -181,7 +181,7 @@ class TokenRefreshAuthenticatorTest {
 
         assertEquals("Bearer fresh-token", retryRequest?.header(AUTHORIZATION_HEADER))
         assertEquals(0, refreshCalls.get())
-        assertEquals("fresh-token", tokenStore.currentToken())
+        assertEquals("fresh-token", tokenDataSource.currentToken())
     }
 
     @Test
@@ -236,8 +236,8 @@ class TokenRefreshAuthenticatorTest {
     @Test
     fun `returns null when token store is absent`() {
         val authenticator = TokenRefreshAuthenticator(
-            accessTokenStore = Optional.empty(),
-            accessTokenRefresher = Optional.of(AccessTokenRefresher { "fresh-token" }),
+            accessTokenDataSource = Optional.empty(),
+            accessTokenRefreshDataSource = Optional.of(AccessTokenRefreshDataSource { "fresh-token" }),
         )
 
         assertNull(
@@ -252,9 +252,9 @@ class TokenRefreshAuthenticatorTest {
     fun `does not refresh a caller provided bearer token`() {
         val refreshCalls = AtomicInteger()
         val authenticator = TokenRefreshAuthenticator(
-            accessTokenStore = Optional.of(RefreshTestAccessTokenStore("stored-token")),
-            accessTokenRefresher = Optional.of(
-                AccessTokenRefresher {
+            accessTokenDataSource = Optional.of(RefreshTestAccessTokenDataSource("stored-token")),
+            accessTokenRefreshDataSource = Optional.of(
+                AccessTokenRefreshDataSource {
                     refreshCalls.incrementAndGet()
                     "fresh-token"
                 },
@@ -274,19 +274,19 @@ class TokenRefreshAuthenticatorTest {
     }
 
     private fun createAuthenticatedClient(
-        tokenStore: AccessTokenStore,
-        tokenRefresher: AccessTokenRefresher,
+        tokenDataSource: AccessTokenDataSource,
+        tokenRefreshDataSource: AccessTokenRefreshDataSource,
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(
             AuthInterceptor(
-                accessTokenStore = Optional.of(tokenStore),
+                accessTokenDataSource = Optional.of(tokenDataSource),
                 networkConfiguration = NetworkConfiguration.create(server.url("/").toString()),
             ),
         )
         .authenticator(
             TokenRefreshAuthenticator(
-                accessTokenStore = Optional.of(tokenStore),
-                accessTokenRefresher = Optional.of(tokenRefresher),
+                accessTokenDataSource = Optional.of(tokenDataSource),
+                accessTokenRefreshDataSource = Optional.of(tokenRefreshDataSource),
             ),
         )
         .build()
@@ -331,14 +331,14 @@ class TokenRefreshAuthenticatorTest {
         val workersReady = CountDownLatch(requestCount)
         val startWorkers = CountDownLatch(1)
         val authenticationInvoked = CountDownLatch(requestCount)
-        val tokenStore = RefreshTestAccessTokenStore(
+        val tokenDataSource = RefreshTestAccessTokenDataSource(
             token = "expired-token",
             tokenReadsObserved = tokenReadsObserved,
         )
         val authenticator = TokenRefreshAuthenticator(
-            accessTokenStore = Optional.of(tokenStore),
-            accessTokenRefresher = Optional.of(
-                AccessTokenRefresher {
+            accessTokenDataSource = Optional.of(tokenDataSource),
+            accessTokenRefreshDataSource = Optional.of(
+                AccessTokenRefreshDataSource {
                     refreshCalls.incrementAndGet()
                     refreshStarted.countDown()
                     assertTrue(releaseRefresh.await(5, TimeUnit.SECONDS))
@@ -373,7 +373,7 @@ class TokenRefreshAuthenticatorTest {
                     future.get(5, TimeUnit.SECONDS)
                 },
                 refreshCallCount = refreshCalls.get(),
-                storedToken = tokenStore.currentToken(),
+                storedToken = tokenDataSource.currentToken(),
             )
         } finally {
             releaseRefresh.countDown()
@@ -387,10 +387,10 @@ class TokenRefreshAuthenticatorTest {
         val storedToken: String?,
     )
 
-    private class RefreshTestAccessTokenStore(
+    private class RefreshTestAccessTokenDataSource(
         @Volatile private var token: String?,
         private val tokenReadsObserved: CountDownLatch? = null,
-    ) : AccessTokenStore {
+    ) : AccessTokenDataSource {
         override fun getAccessToken(): String? {
             tokenReadsObserved?.countDown()
             return token

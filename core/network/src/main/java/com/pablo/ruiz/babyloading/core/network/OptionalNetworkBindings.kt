@@ -9,8 +9,8 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 abstract class OptionalNetworkBindings {
     @BindsOptionalOf
-    abstract fun bindOptionalAccessTokenStore(): AccessTokenStore
+    abstract fun bindOptionalAccessTokenDataSource(): AccessTokenDataSource
 
     @BindsOptionalOf
-    abstract fun bindOptionalAccessTokenRefresher(): AccessTokenRefresher
+    abstract fun bindOptionalAccessTokenRefreshDataSource(): AccessTokenRefreshDataSource
 }
