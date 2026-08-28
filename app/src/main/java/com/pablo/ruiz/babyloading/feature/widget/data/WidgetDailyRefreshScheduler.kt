@@ -4,7 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.pablo.ruiz.babyloading.core.storage.AppStorageNames
+import com.pablo.ruiz.babyloading.core.storage.AppStorageConfigFactory
 import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetState
 import com.pablo.ruiz.babyloading.feature.widget.presentation.BabyProgressWidgetReceiver
 import java.time.Clock
@@ -14,6 +14,9 @@ internal class WidgetDailyRefreshScheduler(
     private val clock: Clock = Clock.systemDefaultZone(),
 ) {
     private val applicationContext = context.applicationContext
+    private val storageConfig = AppStorageConfigFactory().forApplicationId(
+        applicationContext.packageName,
+    )
     private val alarmManager = applicationContext.getSystemService(AlarmManager::class.java)
 
     fun scheduleNextRefresh() {
@@ -41,15 +44,15 @@ internal class WidgetDailyRefreshScheduler(
             applicationContext,
             DAILY_REFRESH_REQUEST_CODE,
             Intent(applicationContext, BabyProgressWidgetReceiver::class.java)
-                .setAction(DAILY_REFRESH_ACTION),
+                .setAction(dailyRefreshAction),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
     }
 
     companion object {
-        val DAILY_REFRESH_ACTION: String
-            get() = AppStorageNames.current.widgetDailyRefreshAction
-
         private const val DAILY_REFRESH_REQUEST_CODE = 1
     }
+
+    val dailyRefreshAction: String
+        get() = storageConfig.widgetDailyRefreshAction
 }

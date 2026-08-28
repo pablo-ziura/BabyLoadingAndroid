@@ -138,8 +138,9 @@ class BabyProgressWidgetReceiver : GlanceAppWidgetReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        val refreshScheduler = WidgetDailyRefreshScheduler(context)
         when (intent.action) {
-            WidgetDailyRefreshScheduler.DAILY_REFRESH_ACTION,
+            refreshScheduler.dailyRefreshAction,
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_TIME_CHANGED,
             Intent.ACTION_TIMEZONE_CHANGED,

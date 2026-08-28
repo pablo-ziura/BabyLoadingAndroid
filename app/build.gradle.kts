@@ -58,6 +58,7 @@ android {
 
 dependencies {
     implementation(project(":core:network"))
+    implementation(project(":core:storage"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.camera.camera2)
