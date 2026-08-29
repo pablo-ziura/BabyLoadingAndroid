@@ -19,7 +19,6 @@ import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
-import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
@@ -28,6 +27,7 @@ import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -45,27 +45,23 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.pablo.ruiz.babyloading.MainActivity
-import com.pablo.ruiz.babyloading.R
-import com.pablo.ruiz.babyloading.core.localization.AppLanguageRepository
+import com.pablo.ruiz.babyloading.feature.widget.R
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
-import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.repository.PregnancyContentRepository
 import com.pablo.ruiz.babyloading.core.pregnancy.content.presentation.drawableResource
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.DueDateRelation
-import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepository
+import com.pablo.ruiz.babyloading.core.storage.AppStorageConfigFactory
 import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetState
-import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetStateFactory
-import com.pablo.ruiz.babyloading.feature.widget.data.WidgetDailyRefreshScheduler
+import com.pablo.ruiz.babyloading.feature.widget.domain.PreparedBabyProgressWidget
+import com.pablo.ruiz.babyloading.feature.widget.domain.usecase.CancelBabyProgressWidgetRefreshUseCase
+import com.pablo.ruiz.babyloading.feature.widget.domain.usecase.PrepareBabyProgressWidgetUseCase
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import java.time.Clock
-import java.time.LocalDate
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withClip
@@ -78,21 +74,18 @@ class BabyProgressWidget : GlanceAppWidget() {
             context.applicationContext,
             BabyProgressWidgetDependencies::class.java,
         )
-        val state = runCatching {
-            BabyProgressWidgetStateFactory(dependencies.pregnancyCalculator()).create(
-                lastPeriodDate = dependencies.pregnancyRepository().lastPeriodDate.first(),
-                currentDate = LocalDate.now(dependencies.clock()),
+        val preparedWidget = try {
+            dependencies.prepareBabyProgressWidget()()
+        } catch (error: CancellationException) {
+            throw error
+        } catch (_: Exception) {
+            PreparedBabyProgressWidget(
+                state = BabyProgressWidgetState.NeedsSetup,
+                weekContent = null,
             )
-        }.getOrDefault(BabyProgressWidgetState.NeedsSetup)
-        WidgetDailyRefreshScheduler(context).scheduleFor(state)
-        val weekContent = (state as? BabyProgressWidgetState.Ongoing)?.let { ongoing ->
-            runCatching {
-                dependencies.pregnancyContentRepository().contentForWeek(
-                    week = ongoing.progress.gestationalAge.completedWeeks,
-                    language = dependencies.appLanguageRepository().currentLanguage(),
-                )
-            }.getOrNull()
         }
+        val state = preparedWidget.state
+        val weekContent = preparedWidget.weekContent
         val strings = BabyProgressWidgetStrings.create(context, state, weekContent)
         val babySizeProgressImage = (state as? BabyProgressWidgetState.Ongoing)
             ?.let { ongoing ->
@@ -112,6 +105,9 @@ class BabyProgressWidget : GlanceAppWidget() {
                 state = state,
                 strings = strings,
                 babySizeProgressImage = babySizeProgressImage,
+                launcherIntent = context.packageManager.getLaunchIntentForPackage(
+                    context.packageName,
+                ),
             )
         }
     }
@@ -120,38 +116,29 @@ class BabyProgressWidget : GlanceAppWidget() {
 class BabyProgressWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = BabyProgressWidget()
 
-    override fun onEnabled(context: Context) {
-        super.onEnabled(context)
-    }
-
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-    ) {
-        super.onUpdate(context, appWidgetManager, appWidgetIds)
-    }
-
     override fun onDisabled(context: Context) {
-        WidgetDailyRefreshScheduler(context).cancel()
+        runCatching {
+            widgetDependencies(context).cancelBabyProgressWidgetRefresh()()
+        }
         super.onDisabled(context)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        val refreshScheduler = WidgetDailyRefreshScheduler(context)
-        when (intent.action) {
-            refreshScheduler.dailyRefreshAction,
-            Intent.ACTION_BOOT_COMPLETED,
-            Intent.ACTION_TIME_CHANGED,
-            Intent.ACTION_TIMEZONE_CHANGED,
-            -> {
-                if (hasWidgets(context)) {
-                    refreshWidgets(context)
-                }
-            }
-
-            else -> super.onReceive(context, intent)
+        val dailyRefreshAction = AppStorageConfigFactory()
+            .forApplicationId(context.packageName)
+            .widgetDailyRefreshAction
+        if (WidgetRefreshTrigger.matches(intent.action, dailyRefreshAction)) {
+            if (hasWidgets(context)) refreshWidgets(context)
+        } else {
+            super.onReceive(context, intent)
         }
+    }
+
+    private fun widgetDependencies(context: Context): BabyProgressWidgetDependencies {
+        return EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            BabyProgressWidgetDependencies::class.java,
+        )
     }
 
     private fun hasWidgets(context: Context): Boolean {
@@ -177,13 +164,14 @@ private fun BabyProgressWidgetContent(
     state: BabyProgressWidgetState,
     strings: BabyProgressWidgetStrings,
     babySizeProgressImage: ImageProvider?,
+    launcherIntent: Intent?,
 ) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
             .background(ImageProvider(R.drawable.widget_progress_background))
             .cornerRadius(android.R.dimen.system_app_widget_background_radius)
-            .clickable(actionStartActivity<MainActivity>())
+            .launcherClickable(launcherIntent)
             .padding(14.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -508,15 +496,22 @@ private data class BabyProgressWidgetStrings(
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface BabyProgressWidgetDependencies {
-    fun pregnancyRepository(): PregnancyRepository
+    fun prepareBabyProgressWidget(): PrepareBabyProgressWidgetUseCase
 
-    fun pregnancyCalculator(): PregnancyCalculator
+    fun cancelBabyProgressWidgetRefresh(): CancelBabyProgressWidgetRefreshUseCase
+}
 
-    fun pregnancyContentRepository(): PregnancyContentRepository
+internal object WidgetRefreshTrigger {
+    fun matches(action: String?, dailyRefreshAction: String): Boolean {
+        return action == dailyRefreshAction ||
+            action == Intent.ACTION_BOOT_COMPLETED ||
+            action == Intent.ACTION_TIME_CHANGED ||
+            action == Intent.ACTION_TIMEZONE_CHANGED
+    }
+}
 
-    fun appLanguageRepository(): AppLanguageRepository
-
-    fun clock(): Clock
+private fun GlanceModifier.launcherClickable(launcherIntent: Intent?): GlanceModifier {
+    return launcherIntent?.let { clickable(actionStartActivity(it)) } ?: this
 }
 
 private val WidgetContent = ColorProvider(Color(0xFFFFFFFF))
