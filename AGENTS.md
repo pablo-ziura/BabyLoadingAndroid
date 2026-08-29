@@ -89,7 +89,7 @@ Before creating or modifying any screen, reusable component, or widget containin
 │                            :core:pregnancy, :core:pregnancy-content
 ├── :feature:gallery ─────> :core:coroutines, :core:designsystem, :core:pregnancy, :core:storage
 ├── :feature:settings ────> :core:designsystem, :core:localization, :core:pregnancy
-├── :feature:widget ──────> :core:localization, :core:pregnancy,
+├── :feature:widget ──────> :core:designsystem, :core:localization, :core:pregnancy,
 │                            :core:pregnancy-content, :core:storage
 └── composition-only core dependencies: :core:designsystem, :core:localization,
                                          :core:network, :core:pregnancy

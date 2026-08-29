@@ -62,6 +62,8 @@ Build, test, lint, or install it with:
 └── :core:network          # API composition
 
 :feature:* ───────────────> required :core:* modules only
+:feature:widget ──────────> :core:designsystem, :core:localization, :core:pregnancy,
+                            :core:pregnancy-content, :core:storage
 :core:pregnancy ──────────> :core:storage
 :core:pregnancy-content ──> :core:localization, :core:coroutines
 
