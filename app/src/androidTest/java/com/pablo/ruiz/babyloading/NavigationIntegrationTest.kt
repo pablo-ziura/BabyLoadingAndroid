@@ -27,6 +27,7 @@ import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingUiSt
 import com.pablo.ruiz.babyloading.feature.onboarding.R as OnboardingR
 import com.pablo.ruiz.babyloading.feature.dashboard.R as DashboardR
 import com.pablo.ruiz.babyloading.feature.journey.R as JourneyR
+import com.pablo.ruiz.babyloading.feature.gallery.R as GalleryR
 import com.pablo.ruiz.babyloading.feature.settings.R as SettingsR
 import java.time.LocalDate
 import org.junit.Assert.assertTrue
@@ -138,7 +139,7 @@ class NavigationIntegrationTest {
                     },
                     galleryContent = {
                         Text(
-                            text = stringResource(R.string.gallery_title),
+                            text = stringResource(GalleryR.string.gallery_title),
                             modifier = Modifier.testTag("gallery_screen"),
                         )
                     },
