@@ -29,6 +29,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:designsystem"))
     implementation(project(":core:localization"))
     implementation(project(":core:pregnancy"))
     implementation(project(":core:pregnancy-content"))
