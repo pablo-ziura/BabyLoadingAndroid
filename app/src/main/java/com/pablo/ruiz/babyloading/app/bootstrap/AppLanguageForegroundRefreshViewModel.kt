@@ -1,4 +1,4 @@
-package com.pablo.ruiz.babyloading.app.lifecycle
+package com.pablo.ruiz.babyloading.app.bootstrap
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

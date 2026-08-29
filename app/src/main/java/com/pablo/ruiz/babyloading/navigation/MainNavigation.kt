@@ -57,7 +57,7 @@ internal fun MainNavigation(
         selectedTab = selectedTab,
         showNavigation = !isGuidedTracking,
         onTabSelected = { tab ->
-            navController.navigate(tab.graphRoute, tabNavigationOptions(navController))
+            navController.navigate(tab.navigationGraph(), tabNavigationOptions(navController))
         }
     ) { innerPadding ->
         TabNavigationHost(
@@ -124,8 +124,15 @@ private fun tabNavigationOptions(navController: NavHostController) = navOptions 
 }
 
 private fun NavDestination?.isInGraph(tab: MainTab): Boolean {
-    val graphRoute = tab.graphRoute::class.qualifiedName ?: return false
+    val graphRoute = tab.navigationGraph()::class.qualifiedName ?: return false
     return this?.hierarchy?.any { destination ->
         destination.route == graphRoute
     } == true
+}
+
+private fun MainTab.navigationGraph(): Any = when (this) {
+    MainTab.Dashboard -> DashboardGraph
+    MainTab.Journey -> JourneyGraph
+    MainTab.Gallery -> GalleryGraph
+    MainTab.Settings -> SettingsGraph
 }
