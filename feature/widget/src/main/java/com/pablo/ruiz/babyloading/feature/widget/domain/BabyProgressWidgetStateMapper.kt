@@ -1,20 +1,18 @@
 package com.pablo.ruiz.babyloading.feature.widget.domain
 
-import com.pablo.ruiz.babyloading.core.pregnancy.domain.PregnancyCalculator
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.ActivePregnancyProgress
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyPhase
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.model.PregnancyProgress
+import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.CalculatePregnancyProgressUseCase
 import java.time.LocalDate
+import javax.inject.Inject
 
-class BabyProgressWidgetStateFactory(
-    private val calculator: PregnancyCalculator,
+class BabyProgressWidgetStateMapper @Inject constructor(
+    private val calculateProgress: CalculatePregnancyProgressUseCase,
 ) {
-    fun create(
-        lastPeriodDate: LocalDate?,
-        currentDate: LocalDate,
-    ): BabyProgressWidgetState {
+    fun map(lastPeriodDate: LocalDate?): BabyProgressWidgetState {
         if (lastPeriodDate == null) return BabyProgressWidgetState.NeedsSetup
-        return when (val progress = calculator.progress(lastPeriodDate, currentDate)) {
+        return when (val progress = calculateProgress(lastPeriodDate)) {
             is PregnancyProgress.InvalidFutureLastPeriodDate -> {
                 BabyProgressWidgetState.InvalidFutureLastPeriodDate
             }
