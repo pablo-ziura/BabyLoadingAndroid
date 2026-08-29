@@ -1,4 +1,4 @@
-package com.pablo.ruiz.babyloading.app.lifecycle
+package com.pablo.ruiz.babyloading.app.bootstrap
 
 import com.pablo.ruiz.babyloading.core.localization.AppLanguage
 import com.pablo.ruiz.babyloading.core.localization.AppLanguageRepository

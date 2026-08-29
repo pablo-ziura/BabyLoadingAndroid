@@ -13,7 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pablo.ruiz.babyloading.app.bootstrap.AppBootstrapViewModel
-import com.pablo.ruiz.babyloading.app.lifecycle.AppLanguageForegroundRefreshViewModel
+import com.pablo.ruiz.babyloading.app.bootstrap.AppLanguageForegroundRefreshViewModel
 import com.pablo.ruiz.babyloading.navigation.AppNavigation
 import com.pablo.ruiz.babyloading.navigation.MainShellGraph
 import com.pablo.ruiz.babyloading.navigation.OnboardingRoute

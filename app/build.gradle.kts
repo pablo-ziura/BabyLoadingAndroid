@@ -56,13 +56,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:coroutines"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:localization"))
     implementation(project(":core:network"))
     implementation(project(":core:pregnancy"))
-    implementation(project(":core:pregnancy-content"))
-    implementation(project(":core:storage"))
     implementation(project(":feature:onboarding"))
     implementation(project(":feature:dashboard"))
     implementation(project(":feature:journey"))
