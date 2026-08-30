@@ -65,12 +65,12 @@ class NetworkModuleTest {
         val authenticatedClient = NetworkModule.provideAuthenticatedClient(
             unauthenticatedClient = unauthenticatedClient,
             authInterceptor = AuthInterceptor(
-                accessTokenStore = Optional.empty(),
+                accessTokenDataSource = Optional.empty(),
                 networkConfiguration = configuration,
             ),
             tokenRefreshAuthenticator = TokenRefreshAuthenticator(
-                accessTokenStore = Optional.empty(),
-                accessTokenRefresher = Optional.empty(),
+                accessTokenDataSource = Optional.empty(),
+                accessTokenRefreshDataSource = Optional.empty(),
             ),
         )
 
@@ -98,7 +98,7 @@ class NetworkModuleTest {
 
         try {
             val configuration = NetworkConfiguration.create(server.url("/").toString())
-            val tokenStore = object : AccessTokenStore {
+            val tokenDataSource = object : AccessTokenDataSource {
                 override fun getAccessToken(): String = "access-token"
 
                 override fun updateAccessToken(accessToken: String?) = Unit
@@ -111,12 +111,12 @@ class NetworkModuleTest {
             val authenticatedClient = NetworkModule.provideAuthenticatedClient(
                 unauthenticatedClient = unauthenticatedClient,
                 authInterceptor = AuthInterceptor(
-                    accessTokenStore = Optional.of(tokenStore),
+                    accessTokenDataSource = Optional.of(tokenDataSource),
                     networkConfiguration = configuration,
                 ),
                 tokenRefreshAuthenticator = TokenRefreshAuthenticator(
-                    accessTokenStore = Optional.of(tokenStore),
-                    accessTokenRefresher = Optional.empty(),
+                    accessTokenDataSource = Optional.of(tokenDataSource),
+                    accessTokenRefreshDataSource = Optional.empty(),
                 ),
             )
             repeat(2) {

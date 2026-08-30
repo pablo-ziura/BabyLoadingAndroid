@@ -11,8 +11,8 @@ import okhttp3.Route
 
 @Singleton
 class TokenRefreshAuthenticator @Inject constructor(
-    private val accessTokenStore: Optional<AccessTokenStore>,
-    private val accessTokenRefresher: Optional<AccessTokenRefresher>,
+    private val accessTokenDataSource: Optional<AccessTokenDataSource>,
+    private val accessTokenRefreshDataSource: Optional<AccessTokenRefreshDataSource>,
 ) : Authenticator {
     private val refreshLock = Any()
     private var activeRefreshFlight: RefreshFlight? = null
@@ -22,8 +22,8 @@ class TokenRefreshAuthenticator @Inject constructor(
             return null
         }
 
-        val tokenStore = accessTokenStore.orElse(null) ?: return null
-        val tokenRefresher = accessTokenRefresher.orElse(null) ?: return null
+        val tokenDataSource = accessTokenDataSource.orElse(null) ?: return null
+        val tokenRefreshDataSource = accessTokenRefreshDataSource.orElse(null) ?: return null
         val authenticationTag = response.request.tag(
             BearerTokenAuthenticationTag::class.java,
         ) ?: return null
@@ -37,7 +37,7 @@ class TokenRefreshAuthenticator @Inject constructor(
         var leadsRefresh = false
         val refreshFlight = synchronized(refreshLock) {
             val currentAccessToken = try {
-                tokenStore.getAccessToken().normalizedToken()
+                tokenDataSource.getAccessToken().normalizedToken()
             } catch (_: InterruptedException) {
                 Thread.currentThread().interrupt()
                 return null
@@ -58,8 +58,8 @@ class TokenRefreshAuthenticator @Inject constructor(
         val refreshOutcome = if (leadsRefresh) {
             executeRefresh(
                 refreshFlight = refreshFlight,
-                tokenStore = tokenStore,
-                tokenRefresher = tokenRefresher,
+                tokenDataSource = tokenDataSource,
+                tokenRefreshDataSource = tokenRefreshDataSource,
                 failedAccessToken = failedAccessToken,
             )
         } else {
@@ -77,15 +77,15 @@ class TokenRefreshAuthenticator @Inject constructor(
 
     private fun executeRefresh(
         refreshFlight: RefreshFlight,
-        tokenStore: AccessTokenStore,
-        tokenRefresher: AccessTokenRefresher,
+        tokenDataSource: AccessTokenDataSource,
+        tokenRefreshDataSource: AccessTokenRefreshDataSource,
         failedAccessToken: String?,
     ): RefreshOutcome {
         var refreshOutcome: RefreshOutcome = RefreshOutcome.Failure
 
         try {
             val refreshedAccessToken = try {
-                tokenRefresher.refreshAccessToken(failedAccessToken).normalizedToken()
+                tokenRefreshDataSource.refreshAccessToken(failedAccessToken).normalizedToken()
             } catch (_: InterruptedException) {
                 Thread.currentThread().interrupt()
                 null
@@ -98,7 +98,7 @@ class TokenRefreshAuthenticator @Inject constructor(
             }
 
             try {
-                tokenStore.updateAccessToken(refreshedAccessToken)
+                tokenDataSource.updateAccessToken(refreshedAccessToken)
             } catch (_: InterruptedException) {
                 Thread.currentThread().interrupt()
                 return refreshOutcome

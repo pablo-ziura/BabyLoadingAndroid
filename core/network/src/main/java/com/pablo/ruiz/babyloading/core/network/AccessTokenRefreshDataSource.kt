@@ -1,0 +1,6 @@
+package com.pablo.ruiz.babyloading.core.network
+
+/** Implementations execute synchronously and must use the unauthenticated client. */
+fun interface AccessTokenRefreshDataSource {
+    fun refreshAccessToken(expiredAccessToken: String?): String?
+}
