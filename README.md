@@ -114,4 +114,10 @@ Run these commands from the repository root:
 ./gradlew check
 ```
 
+Android Studio includes the shared **All Unit Tests** Gradle configuration. Select it
+from the run-configuration menu and press Run to execute all local unit tests: the
+`debug` variant across every Android module and the release-only network tests. It
+deliberately excludes instrumentation tests, which require a connected device or
+emulator.
+
 The primary debugging target is a Pixel 9a running API 36.1. CameraX, MediaStore, the Glance widget, Compose navigation, and `GalleryDaoTest` require device validation when that target is connected. The project compiles and targets Android API 37 with `minSdk` 34 and Java 17 bytecode.
