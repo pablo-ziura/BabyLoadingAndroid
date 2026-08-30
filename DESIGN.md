@@ -9,7 +9,7 @@ Toda interfaz propia usa **Nunito Sans**, incluida la app y el widget. El origen
 - Romana: `f934d7142fb4784bf828da485b7dcbd90c0c80d514e9d49a5da0ed3a1ae2491d`
 - Cursiva: `d9d5db18f3c11221a4fbb553cbc709391c1179964c7eaa4466ef43c78aa4492f`
 
-Los dos ficheros viven en `app/src/main/res/font/`; la licencia se distribuye como `res/raw/nunito_sans_ofl.txt`. No se añaden fuentes descargables ni fuentes del sistema para contenido propio.
+Los dos ficheros viven en `core/designsystem/src/main/res/font/`; la licencia se distribuye como `core/designsystem/src/main/res/raw/nunito_sans_ofl.txt`. No se añaden fuentes descargables ni fuentes del sistema para contenido propio.
 
 | Uso | Peso | Rol Material 3 recomendado |
 | --- | --- | --- |

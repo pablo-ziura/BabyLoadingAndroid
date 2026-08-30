@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_future_date_error">La fecha no puede estar en el futuro.</string>
+    <string name="settings_old_date_error">Elige una fecha de las últimas 42 semanas.</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_last_period_prompt">¿Cuándo fue tu última menstruación?</string>
+    <string name="settings_due_date">Fecha probable de parto</string>
+    <string name="settings_invalid_future_last_period_date">La fecha guardada está en el futuro. Elige una fecha hasta hoy.</string>
+    <string name="settings_save_date">Fijar fecha</string>
+    <string name="settings_date_saved">Fecha del embarazo actualizada</string>
+    <string name="settings_language_title">Idioma</string>
+    <string name="settings_language_current">Idioma actual de la aplicación: %1$s</string>
+    <string name="settings_language_system_message">Los ajustes del sistema Android gestionan el idioma de la aplicación.</string>
+    <string name="settings_language_open_settings">Abrir ajustes</string>
+    <string name="settings_language_open_settings_description">Abrir los ajustes de idioma de la aplicación</string>
+    <string name="settings_info">Cambia la fecha de tu última menstruación para recalcular toda tu información de embarazo.</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_spanish">Español</string>
+    <string name="settings_previous_month">Mes anterior</string>
+    <string name="settings_next_month">Mes siguiente</string>
+    <string name="settings_selected_date">Seleccionada</string>
+    <string name="settings_version">Versión %1$s</string>
+</resources>

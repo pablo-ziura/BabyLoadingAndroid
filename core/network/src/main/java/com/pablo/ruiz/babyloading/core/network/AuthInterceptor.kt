@@ -9,7 +9,7 @@ import okhttp3.Response
 
 @Singleton
 class AuthInterceptor @Inject constructor(
-    private val accessTokenStore: Optional<AccessTokenStore>,
+    private val accessTokenDataSource: Optional<AccessTokenDataSource>,
     private val networkConfiguration: NetworkConfiguration,
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -21,7 +21,7 @@ class AuthInterceptor @Inject constructor(
             return chain.proceed(request)
         }
 
-        val accessToken = accessTokenStore
+        val accessToken = accessTokenDataSource
             .orElse(null)
             ?.getAccessToken()
             .normalizedToken()

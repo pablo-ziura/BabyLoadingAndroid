@@ -32,10 +32,6 @@ import androidx.compose.ui.unit.dp
 import com.pablo.ruiz.babyloading.R
 import com.pablo.ruiz.babyloading.core.designsystem.component.BabyLoadingBackground
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
-import com.pablo.ruiz.babyloading.navigation.DashboardGraph
-import com.pablo.ruiz.babyloading.navigation.GalleryGraph
-import com.pablo.ruiz.babyloading.navigation.JourneyGraph
-import com.pablo.ruiz.babyloading.navigation.SettingsGraph
 
 @Composable
 internal fun MainScreen(
@@ -159,35 +155,30 @@ private fun MainNavigationRail(
 }
 
 internal enum class MainTab(
-    val graphRoute: Any,
     @param:StringRes val labelRes: Int,
     @param:StringRes val contentDescriptionRes: Int,
     val icon: ImageVector,
     val testTag: String,
 ) {
     Dashboard(
-        graphRoute = DashboardGraph,
         labelRes = R.string.dashboard_tab,
         contentDescriptionRes = R.string.dashboard_content_description,
         icon = Icons.Filled.Favorite,
         testTag = "dashboard_tab",
     ),
     Journey(
-        graphRoute = JourneyGraph,
         labelRes = R.string.journey_tab,
         contentDescriptionRes = R.string.journey_content_description,
         icon = Icons.Filled.Map,
         testTag = "journey_tab",
     ),
     Gallery(
-        graphRoute = GalleryGraph,
         labelRes = R.string.gallery_tab,
         contentDescriptionRes = R.string.gallery_content_description,
         icon = Icons.Filled.PhotoLibrary,
         testTag = "gallery_tab",
     ),
     Settings(
-        graphRoute = SettingsGraph,
         labelRes = R.string.settings_tab,
         contentDescriptionRes = R.string.settings_content_description,
         icon = Icons.Filled.Settings,

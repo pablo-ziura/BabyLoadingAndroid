@@ -15,6 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import androidx.navigation.navigation
+import com.pablo.ruiz.babyloading.BuildConfig
 import com.pablo.ruiz.babyloading.app.shell.MainScreen
 import com.pablo.ruiz.babyloading.app.shell.MainTab
 import com.pablo.ruiz.babyloading.feature.dashboard.presentation.DashboardScreen
@@ -40,7 +41,9 @@ internal fun MainNavigation(
             onCaptureSaved = navController::navigateUp,
         )
     },
-    settingsContent: @Composable () -> Unit = { SettingsScreen() },
+    settingsContent: @Composable () -> Unit = {
+        SettingsScreen(versionName = BuildConfig.VERSION_NAME)
+    },
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val selectedTab = MainTab.entries.firstOrNull { tab ->
@@ -54,7 +57,7 @@ internal fun MainNavigation(
         selectedTab = selectedTab,
         showNavigation = !isGuidedTracking,
         onTabSelected = { tab ->
-            navController.navigate(tab.graphRoute, tabNavigationOptions(navController))
+            navController.navigate(tab.navigationGraph(), tabNavigationOptions(navController))
         }
     ) { innerPadding ->
         TabNavigationHost(
@@ -121,8 +124,15 @@ private fun tabNavigationOptions(navController: NavHostController) = navOptions 
 }
 
 private fun NavDestination?.isInGraph(tab: MainTab): Boolean {
-    val graphRoute = tab.graphRoute::class.qualifiedName ?: return false
+    val graphRoute = tab.navigationGraph()::class.qualifiedName ?: return false
     return this?.hierarchy?.any { destination ->
         destination.route == graphRoute
     } == true
+}
+
+private fun MainTab.navigationGraph(): Any = when (this) {
+    MainTab.Dashboard -> DashboardGraph
+    MainTab.Journey -> JourneyGraph
+    MainTab.Gallery -> GalleryGraph
+    MainTab.Settings -> SettingsGraph
 }

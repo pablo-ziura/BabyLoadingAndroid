@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dashboard_title">Baby Loading…</string>
+    <string name="dashboard_subtitle">Tu aventura semana a semana</string>
+    <string name="dashboard_missing_setup">Falta la configuración del embarazo. Añade la fecha en Ajustes.</string>
+    <string name="dashboard_baby_size">Tu bebé ahora es del tamaño de %1$s</string>
+    <string name="dashboard_week">Semana</string>
+    <string name="dashboard_days_until_due_date">Días hasta la fecha estimada de parto</string>
+    <string name="dashboard_due_date_metric">Fecha estimada de parto</string>
+    <string name="dashboard_days_since_due_date">Días desde la fecha estimada de parto</string>
+    <string name="dashboard_due_date">Fecha probable de parto</string>
+    <string name="pregnancy_status_due_date_today">Fecha estimada hoy</string>
+    <string name="pregnancy_status_invalid_date_title">Revisa tu fecha</string>
+    <string name="pregnancy_status_invalid_date_message">Revisa tu fecha de última menstruación en Ajustes.</string>
+    <string name="pregnancy_status_late_term_title">Término tardío</string>
+    <string name="pregnancy_status_late_term_message">Tu fecha estimada de parto ya ha pasado. Revisa la fecha en Ajustes.</string>
+    <string name="pregnancy_status_post_term_title">Postérmino</string>
+    <string name="pregnancy_status_post_term_message">Este embarazo supera la fecha estimada de parto. Revisa la fecha en Ajustes.</string>
+</resources>
