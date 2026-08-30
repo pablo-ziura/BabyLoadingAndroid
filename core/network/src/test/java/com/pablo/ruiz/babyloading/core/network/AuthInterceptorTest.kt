@@ -33,16 +33,16 @@ class AuthInterceptorTest {
 
     @Test
     fun `omits authorization header when access token is blank`() {
-        val tokenStore = AuthTestAccessTokenStore(" \t ")
-        val interceptor = createInterceptor(tokenStore)
+        val tokenDataSource = AuthTestAccessTokenDataSource(" \t ")
+        val interceptor = createInterceptor(tokenDataSource)
 
         assertNull(executeRequest(interceptor).headers[AUTHORIZATION_HEADER])
     }
 
     @Test
     fun `adds trimmed bearer access token`() {
-        val tokenStore = AuthTestAccessTokenStore("  access-token  ")
-        val interceptor = createInterceptor(tokenStore)
+        val tokenDataSource = AuthTestAccessTokenDataSource("  access-token  ")
+        val interceptor = createInterceptor(tokenDataSource)
 
         assertEquals(
             "Bearer access-token",
@@ -52,12 +52,12 @@ class AuthInterceptorTest {
 
     @Test
     fun `preserves explicit authorization header without reading token store`() {
-        val tokenStore = object : AccessTokenStore {
+        val tokenDataSource = object : AccessTokenDataSource {
             override fun getAccessToken(): String? = error("Token store must not be read")
 
             override fun updateAccessToken(accessToken: String?) = Unit
         }
-        val interceptor = createInterceptor(tokenStore)
+        val interceptor = createInterceptor(tokenDataSource)
 
         val recordedRequest = executeRequest(
             interceptor = interceptor,
@@ -73,7 +73,7 @@ class AuthInterceptorTest {
     @Test
     fun `omits authorization header for a different origin`() {
         val interceptor = createInterceptor(
-            tokenStore = AuthTestAccessTokenStore("access-token"),
+            tokenDataSource = AuthTestAccessTokenDataSource("access-token"),
             baseUrl = "https://api.example.invalid/",
         )
 
@@ -81,10 +81,10 @@ class AuthInterceptorTest {
     }
 
     private fun createInterceptor(
-        tokenStore: AccessTokenStore? = null,
+        tokenDataSource: AccessTokenDataSource? = null,
         baseUrl: String = server.url("/").toString(),
     ): AuthInterceptor = AuthInterceptor(
-        accessTokenStore = java.util.Optional.ofNullable(tokenStore),
+        accessTokenDataSource = java.util.Optional.ofNullable(tokenDataSource),
         networkConfiguration = NetworkConfiguration.create(baseUrl),
     )
 
@@ -109,9 +109,9 @@ class AuthInterceptorTest {
         server.takeRequest()
     }
 
-    private class AuthTestAccessTokenStore(
+    private class AuthTestAccessTokenDataSource(
         @Volatile private var token: String?,
-    ) : AccessTokenStore {
+    ) : AccessTokenDataSource {
         override fun getAccessToken(): String? = token
 
         override fun updateAccessToken(accessToken: String?) {

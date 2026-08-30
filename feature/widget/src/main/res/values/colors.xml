@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_gradient_start">#FFED8CAB</color>
+    <color name="widget_gradient_end">#FFB38CD1</color>
+    <color name="widget_content">#FFFFFFFF</color>
+    <color name="widget_content_muted">#D9FFFFFF</color>
+    <color name="widget_ring_surface">#1FFFFFFF</color>
+    <color name="widget_ring_track">#33FFFFFF</color>
+    <color name="widget_progress_track">#33FFFFFF</color>
+</resources>

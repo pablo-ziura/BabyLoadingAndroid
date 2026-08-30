@@ -22,7 +22,13 @@ import com.pablo.ruiz.babyloading.navigation.MainNavigation
 import com.pablo.ruiz.babyloading.navigation.OnboardingRoute
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingEvent
+import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingScreen
 import com.pablo.ruiz.babyloading.feature.onboarding.presentation.OnboardingUiState
+import com.pablo.ruiz.babyloading.feature.onboarding.R as OnboardingR
+import com.pablo.ruiz.babyloading.feature.dashboard.R as DashboardR
+import com.pablo.ruiz.babyloading.feature.journey.R as JourneyR
+import com.pablo.ruiz.babyloading.feature.gallery.R as GalleryR
+import com.pablo.ruiz.babyloading.feature.settings.R as SettingsR
 import java.time.LocalDate
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -54,8 +60,12 @@ class NavigationIntegrationTest {
             BabyLoadingTheme {
                 AppNavigation(
                     startDestination = startDestination,
-                    onboardingUiState = onboardingUiState,
-                    onOnboardingEvent = { event -> receivedOnboardingEvent = event },
+                    onboardingContent = {
+                        OnboardingScreen(
+                            uiState = onboardingUiState,
+                            onEvent = { event -> receivedOnboardingEvent = event },
+                        )
+                    },
                     navController = testNavController,
                 )
             }
@@ -66,7 +76,7 @@ class NavigationIntegrationTest {
     fun onboardingIsTheInitialDestination() {
         setNavigationContent()
 
-        composeTestRule.onNodeWithText(string(R.string.onboarding_title)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(string(OnboardingR.string.onboarding_title)).assertIsDisplayed()
         composeTestRule.runOnIdle {
             assertTrue(navController.currentDestination.matches(OnboardingRoute::class.qualifiedName.orEmpty()))
         }
@@ -76,7 +86,7 @@ class NavigationIntegrationTest {
     fun continueRequestsDatePersistence() {
         setNavigationContent()
 
-        composeTestRule.onNodeWithText(string(R.string.onboarding_continue)).performClick()
+        composeTestRule.onNodeWithText(string(OnboardingR.string.onboarding_continue)).performClick()
 
         composeTestRule.runOnIdle {
             assertTrue(receivedOnboardingEvent == OnboardingEvent.Continue)
@@ -92,7 +102,7 @@ class NavigationIntegrationTest {
             ),
         )
 
-        composeTestRule.onNodeWithText(string(R.string.onboarding_continue)).assertIsNotEnabled()
+        composeTestRule.onNodeWithText(string(OnboardingR.string.onboarding_continue)).assertIsNotEnabled()
     }
 
     @Test
@@ -117,26 +127,26 @@ class NavigationIntegrationTest {
                     navController = testNavController,
                     dashboardContent = {
                         Text(
-                            text = stringResource(R.string.dashboard_title),
+                            text = stringResource(DashboardR.string.dashboard_title),
                             modifier = Modifier.testTag("dashboard_screen"),
                         )
                     },
                     journeyContent = {
                         Text(
-                            text = stringResource(R.string.journey_title),
+                            text = stringResource(JourneyR.string.journey_title),
                             modifier = Modifier.testTag("journey_screen"),
                         )
                     },
                     galleryContent = {
                         Text(
-                            text = stringResource(R.string.gallery_title),
+                            text = stringResource(GalleryR.string.gallery_title),
                             modifier = Modifier.testTag("gallery_screen"),
                         )
                     },
                     guidedTrackingContent = {},
                     settingsContent = {
                         Text(
-                            text = stringResource(R.string.settings_title),
+                            text = stringResource(SettingsR.string.settings_title),
                             modifier = Modifier.testTag("settings_screen"),
                         )
                     },

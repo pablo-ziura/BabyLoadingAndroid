@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">Progreso del bebé</string>
+    <string name="widget_description">Tu semana actual de embarazo, tamaño del bebé, fecha estimada de parto y progreso.</string>
+    <string name="widget_setup_message">Configura la fecha\nen la app</string>
+    <string name="widget_week">Semana %1$d</string>
+    <string name="widget_baby_size">El bebé ahora tiene el tamaño de %1$s</string>
+    <string name="widget_unknown_size">un misterio</string>
+    <string name="widget_baby_size_description">Tamaño del bebé: %1$s</string>
+    <string name="widget_days_until_due_date">%1$d días hasta la fecha estimada de parto</string>
+    <string name="widget_due_date_today">Fecha estimada de parto hoy</string>
+    <string name="widget_days_since_due_date">%1$d días desde la fecha estimada de parto</string>
+    <string name="widget_gestational_age">Semana %1$d+%2$d</string>
+    <string name="widget_invalid_date">Revisa la fecha guardada en la app</string>
+    <string name="widget_late_term">Término tardío</string>
+    <string name="widget_post_term">Postérmino</string>
+    <string name="widget_review_date">Revisa la fecha en la app</string>
+    <string name="widget_preview_week">Semana 24</string>
+    <string name="widget_preview_baby_size">El bebé ahora tiene el tamaño de una piña</string>
+    <string name="widget_preview_due_date_relation">109 días hasta la fecha estimada de parto</string>
+</resources>
