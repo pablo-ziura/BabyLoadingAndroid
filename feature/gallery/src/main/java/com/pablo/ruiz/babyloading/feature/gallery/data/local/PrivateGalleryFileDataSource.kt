@@ -7,6 +7,7 @@ import com.pablo.ruiz.babyloading.core.storage.AppStorageConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -56,7 +57,7 @@ class PrivateGalleryFileDataSource @Inject constructor(
     }
 
     override suspend fun delete(fileName: String) = withContext(ioDispatcher) {
-        fileFor(fileName).delete()
+        Files.deleteIfExists(fileFor(fileName).toPath())
         Unit
     }
 
