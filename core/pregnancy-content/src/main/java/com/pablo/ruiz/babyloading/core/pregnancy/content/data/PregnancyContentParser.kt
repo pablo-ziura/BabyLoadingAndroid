@@ -6,13 +6,15 @@ import kotlinx.serialization.json.Json
 
 class PregnancyContentParser @Inject constructor(
     @param:PregnancyContentJson private val json: Json,
+    private val mapper: PregnancyContentMapper,
 ) {
     fun parse(
         content: String,
         expectedLocale: String,
     ): PregnancyContentDocument {
         return json
-            .decodeFromString<PregnancyContentDocument>(content)
+            .decodeFromString<PregnancyContentDocumentDto>(content)
+            .let(mapper::toDomain)
             .validated(expectedLocale)
     }
 }
