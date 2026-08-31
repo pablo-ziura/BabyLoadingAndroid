@@ -1,8 +1,5 @@
 package com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class PregnancyContentDocument(
     val schemaVersion: Int,
     val locale: String,
