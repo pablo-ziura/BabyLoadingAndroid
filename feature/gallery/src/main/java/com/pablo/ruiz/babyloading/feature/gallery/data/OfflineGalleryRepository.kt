@@ -15,6 +15,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -28,7 +29,7 @@ class OfflineGalleryRepository @Inject constructor(
 ) : GalleryRepository {
     override val items: Flow<List<GalleryItem>> = roomDataSource.items.map { entities ->
         entities.map(mapper::toDomain)
-    }
+    }.flowOn(ioDispatcher)
 
     override suspend fun importPhotos(sourceUris: List<String>): GalleryImportResult {
         return withContext(ioDispatcher) {
@@ -64,13 +65,13 @@ class OfflineGalleryRepository @Inject constructor(
         }
     }
 
-    override suspend fun addPrivatePhoto(
-        data: ByteArray,
+    override suspend fun addPrivatePhotoFromFile(
+        temporaryFilePath: String,
         source: GallerySource,
         capturedAt: Instant,
         pregnancyWeek: Int?,
     ): GalleryItem = withContext(ioDispatcher) {
-        val storedImage = fileDataSource.writeJpeg(data)
+        val storedImage = fileDataSource.writeJpegFromFile(temporaryFilePath)
         val entity = mapper.toEntity(
             id = UUID.randomUUID().toString(),
             privateFileName = storedImage.fileName,
@@ -89,7 +90,7 @@ class OfflineGalleryRepository @Inject constructor(
 
     override suspend fun deletePrivateCopy(id: String) = withContext(ioDispatcher) {
         val entity = roomDataSource.itemById(id) ?: return@withContext
-        roomDataSource.deleteById(id)
         fileDataSource.delete(entity.privateFileName)
+        roomDataSource.deleteById(id)
     }
 }

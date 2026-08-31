@@ -8,6 +8,7 @@ import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GalleryItem
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GallerySource
 import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.GalleryRepository
 import com.pablo.ruiz.babyloading.feature.gallery.domain.usecase.ObserveGuidedTrackingContextUseCase
+import com.pablo.ruiz.babyloading.feature.tracking.domain.model.CapturedPhotoFile
 import com.pablo.ruiz.babyloading.feature.tracking.domain.repository.TrackingPhotoExporter
 import com.pablo.ruiz.babyloading.feature.tracking.domain.usecase.SaveGuidedTrackingPhotoUseCase
 import com.pablo.ruiz.babyloading.test.MainDispatcherRule
@@ -43,7 +44,7 @@ class GuidedTrackingViewModelTest {
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(byteArrayOf(1, 2)))
+        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(capturedPhoto("one", 2)))
         advanceUntilIdle()
 
         assertEquals(23, viewModel.uiState.value.pregnancyWeek)
@@ -60,7 +61,7 @@ class GuidedTrackingViewModelTest {
         advanceUntilIdle()
 
         assertNull(viewModel.uiState.value.pregnancyWeek)
-        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(byteArrayOf(1)))
+        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(capturedPhoto("future")))
         advanceUntilIdle()
         assertNull(galleryRepository.savedWeek)
     }
@@ -71,7 +72,7 @@ class GuidedTrackingViewModelTest {
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(byteArrayOf(1)))
+        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(capturedPhoto("export-failure")))
         advanceUntilIdle()
 
         assertEquals(GuidedTrackingSaveOutcome.PrivateOnly, viewModel.uiState.value.saveOutcome)
@@ -83,7 +84,7 @@ class GuidedTrackingViewModelTest {
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(byteArrayOf(1)))
+        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(capturedPhoto("save-failure")))
         advanceUntilIdle()
 
         assertEquals(GuidedTrackingError.SaveFailed, viewModel.uiState.value.error)
@@ -97,8 +98,8 @@ class GuidedTrackingViewModelTest {
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(byteArrayOf(1)))
-        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(byteArrayOf(2)))
+        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(capturedPhoto("first")))
+        viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(capturedPhoto("second")))
         advanceUntilIdle()
 
         assertEquals(1, galleryRepository.saveCount)
@@ -148,6 +149,13 @@ class GuidedTrackingViewModelTest {
         )
     }
 
+    private fun capturedPhoto(name: String, sizeBytes: Long = 1): CapturedPhotoFile {
+        return CapturedPhotoFile(
+            temporaryFilePath = "/cache/guided-capture-$name.jpg",
+            sizeBytes = sizeBytes,
+        )
+    }
+
     private class FakePregnancyRepository(date: LocalDate?) : PregnancyRepository {
         override val lastPeriodDate = MutableStateFlow(date)
         override suspend fun setLastPeriodDate(date: LocalDate) {
@@ -167,8 +175,8 @@ class GuidedTrackingViewModelTest {
 
         override suspend fun importPhotos(sourceUris: List<String>) = GalleryImportResult(0, 0)
 
-        override suspend fun addPrivatePhoto(
-            data: ByteArray,
+        override suspend fun addPrivatePhotoFromFile(
+            temporaryFilePath: String,
             source: GallerySource,
             capturedAt: Instant,
             pregnancyWeek: Int?,
@@ -184,7 +192,10 @@ class GuidedTrackingViewModelTest {
 
     private class FakeExporter : TrackingPhotoExporter {
         var failure: Throwable? = null
-        override suspend fun exportJpeg(data: ByteArray, capturedAt: Instant): String {
+        override suspend fun exportJpegFromFile(
+            privateFilePath: String,
+            capturedAt: Instant,
+        ): String {
             failure?.let { throw it }
             return "content://media/saved"
         }

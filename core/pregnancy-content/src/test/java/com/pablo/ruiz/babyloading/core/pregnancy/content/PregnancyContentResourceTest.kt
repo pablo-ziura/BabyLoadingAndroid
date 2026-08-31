@@ -1,6 +1,7 @@
 package com.pablo.ruiz.babyloading.core.pregnancy.content
 
 import com.pablo.ruiz.babyloading.core.pregnancy.content.data.PregnancyContentParser
+import com.pablo.ruiz.babyloading.core.pregnancy.content.data.PregnancyContentMapper
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.PregnancyContentDocument
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
 import com.pablo.ruiz.babyloading.core.pregnancy.content.presentation.drawableResource
@@ -12,7 +13,10 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class PregnancyContentResourceTest {
-    private val parser = PregnancyContentParser(Json { ignoreUnknownKeys = true })
+    private val parser = PregnancyContentParser(
+        json = Json { ignoreUnknownKeys = true },
+        mapper = PregnancyContentMapper(),
+    )
 
     @Test
     fun bundledEnglishAndSpanishDocumentsAreCompleteAndValid() {

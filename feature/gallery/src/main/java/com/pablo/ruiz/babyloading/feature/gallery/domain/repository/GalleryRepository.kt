@@ -11,8 +11,8 @@ interface GalleryRepository {
 
     suspend fun importPhotos(sourceUris: List<String>): GalleryImportResult
 
-    suspend fun addPrivatePhoto(
-        data: ByteArray,
+    suspend fun addPrivatePhotoFromFile(
+        temporaryFilePath: String,
         source: GallerySource,
         capturedAt: Instant,
         pregnancyWeek: Int?,

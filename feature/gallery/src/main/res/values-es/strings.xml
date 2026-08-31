@@ -3,6 +3,9 @@
     <string name="gallery_title">Galería</string>
     <string name="gallery_subtitle">Guarda tus ecografías y crea una progresión visual guiada de la tripa.</string>
     <string name="gallery_add_photo">Añadir foto</string>
+    <string name="gallery_previous_page">Anterior</string>
+    <string name="gallery_next_page">Siguiente</string>
+    <string name="gallery_page_indicator">Página %1$d de %2$d</string>
     <string name="gallery_ultrasound_title">Galería de ecografías</string>
     <string name="gallery_ultrasound_subtitle">Sigue importando cualquier otra foto del embarazo que quieras guardar.</string>
     <string name="gallery_empty_title">Aquí aparecerán tus ecografías</string>
