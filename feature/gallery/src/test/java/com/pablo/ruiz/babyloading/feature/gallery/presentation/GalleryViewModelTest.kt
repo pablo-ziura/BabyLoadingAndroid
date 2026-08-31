@@ -186,8 +186,8 @@ class GalleryViewModelTest {
             return nextImportResult
         }
 
-        override suspend fun addPrivatePhoto(
-            data: ByteArray,
+        override suspend fun addPrivatePhotoFromFile(
+            temporaryFilePath: String,
             source: GallerySource,
             capturedAt: Instant,
             pregnancyWeek: Int?,

@@ -51,8 +51,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -69,6 +73,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -572,13 +577,20 @@ private fun TrackingTimelineItem(
 }
 
 @Composable
-private fun UltrasoundGallerySection(
+internal fun UltrasoundGallerySection(
     items: List<GalleryItem>,
     isImporting: Boolean,
     onAddPhotos: () -> Unit,
     onItemSelected: (String) -> Unit,
     onDeleteRequested: (String) -> Unit,
 ) {
+    var requestedPageIndex by rememberSaveable { mutableIntStateOf(0) }
+    val page = galleryPage(items, requestedPageIndex)
+    LaunchedEffect(page.pageIndex, requestedPageIndex) {
+        if (requestedPageIndex != page.pageIndex) {
+            requestedPageIndex = page.pageIndex
+        }
+    }
     BabyLoadingCard(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = stringResource(R.string.gallery_ultrasound_title),
@@ -593,13 +605,23 @@ private fun UltrasoundGallerySection(
         )
 
         UltrasoundPhotoGrid(
-            items = items,
+            items = page.items,
             isImporting = isImporting,
             onAddPhotos = onAddPhotos,
             onItemSelected = onItemSelected,
             onDeleteRequested = onDeleteRequested,
             modifier = Modifier.padding(top = 18.dp),
         )
+
+        if (page.pageCount > 1) {
+            GalleryPaginationControls(
+                pageIndex = page.pageIndex,
+                pageCount = page.pageCount,
+                onPrevious = { requestedPageIndex = page.pageIndex - 1 },
+                onNext = { requestedPageIndex = page.pageIndex + 1 },
+                modifier = Modifier.padding(top = 12.dp),
+            )
+        }
 
         if (items.isEmpty()) {
             EmptyUltrasoundGallery(modifier = Modifier.padding(top = 12.dp))
@@ -628,18 +650,20 @@ private fun UltrasoundPhotoGrid(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     rowCells.forEach { cell ->
-                        when (cell) {
-                            GalleryGridCell.AddPhoto -> AddPhotoTile(
-                                isImporting = isImporting,
-                                onClick = onAddPhotos,
-                                modifier = Modifier.weight(1f),
-                            )
-                            is GalleryGridCell.Photo -> UltrasoundPhotoTile(
-                                item = cell.item,
-                                onSelected = { onItemSelected(cell.item.id) },
-                                onDelete = { onDeleteRequested(cell.item.id) },
-                                modifier = Modifier.weight(1f),
-                            )
+                        key(cell.key) {
+                            when (cell) {
+                                GalleryGridCell.AddPhoto -> AddPhotoTile(
+                                    isImporting = isImporting,
+                                    onClick = onAddPhotos,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                is GalleryGridCell.Photo -> UltrasoundPhotoTile(
+                                    item = cell.item,
+                                    onSelected = { onItemSelected(cell.item.id) },
+                                    onDelete = { onDeleteRequested(cell.item.id) },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
                         }
                     }
                     repeat(columnCount - rowCells.size) {
@@ -660,6 +684,7 @@ private fun UltrasoundPhotoTile(
 ) {
     Box(
         modifier = modifier
+            .testTag("ultrasound-photo-${item.id}")
             .height(180.dp)
             .clip(MaterialTheme.shapes.medium)
             .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -690,6 +715,7 @@ private fun AddPhotoTile(
     val borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
     Column(
         modifier = modifier
+            .testTag(ADD_PHOTO_TEST_TAG)
             .height(180.dp)
             .clip(MaterialTheme.shapes.medium)
             .background(Color.White.copy(alpha = 0.36f))
@@ -715,6 +741,46 @@ private fun AddPhotoTile(
             modifier = Modifier.padding(top = 10.dp),
             style = MaterialTheme.typography.labelMedium,
         )
+    }
+}
+
+@Composable
+private fun GalleryPaginationControls(
+    pageIndex: Int,
+    pageCount: Int,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TextButton(
+            onClick = onPrevious,
+            enabled = pageIndex > 0,
+            modifier = Modifier
+                .weight(1f)
+                .testTag(PREVIOUS_PAGE_TEST_TAG),
+        ) {
+            Text(stringResource(R.string.gallery_previous_page))
+        }
+        Text(
+            text = stringResource(R.string.gallery_page_indicator, pageIndex + 1, pageCount),
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.labelLarge,
+            textAlign = TextAlign.Center,
+        )
+        TextButton(
+            onClick = onNext,
+            enabled = pageIndex < pageCount - 1,
+            modifier = Modifier
+                .weight(1f)
+                .testTag(NEXT_PAGE_TEST_TAG),
+        ) {
+            Text(stringResource(R.string.gallery_next_page))
+        }
     }
 }
 
@@ -936,9 +1002,36 @@ private fun Modifier.dashedBorder(color: Color): Modifier = drawBehind {
 }
 
 private sealed interface GalleryGridCell {
-    data class Photo(val item: GalleryItem) : GalleryGridCell
+    val key: String
 
-    data object AddPhoto : GalleryGridCell
+    data class Photo(val item: GalleryItem) : GalleryGridCell {
+        override val key: String = "photo-${item.id}"
+    }
+
+    data object AddPhoto : GalleryGridCell {
+        override val key: String = "add-photo"
+    }
+}
+
+internal data class GalleryPage(
+    val items: List<GalleryItem>,
+    val pageIndex: Int,
+    val pageCount: Int,
+)
+
+internal fun galleryPage(
+    items: List<GalleryItem>,
+    requestedPageIndex: Int,
+): GalleryPage {
+    val pageCount = maxOf(1, (items.size + MAXIMUM_PHOTOS_PER_PAGE - 1) / MAXIMUM_PHOTOS_PER_PAGE)
+    val pageIndex = requestedPageIndex.coerceIn(0, pageCount - 1)
+    val firstIndex = pageIndex * MAXIMUM_PHOTOS_PER_PAGE
+    val pageItems = items.drop(firstIndex).take(MAXIMUM_PHOTOS_PER_PAGE)
+    return GalleryPage(
+        items = pageItems,
+        pageIndex = pageIndex,
+        pageCount = pageCount,
+    )
 }
 
 @Preview(showBackground = true)
@@ -992,4 +1085,8 @@ private fun GalleryWithTrackingPreview() {
 }
 
 private const val ACCESSIBILITY_FONT_SCALE = 1.3f
+internal const val MAXIMUM_PHOTOS_PER_PAGE = 7
+internal const val PREVIOUS_PAGE_TEST_TAG = "gallery-previous-page"
+internal const val NEXT_PAGE_TEST_TAG = "gallery-next-page"
+internal const val ADD_PHOTO_TEST_TAG = "gallery-add-photo"
 private const val TRACKING_STATUS_REFRESH_INTERVAL_MILLIS = 60_000L

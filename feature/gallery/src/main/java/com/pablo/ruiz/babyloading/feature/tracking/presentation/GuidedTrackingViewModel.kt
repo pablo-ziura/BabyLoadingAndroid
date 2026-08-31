@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pablo.ruiz.babyloading.feature.gallery.domain.usecase.ObserveGuidedTrackingContextUseCase
 import com.pablo.ruiz.babyloading.feature.tracking.domain.usecase.SaveGuidedTrackingPhotoUseCase
+import com.pablo.ruiz.babyloading.feature.tracking.domain.model.CapturedPhotoFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
@@ -36,7 +37,7 @@ class GuidedTrackingViewModel @Inject constructor(
 
     fun onEvent(event: GuidedTrackingEvent) {
         when (event) {
-            is GuidedTrackingEvent.PhotoCaptured -> save(event.data)
+            is GuidedTrackingEvent.PhotoCaptured -> save(event.photo)
             GuidedTrackingEvent.CaptureFailed -> _uiState.update {
                 it.copy(error = GuidedTrackingError.CaptureFailed)
             }
@@ -44,14 +45,14 @@ class GuidedTrackingViewModel @Inject constructor(
         }
     }
 
-    private fun save(data: ByteArray) {
+    private fun save(photo: CapturedPhotoFile) {
         if (_uiState.value.isSaving || _uiState.value.saveOutcome != null) return
         val pregnancyWeek = _uiState.value.pregnancyWeek
         _uiState.update { it.copy(isSaving = true, error = null) }
         viewModelScope.launch {
             try {
                 val result = savePhoto(
-                    data = data,
+                    photo = photo,
                     pregnancyWeek = pregnancyWeek,
                 )
                 _uiState.update {

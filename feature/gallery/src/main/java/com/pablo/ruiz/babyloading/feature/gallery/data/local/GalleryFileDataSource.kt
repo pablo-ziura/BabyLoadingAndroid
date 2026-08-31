@@ -5,7 +5,7 @@ import java.io.File
 interface GalleryFileDataSource {
     suspend fun importFromUri(uriValue: String): StoredGalleryImage
 
-    suspend fun writeJpeg(data: ByteArray): StoredGalleryImage
+    suspend fun writeJpegFromFile(temporaryFilePath: String): StoredGalleryImage
 
     fun fileFor(fileName: String): File
 

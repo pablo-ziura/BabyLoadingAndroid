@@ -18,20 +18,19 @@ class WidgetReceiverContractTest {
             AppStorageConfigFactory.LabApplicationId,
         ).widgetDailyRefreshAction
 
-        assertTrue(WidgetRefreshTrigger.matches(productionAction, productionAction))
-        assertTrue(WidgetRefreshTrigger.matches(labAction, labAction))
-        assertFalse(WidgetRefreshTrigger.matches(productionAction, labAction))
+        assertTrue(WidgetDailyRefreshTrigger.matches(productionAction, productionAction))
+        assertTrue(WidgetDailyRefreshTrigger.matches(labAction, labAction))
+        assertFalse(WidgetDailyRefreshTrigger.matches(productionAction, labAction))
     }
 
     @Test
     fun clockAndBootChangesAreRecognizedWithoutAcceptingOtherBroadcasts() {
-        val dailyAction = "com.example.DAILY_REFRESH"
-
-        assertTrue(WidgetRefreshTrigger.matches(Intent.ACTION_BOOT_COMPLETED, dailyAction))
-        assertTrue(WidgetRefreshTrigger.matches(Intent.ACTION_TIME_CHANGED, dailyAction))
-        assertTrue(WidgetRefreshTrigger.matches(Intent.ACTION_TIMEZONE_CHANGED, dailyAction))
-        assertFalse(WidgetRefreshTrigger.matches(Intent.ACTION_LOCALE_CHANGED, dailyAction))
-        assertFalse(WidgetRefreshTrigger.matches(null, dailyAction))
+        assertTrue(WidgetSystemRefreshTrigger.matches(Intent.ACTION_BOOT_COMPLETED))
+        assertTrue(WidgetSystemRefreshTrigger.matches(Intent.ACTION_TIME_CHANGED))
+        assertTrue(WidgetSystemRefreshTrigger.matches(Intent.ACTION_TIMEZONE_CHANGED))
+        assertFalse(WidgetSystemRefreshTrigger.matches(Intent.ACTION_LOCALE_CHANGED))
+        assertFalse(WidgetSystemRefreshTrigger.matches("com.example.DAILY_REFRESH"))
+        assertFalse(WidgetSystemRefreshTrigger.matches(null))
     }
 
     @Test

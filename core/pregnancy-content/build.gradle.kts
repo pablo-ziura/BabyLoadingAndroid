@@ -26,7 +26,7 @@ android {
 
 dependencies {
     api(project(":core:localization"))
-    api(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.serialization.json)
     implementation(project(":core:coroutines"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.hilt.android)

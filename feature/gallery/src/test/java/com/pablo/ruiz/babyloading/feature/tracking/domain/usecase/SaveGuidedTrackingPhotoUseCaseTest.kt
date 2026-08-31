@@ -4,18 +4,20 @@ import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GalleryImportResu
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GalleryItem
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GallerySource
 import com.pablo.ruiz.babyloading.feature.gallery.domain.repository.GalleryRepository
+import com.pablo.ruiz.babyloading.feature.tracking.domain.model.CapturedPhotoFile
 import com.pablo.ruiz.babyloading.feature.tracking.domain.repository.TrackingPhotoExporter
 import java.io.IOException
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class SaveGuidedTrackingPhotoUseCaseTest {
@@ -31,15 +33,15 @@ class SaveGuidedTrackingPhotoUseCaseTest {
 
     @Test
     fun savesPrivateTrackingMetadataBeforeExportingPublicCopy() = runTest {
-        val data = byteArrayOf(1, 2, 3)
+        val photo = CapturedPhotoFile("/cache/guided-capture-one.jpg", 3)
 
-        val result = useCase(data = data, pregnancyWeek = 24)
+        val result = useCase(photo = photo, pregnancyWeek = 24)
 
         assertEquals(GallerySource.GuidedTracking, galleryRepository.savedSource)
         assertEquals(24, galleryRepository.savedWeek)
         assertEquals(capturedAt, galleryRepository.savedAt)
-        assertArrayEquals(data, galleryRepository.savedData)
-        assertArrayEquals(data, exporter.exportedData)
+        assertEquals(photo.temporaryFilePath, galleryRepository.savedTemporaryPath)
+        assertEquals("/private/saved.jpg", exporter.exportedPrivatePath)
         assertEquals(capturedAt, exporter.exportedAt)
         assertEquals(listOf("private", "export"), operations)
         assertTrue(result.publicCopySaved)
@@ -49,31 +51,50 @@ class SaveGuidedTrackingPhotoUseCaseTest {
     fun preservesPrivateResultWhenMediaStoreExportFails() = runTest {
         exporter.failure = IOException("MediaStore unavailable")
 
-        val result = useCase(data = byteArrayOf(1), pregnancyWeek = 24)
+        val result = useCase(
+            photo = CapturedPhotoFile("/cache/guided-capture-two.jpg", 1),
+            pregnancyWeek = 24,
+        )
 
         assertFalse(result.publicCopySaved)
         assertEquals("saved", result.galleryItem.id)
+    }
+
+    @Test
+    fun exportCancellationIsPropagatedAfterThePrivateCopyWasSaved() {
+        exporter.failure = CancellationException("Cancelled")
+
+        assertThrows(CancellationException::class.java) {
+            runTest {
+                useCase(
+                    photo = CapturedPhotoFile("/cache/guided-capture-cancelled.jpg", 1),
+                    pregnancyWeek = 24,
+                )
+            }
+        }
+
+        assertEquals(listOf("private", "export"), operations)
     }
 
     private class RecordingGalleryRepository(
         private val operations: MutableList<String>,
     ) : GalleryRepository {
         override val items: Flow<List<GalleryItem>> = emptyFlow()
-        var savedData: ByteArray? = null
+        var savedTemporaryPath: String? = null
         var savedSource: GallerySource? = null
         var savedAt: Instant? = null
         var savedWeek: Int? = null
 
         override suspend fun importPhotos(sourceUris: List<String>) = GalleryImportResult(0, 0)
 
-        override suspend fun addPrivatePhoto(
-            data: ByteArray,
+        override suspend fun addPrivatePhotoFromFile(
+            temporaryFilePath: String,
             source: GallerySource,
             capturedAt: Instant,
             pregnancyWeek: Int?,
         ): GalleryItem {
             operations += "private"
-            savedData = data
+            savedTemporaryPath = temporaryFilePath
             savedSource = source
             savedAt = capturedAt
             savedWeek = pregnancyWeek
@@ -92,14 +113,17 @@ class SaveGuidedTrackingPhotoUseCaseTest {
     private class RecordingExporter(
         private val operations: MutableList<String>,
     ) : TrackingPhotoExporter {
-        var exportedData: ByteArray? = null
+        var exportedPrivatePath: String? = null
         var exportedAt: Instant? = null
         var failure: Throwable? = null
 
-        override suspend fun exportJpeg(data: ByteArray, capturedAt: Instant): String {
+        override suspend fun exportJpegFromFile(
+            privateFilePath: String,
+            capturedAt: Instant,
+        ): String {
             operations += "export"
             failure?.let { throw it }
-            exportedData = data
+            exportedPrivatePath = privateFilePath
             exportedAt = capturedAt
             return "content://media/photo"
         }

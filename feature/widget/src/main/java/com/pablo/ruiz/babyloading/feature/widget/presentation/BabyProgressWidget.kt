@@ -1,6 +1,7 @@
 package com.pablo.ruiz.babyloading.feature.widget.presentation
 
 import android.appwidget.AppWidgetManager
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -124,10 +125,7 @@ class BabyProgressWidgetReceiver : GlanceAppWidgetReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        val dailyRefreshAction = AppStorageConfigFactory()
-            .forApplicationId(context.packageName)
-            .widgetDailyRefreshAction
-        if (WidgetRefreshTrigger.matches(intent.action, dailyRefreshAction)) {
+        if (WidgetSystemRefreshTrigger.matches(intent.action)) {
             if (hasWidgets(context)) refreshWidgets(context)
         } else {
             super.onReceive(context, intent)
@@ -141,20 +139,32 @@ class BabyProgressWidgetReceiver : GlanceAppWidgetReceiver() {
         )
     }
 
-    private fun hasWidgets(context: Context): Boolean {
-        return AppWidgetManager.getInstance(context).getAppWidgetIds(
-            ComponentName(context, BabyProgressWidgetReceiver::class.java),
-        ).isNotEmpty()
-    }
+}
 
-    private fun refreshWidgets(context: Context) {
-        val pendingResult = goAsync()
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                runCatching { BabyProgressWidget().updateAll(context.applicationContext) }
-            } finally {
-                pendingResult.finish()
-            }
+class BabyProgressWidgetDailyRefreshReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val dailyRefreshAction = AppStorageConfigFactory()
+            .forApplicationId(context.packageName)
+            .widgetDailyRefreshAction
+        if (WidgetDailyRefreshTrigger.matches(intent.action, dailyRefreshAction) && hasWidgets(context)) {
+            refreshWidgets(context)
+        }
+    }
+}
+
+private fun hasWidgets(context: Context): Boolean {
+    return AppWidgetManager.getInstance(context).getAppWidgetIds(
+        ComponentName(context, BabyProgressWidgetReceiver::class.java),
+    ).isNotEmpty()
+}
+
+private fun BroadcastReceiver.refreshWidgets(context: Context) {
+    val pendingResult = goAsync()
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            runCatching { BabyProgressWidget().updateAll(context.applicationContext) }
+        } finally {
+            pendingResult.finish()
         }
     }
 }
@@ -501,12 +511,17 @@ interface BabyProgressWidgetDependencies {
     fun cancelBabyProgressWidgetRefresh(): CancelBabyProgressWidgetRefreshUseCase
 }
 
-internal object WidgetRefreshTrigger {
-    fun matches(action: String?, dailyRefreshAction: String): Boolean {
-        return action == dailyRefreshAction ||
-            action == Intent.ACTION_BOOT_COMPLETED ||
+internal object WidgetSystemRefreshTrigger {
+    fun matches(action: String?): Boolean {
+        return action == Intent.ACTION_BOOT_COMPLETED ||
             action == Intent.ACTION_TIME_CHANGED ||
             action == Intent.ACTION_TIMEZONE_CHANGED
+    }
+}
+
+internal object WidgetDailyRefreshTrigger {
+    fun matches(action: String?, dailyRefreshAction: String): Boolean {
+        return action == dailyRefreshAction
     }
 }
 

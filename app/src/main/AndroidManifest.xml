@@ -47,6 +47,10 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/baby_progress_widget_info" />
         </receiver>
+
+        <receiver
+            android:name=".feature.widget.presentation.BabyProgressWidgetDailyRefreshReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

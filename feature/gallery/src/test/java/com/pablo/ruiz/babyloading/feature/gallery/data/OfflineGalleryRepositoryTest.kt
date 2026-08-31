@@ -7,6 +7,7 @@ import com.pablo.ruiz.babyloading.feature.gallery.data.local.StoredGalleryImage
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GallerySource
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import kotlin.coroutines.CoroutineContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -54,8 +56,8 @@ class OfflineGalleryRepositoryTest {
         val repository = createRepository()
         val capturedAt = Instant.parse("2026-08-15T12:00:00Z")
 
-        val item = repository.addPrivatePhoto(
-            data = byteArrayOf(1, 2, 3),
+        val item = repository.addPrivatePhotoFromFile(
+            temporaryFilePath = createTemporaryCapture(byteArrayOf(1, 2, 3)).absolutePath,
             source = GallerySource.GuidedTracking,
             capturedAt = capturedAt,
             pregnancyWeek = 24,
@@ -66,10 +68,73 @@ class OfflineGalleryRepositoryTest {
         assertEquals(listOf("file", "room"), operations)
         assertTrue(File(item.privateFilePath).exists())
 
+        operations.clear()
+        repository.deletePrivateCopy(item.id)
+
+        assertEquals(listOf("file-delete", "room-delete"), operations)
+        assertTrue(roomDataSource.entities.value.isEmpty())
+        assertFalse(File(item.privateFilePath).exists())
+    }
+
+    @Test
+    fun fileDeletionFailureKeepsRoomMetadataForRetry() = runTest {
+        val repository = createRepository()
+        val item = repository.addPrivatePhotoFromFile(
+            temporaryFilePath = createTemporaryCapture(byteArrayOf(1)).absolutePath,
+            source = GallerySource.Imported,
+            capturedAt = clock.instant(),
+            pregnancyWeek = null,
+        )
+        fileDataSource.failDeletes = true
+        operations.clear()
+
+        val error = runCatching { repository.deletePrivateCopy(item.id) }.exceptionOrNull()
+
+        assertTrue(error is IOException)
+        assertEquals(listOf("file-delete"), operations)
+        assertTrue(roomDataSource.entities.value.any { it.id == item.id })
+        assertTrue(File(item.privateFilePath).exists())
+    }
+
+    @Test
+    fun missingPrivateFileIsAnIdempotentDeletionSuccess() = runTest {
+        val repository = createRepository()
+        val item = repository.addPrivatePhotoFromFile(
+            temporaryFilePath = createTemporaryCapture(byteArrayOf(1)).absolutePath,
+            source = GallerySource.Imported,
+            capturedAt = clock.instant(),
+            pregnancyWeek = null,
+        )
+        Files.delete(File(item.privateFilePath).toPath())
+        operations.clear()
+
+        repository.deletePrivateCopy(item.id)
+
+        assertEquals(listOf("file-delete", "room-delete"), operations)
+        assertTrue(roomDataSource.entities.value.isEmpty())
+    }
+
+    @Test
+    fun roomDeletionFailureCanBeRetriedAfterTheFileWasDeleted() = runTest {
+        val repository = createRepository()
+        val item = repository.addPrivatePhotoFromFile(
+            temporaryFilePath = createTemporaryCapture(byteArrayOf(1)).absolutePath,
+            source = GallerySource.Imported,
+            capturedAt = clock.instant(),
+            pregnancyWeek = null,
+        )
+        roomDataSource.failDeletes = true
+
+        val error = runCatching { repository.deletePrivateCopy(item.id) }.exceptionOrNull()
+
+        assertTrue(error is IOException)
+        assertFalse(File(item.privateFilePath).exists())
+        assertTrue(roomDataSource.entities.value.any { it.id == item.id })
+
+        roomDataSource.failDeletes = false
         repository.deletePrivateCopy(item.id)
 
         assertTrue(roomDataSource.entities.value.isEmpty())
-        assertFalse(File(item.privateFilePath).exists())
     }
 
     @Test
@@ -77,8 +142,8 @@ class OfflineGalleryRepositoryTest {
         val repository = createRepository()
 
         repository.importPhotos(listOf("content://photos/imported"))
-        repository.addPrivatePhoto(
-            data = byteArrayOf(1, 2, 3),
+        repository.addPrivatePhotoFromFile(
+            temporaryFilePath = createTemporaryCapture(byteArrayOf(1, 2, 3)).absolutePath,
             source = GallerySource.GuidedTracking,
             capturedAt = clock.instant(),
             pregnancyWeek = 24,
@@ -102,14 +167,42 @@ class OfflineGalleryRepositoryTest {
         assertTrue(fileDataSource.deletedFileNames.isNotEmpty())
     }
 
-    private fun createRepository(): OfflineGalleryRepository {
+    @Test
+    fun galleryItemsAreMappedOnTheInjectedIoDispatcher() = runTest {
+        val dispatcher = RecordingDispatcher()
+        val repository = createRepository(dispatcher)
+
+        repository.items.first()
+
+        assertTrue(dispatcher.dispatchCount > 0)
+    }
+
+    private fun createRepository(
+        ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = kotlinx.coroutines.Dispatchers.Unconfined,
+    ): OfflineGalleryRepository {
         return OfflineGalleryRepository(
             roomDataSource = roomDataSource,
             fileDataSource = fileDataSource,
             mapper = GalleryItemMapper(fileDataSource),
             clock = clock,
-            ioDispatcher = kotlinx.coroutines.Dispatchers.Unconfined,
+            ioDispatcher = ioDispatcher,
         )
+    }
+
+    private fun createTemporaryCapture(data: ByteArray): File {
+        return File.createTempFile("guided-capture-", ".jpg", temporaryFolder.root).apply {
+            writeBytes(data)
+        }
+    }
+
+    private class RecordingDispatcher : kotlinx.coroutines.CoroutineDispatcher() {
+        var dispatchCount: Int = 0
+            private set
+
+        override fun dispatch(context: CoroutineContext, block: Runnable) {
+            dispatchCount += 1
+            block.run()
+        }
     }
 
     private class FakeGalleryRoomDataSource(
@@ -117,6 +210,7 @@ class OfflineGalleryRepositoryTest {
     ) : GalleryRoomDataSource {
         val entities = MutableStateFlow<List<GalleryItemEntity>>(emptyList())
         var failInserts = false
+        var failDeletes = false
         override val items: Flow<List<GalleryItemEntity>> = entities
 
         override suspend fun insert(item: GalleryItemEntity) {
@@ -130,6 +224,8 @@ class OfflineGalleryRepositoryTest {
         }
 
         override suspend fun deleteById(id: String) {
+            operations += "room-delete"
+            if (failDeletes) throw IOException("Database unavailable")
             entities.value = entities.value.filterNot { it.id == id }
         }
     }
@@ -139,6 +235,7 @@ class OfflineGalleryRepositoryTest {
         private val operations: MutableList<String>,
     ) : GalleryFileDataSource {
         val deletedFileNames = mutableListOf<String>()
+        var failDeletes = false
         private var index = 0
 
         override suspend fun importFromUri(uriValue: String): StoredGalleryImage {
@@ -146,13 +243,20 @@ class OfflineGalleryRepositoryTest {
             return createFile(byteArrayOf(1))
         }
 
-        override suspend fun writeJpeg(data: ByteArray): StoredGalleryImage = createFile(data)
+        override suspend fun writeJpegFromFile(temporaryFilePath: String): StoredGalleryImage {
+            val sourceFile = File(temporaryFilePath)
+            return createFile(sourceFile.readBytes()).also {
+                Files.delete(sourceFile.toPath())
+            }
+        }
 
         override fun fileFor(fileName: String): File = File(directory, fileName)
 
         override suspend fun delete(fileName: String) {
+            operations += "file-delete"
+            if (failDeletes) throw IOException("Filesystem unavailable")
             deletedFileNames += fileName
-            fileFor(fileName).delete()
+            Files.deleteIfExists(fileFor(fileName).toPath())
         }
 
         private fun createFile(data: ByteArray): StoredGalleryImage {
