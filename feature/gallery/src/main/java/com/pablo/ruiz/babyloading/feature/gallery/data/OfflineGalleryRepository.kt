@@ -90,7 +90,7 @@ class OfflineGalleryRepository @Inject constructor(
 
     override suspend fun deletePrivateCopy(id: String) = withContext(ioDispatcher) {
         val entity = roomDataSource.itemById(id) ?: return@withContext
-        roomDataSource.deleteById(id)
         fileDataSource.delete(entity.privateFileName)
+        roomDataSource.deleteById(id)
     }
 }

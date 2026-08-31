@@ -7,6 +7,7 @@ import com.pablo.ruiz.babyloading.feature.gallery.data.local.StoredGalleryImage
 import com.pablo.ruiz.babyloading.feature.gallery.domain.model.GallerySource
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
@@ -67,10 +68,73 @@ class OfflineGalleryRepositoryTest {
         assertEquals(listOf("file", "room"), operations)
         assertTrue(File(item.privateFilePath).exists())
 
+        operations.clear()
+        repository.deletePrivateCopy(item.id)
+
+        assertEquals(listOf("file-delete", "room-delete"), operations)
+        assertTrue(roomDataSource.entities.value.isEmpty())
+        assertFalse(File(item.privateFilePath).exists())
+    }
+
+    @Test
+    fun fileDeletionFailureKeepsRoomMetadataForRetry() = runTest {
+        val repository = createRepository()
+        val item = repository.addPrivatePhoto(
+            data = byteArrayOf(1),
+            source = GallerySource.Imported,
+            capturedAt = clock.instant(),
+            pregnancyWeek = null,
+        )
+        fileDataSource.failDeletes = true
+        operations.clear()
+
+        val error = runCatching { repository.deletePrivateCopy(item.id) }.exceptionOrNull()
+
+        assertTrue(error is IOException)
+        assertEquals(listOf("file-delete"), operations)
+        assertTrue(roomDataSource.entities.value.any { it.id == item.id })
+        assertTrue(File(item.privateFilePath).exists())
+    }
+
+    @Test
+    fun missingPrivateFileIsAnIdempotentDeletionSuccess() = runTest {
+        val repository = createRepository()
+        val item = repository.addPrivatePhoto(
+            data = byteArrayOf(1),
+            source = GallerySource.Imported,
+            capturedAt = clock.instant(),
+            pregnancyWeek = null,
+        )
+        Files.delete(File(item.privateFilePath).toPath())
+        operations.clear()
+
+        repository.deletePrivateCopy(item.id)
+
+        assertEquals(listOf("file-delete", "room-delete"), operations)
+        assertTrue(roomDataSource.entities.value.isEmpty())
+    }
+
+    @Test
+    fun roomDeletionFailureCanBeRetriedAfterTheFileWasDeleted() = runTest {
+        val repository = createRepository()
+        val item = repository.addPrivatePhoto(
+            data = byteArrayOf(1),
+            source = GallerySource.Imported,
+            capturedAt = clock.instant(),
+            pregnancyWeek = null,
+        )
+        roomDataSource.failDeletes = true
+
+        val error = runCatching { repository.deletePrivateCopy(item.id) }.exceptionOrNull()
+
+        assertTrue(error is IOException)
+        assertFalse(File(item.privateFilePath).exists())
+        assertTrue(roomDataSource.entities.value.any { it.id == item.id })
+
+        roomDataSource.failDeletes = false
         repository.deletePrivateCopy(item.id)
 
         assertTrue(roomDataSource.entities.value.isEmpty())
-        assertFalse(File(item.privateFilePath).exists())
     }
 
     @Test
@@ -140,6 +204,7 @@ class OfflineGalleryRepositoryTest {
     ) : GalleryRoomDataSource {
         val entities = MutableStateFlow<List<GalleryItemEntity>>(emptyList())
         var failInserts = false
+        var failDeletes = false
         override val items: Flow<List<GalleryItemEntity>> = entities
 
         override suspend fun insert(item: GalleryItemEntity) {
@@ -153,6 +218,8 @@ class OfflineGalleryRepositoryTest {
         }
 
         override suspend fun deleteById(id: String) {
+            operations += "room-delete"
+            if (failDeletes) throw IOException("Database unavailable")
             entities.value = entities.value.filterNot { it.id == id }
         }
     }
@@ -162,6 +229,7 @@ class OfflineGalleryRepositoryTest {
         private val operations: MutableList<String>,
     ) : GalleryFileDataSource {
         val deletedFileNames = mutableListOf<String>()
+        var failDeletes = false
         private var index = 0
 
         override suspend fun importFromUri(uriValue: String): StoredGalleryImage {
@@ -174,8 +242,10 @@ class OfflineGalleryRepositoryTest {
         override fun fileFor(fileName: String): File = File(directory, fileName)
 
         override suspend fun delete(fileName: String) {
+            operations += "file-delete"
+            if (failDeletes) throw IOException("Filesystem unavailable")
             deletedFileNames += fileName
-            fileFor(fileName).delete()
+            Files.deleteIfExists(fileFor(fileName).toPath())
         }
 
         private fun createFile(data: ByteArray): StoredGalleryImage {
