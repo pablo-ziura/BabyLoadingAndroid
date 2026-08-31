@@ -5,7 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.pablo.ruiz.babyloading.core.storage.AppStorageConfig
-import com.pablo.ruiz.babyloading.feature.widget.presentation.BabyProgressWidgetReceiver
+import com.pablo.ruiz.babyloading.feature.widget.presentation.BabyProgressWidgetDailyRefreshReceiver
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
 import javax.inject.Inject
@@ -41,7 +41,7 @@ class AlarmManagerWidgetRefreshAlarmDataSource @Inject constructor(
         return PendingIntent.getBroadcast(
             applicationContext,
             DAILY_REFRESH_REQUEST_CODE,
-            Intent(applicationContext, BabyProgressWidgetReceiver::class.java)
+            Intent(applicationContext, BabyProgressWidgetDailyRefreshReceiver::class.java)
                 .setAction(storageConfig.widgetDailyRefreshAction),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
