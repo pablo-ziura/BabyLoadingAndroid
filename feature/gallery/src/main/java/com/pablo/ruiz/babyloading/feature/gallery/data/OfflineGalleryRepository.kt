@@ -65,13 +65,13 @@ class OfflineGalleryRepository @Inject constructor(
         }
     }
 
-    override suspend fun addPrivatePhoto(
-        data: ByteArray,
+    override suspend fun addPrivatePhotoFromFile(
+        temporaryFilePath: String,
         source: GallerySource,
         capturedAt: Instant,
         pregnancyWeek: Int?,
     ): GalleryItem = withContext(ioDispatcher) {
-        val storedImage = fileDataSource.writeJpeg(data)
+        val storedImage = fileDataSource.writeJpegFromFile(temporaryFilePath)
         val entity = mapper.toEntity(
             id = UUID.randomUUID().toString(),
             privateFileName = storedImage.fileName,

@@ -80,7 +80,9 @@ import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingSpacing
 import com.pablo.ruiz.babyloading.core.designsystem.theme.BabyLoadingTheme
 import com.pablo.ruiz.babyloading.feature.gallery.R
 import com.pablo.ruiz.babyloading.feature.gallery.presentation.GalleryBitmapDecoder
+import com.pablo.ruiz.babyloading.feature.tracking.domain.model.CapturedPhotoFile
 import java.io.File
+import java.nio.file.Files
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -112,8 +114,8 @@ fun GuidedTrackingScreen(
         uiState = uiState,
         hasCameraPermission = hasCameraPermission,
         onRequestPermission = { permissionLauncher.launch(Manifest.permission.CAMERA) },
-        onPhotoCaptured = { data ->
-            viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(data))
+        onPhotoCaptured = { photo ->
+            viewModel.onEvent(GuidedTrackingEvent.PhotoCaptured(photo))
         },
         onCaptureFailed = { viewModel.onEvent(GuidedTrackingEvent.CaptureFailed) },
         onErrorShown = { viewModel.onEvent(GuidedTrackingEvent.ErrorShown) },
@@ -128,7 +130,7 @@ private fun GuidedTrackingContent(
     uiState: GuidedTrackingUiState,
     hasCameraPermission: Boolean,
     onRequestPermission: () -> Unit,
-    onPhotoCaptured: (ByteArray) -> Unit,
+    onPhotoCaptured: (CapturedPhotoFile) -> Unit,
     onCaptureFailed: () -> Unit,
     onErrorShown: () -> Unit,
     onBack: () -> Unit,
@@ -187,7 +189,7 @@ private fun GuidedTrackingContent(
 private fun TrackingCamera(
     referenceImagePath: String?,
     isSaving: Boolean,
-    onPhotoCaptured: (ByteArray) -> Unit,
+    onPhotoCaptured: (CapturedPhotoFile) -> Unit,
     onCaptureFailed: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -324,9 +326,9 @@ private fun TrackingCamera(
                     executor = cameraExecutor,
                     mainExecutor = context.mainExecutor,
                     cacheDirectory = context.cacheDir,
-                    onSuccess = { data ->
+                    onSuccess = { photo ->
                         isCapturing = false
-                        onPhotoCaptured(data)
+                        onPhotoCaptured(photo)
                     },
                     onFailure = {
                         isCapturing = false
@@ -447,35 +449,54 @@ private fun capturePhoto(
     executor: ExecutorService,
     mainExecutor: java.util.concurrent.Executor,
     cacheDirectory: File,
-    onSuccess: (ByteArray) -> Unit,
+    onSuccess: (CapturedPhotoFile) -> Unit,
     onFailure: () -> Unit,
 ) {
-    val temporaryFile = runCatching {
-        File.createTempFile("guided-capture-", ".jpg", cacheDirectory)
-    }.getOrElse {
-        onFailure()
-        return
-    }
-    val options = ImageCapture.OutputFileOptions.Builder(temporaryFile)
-        .build()
-    controller.takePicture(
-        options,
-        executor,
-        object : ImageCapture.OnImageSavedCallback {
-            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                val data = runCatching { temporaryFile.readBytes() }
-                temporaryFile.delete()
-                mainExecutor.execute {
-                    data.onSuccess(onSuccess).onFailure { onFailure() }
+    executor.execute {
+        val temporaryFile = runCatching {
+            File.createTempFile("guided-capture-", ".jpg", cacheDirectory)
+        }.getOrElse {
+            mainExecutor.execute(onFailure)
+            return@execute
+        }
+        val options = ImageCapture.OutputFileOptions.Builder(temporaryFile).build()
+        mainExecutor.execute {
+            runCatching {
+                controller.takePicture(
+                    options,
+                    executor,
+                    object : ImageCapture.OnImageSavedCallback {
+                        override fun onImageSaved(
+                            outputFileResults: ImageCapture.OutputFileResults,
+                        ) {
+                            val photo = runCatching {
+                                CapturedPhotoFile(
+                                    temporaryFilePath = temporaryFile.absolutePath,
+                                    sizeBytes = temporaryFile.length(),
+                                )
+                            }
+                            if (photo.isFailure) {
+                                runCatching { Files.deleteIfExists(temporaryFile.toPath()) }
+                            }
+                            mainExecutor.execute {
+                                photo.onSuccess(onSuccess).onFailure { onFailure() }
+                            }
+                        }
+
+                        override fun onError(exception: ImageCaptureException) {
+                            runCatching { Files.deleteIfExists(temporaryFile.toPath()) }
+                            mainExecutor.execute(onFailure)
+                        }
+                    },
+                )
+            }.onFailure {
+                executor.execute {
+                    runCatching { Files.deleteIfExists(temporaryFile.toPath()) }
+                    mainExecutor.execute(onFailure)
                 }
             }
-
-            override fun onError(exception: ImageCaptureException) {
-                temporaryFile.delete()
-                mainExecutor.execute(onFailure)
-            }
-        },
-    )
+        }
+    }
 }
 
 @Composable

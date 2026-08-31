@@ -21,8 +21,8 @@ class MediaStoreTrackingPhotoDataSourceTest {
 
     @Test
     fun writesAndPublishesThePendingPhotoUsingExistingProductionNames() = runTest {
-        val result = dataSource.exportJpeg(
-            data = byteArrayOf(1, 2, 3),
+        val result = dataSource.exportJpegFromFile(
+            privateFilePath = "/private/photo.jpg",
             capturedAt = Instant.parse("2026-08-15T12:00:00Z"),
         )
 
@@ -33,6 +33,7 @@ class MediaStoreTrackingPhotoDataSourceTest {
             gateway.photo?.displayName,
         )
         assertEquals("Pictures/Baby Loading", gateway.photo?.relativePath)
+        assertEquals("/private/photo.jpg", gateway.privateFilePath)
     }
 
     @Test
@@ -41,8 +42,8 @@ class MediaStoreTrackingPhotoDataSourceTest {
 
         assertThrows(IOException::class.java) {
             runTest {
-                dataSource.exportJpeg(
-                    data = byteArrayOf(1),
+                dataSource.exportJpegFromFile(
+                    privateFilePath = "/private/photo.jpg",
                     capturedAt = Instant.parse("2026-08-15T12:00:00Z"),
                 )
             }
@@ -53,6 +54,7 @@ class MediaStoreTrackingPhotoDataSourceTest {
     private class RecordingGateway : TrackingMediaStoreGateway {
         val operations = mutableListOf<String>()
         var photo: TrackingMediaStorePhoto? = null
+        var privateFilePath: String? = null
         var writeFailure: Throwable? = null
 
         override fun createPendingPhoto(photo: TrackingMediaStorePhoto): String {
@@ -61,9 +63,10 @@ class MediaStoreTrackingPhotoDataSourceTest {
             return "content://media/pending"
         }
 
-        override fun write(uriValue: String, data: ByteArray) {
+        override fun writeFromFile(uriValue: String, privateFilePath: String) {
             operations += "write"
             writeFailure?.let { throw it }
+            this.privateFilePath = privateFilePath
         }
 
         override fun publish(uriValue: String) {

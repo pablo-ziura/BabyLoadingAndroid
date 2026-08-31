@@ -56,8 +56,8 @@ class OfflineGalleryRepositoryTest {
         val repository = createRepository()
         val capturedAt = Instant.parse("2026-08-15T12:00:00Z")
 
-        val item = repository.addPrivatePhoto(
-            data = byteArrayOf(1, 2, 3),
+        val item = repository.addPrivatePhotoFromFile(
+            temporaryFilePath = createTemporaryCapture(byteArrayOf(1, 2, 3)).absolutePath,
             source = GallerySource.GuidedTracking,
             capturedAt = capturedAt,
             pregnancyWeek = 24,
@@ -79,8 +79,8 @@ class OfflineGalleryRepositoryTest {
     @Test
     fun fileDeletionFailureKeepsRoomMetadataForRetry() = runTest {
         val repository = createRepository()
-        val item = repository.addPrivatePhoto(
-            data = byteArrayOf(1),
+        val item = repository.addPrivatePhotoFromFile(
+            temporaryFilePath = createTemporaryCapture(byteArrayOf(1)).absolutePath,
             source = GallerySource.Imported,
             capturedAt = clock.instant(),
             pregnancyWeek = null,
@@ -99,8 +99,8 @@ class OfflineGalleryRepositoryTest {
     @Test
     fun missingPrivateFileIsAnIdempotentDeletionSuccess() = runTest {
         val repository = createRepository()
-        val item = repository.addPrivatePhoto(
-            data = byteArrayOf(1),
+        val item = repository.addPrivatePhotoFromFile(
+            temporaryFilePath = createTemporaryCapture(byteArrayOf(1)).absolutePath,
             source = GallerySource.Imported,
             capturedAt = clock.instant(),
             pregnancyWeek = null,
@@ -117,8 +117,8 @@ class OfflineGalleryRepositoryTest {
     @Test
     fun roomDeletionFailureCanBeRetriedAfterTheFileWasDeleted() = runTest {
         val repository = createRepository()
-        val item = repository.addPrivatePhoto(
-            data = byteArrayOf(1),
+        val item = repository.addPrivatePhotoFromFile(
+            temporaryFilePath = createTemporaryCapture(byteArrayOf(1)).absolutePath,
             source = GallerySource.Imported,
             capturedAt = clock.instant(),
             pregnancyWeek = null,
@@ -142,8 +142,8 @@ class OfflineGalleryRepositoryTest {
         val repository = createRepository()
 
         repository.importPhotos(listOf("content://photos/imported"))
-        repository.addPrivatePhoto(
-            data = byteArrayOf(1, 2, 3),
+        repository.addPrivatePhotoFromFile(
+            temporaryFilePath = createTemporaryCapture(byteArrayOf(1, 2, 3)).absolutePath,
             source = GallerySource.GuidedTracking,
             capturedAt = clock.instant(),
             pregnancyWeek = 24,
@@ -187,6 +187,12 @@ class OfflineGalleryRepositoryTest {
             clock = clock,
             ioDispatcher = ioDispatcher,
         )
+    }
+
+    private fun createTemporaryCapture(data: ByteArray): File {
+        return File.createTempFile("guided-capture-", ".jpg", temporaryFolder.root).apply {
+            writeBytes(data)
+        }
     }
 
     private class RecordingDispatcher : kotlinx.coroutines.CoroutineDispatcher() {
@@ -237,7 +243,12 @@ class OfflineGalleryRepositoryTest {
             return createFile(byteArrayOf(1))
         }
 
-        override suspend fun writeJpeg(data: ByteArray): StoredGalleryImage = createFile(data)
+        override suspend fun writeJpegFromFile(temporaryFilePath: String): StoredGalleryImage {
+            val sourceFile = File(temporaryFilePath)
+            return createFile(sourceFile.readBytes()).also {
+                Files.delete(sourceFile.toPath())
+            }
+        }
 
         override fun fileFor(fileName: String): File = File(directory, fileName)
 

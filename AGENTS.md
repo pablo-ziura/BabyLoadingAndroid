@@ -57,6 +57,7 @@ Before creating or modifying any screen, reusable component, or widget containin
 - Store the belly-tracking cadence as 7, 14, or 28 days in the feature-owned Preferences DataStore; invalid stored values fall back to 7 days.
 - Label gallery items as imported or guided tracking. Deleting a guided tracking item removes only its private app copy and never deletes an exported MediaStore copy.
 - Use CameraX for guided captures and request only the runtime camera permission. Save the private Room-backed copy first, then export a separate JPEG to `Pictures/Baby Loading` through MediaStore without storage permissions.
+- Keep guided capture JPEGs file-backed end to end: pass a temporary-file reference through presentation, stream it into private storage with the 25 MiB limit, delete the temporary file before inserting Room metadata, and stream the private copy to MediaStore. Never materialize the full capture as a `ByteArray`.
 - Treat MediaStore export as recoverable: if it fails, preserve and report the successfully saved private gallery copy.
 - Provide a single fixed 4x2 home-screen widget with Jetpack Glance. Refresh it immediately after pregnancy-date changes and at most daily while an ongoing, late-term, or postterm pregnancy is active; do not schedule a daily refresh for setup or invalid-date states, frequent background work, or notifications.
 - Export Room schemas to `app/schemas/` and add migrations whenever the database version changes.
