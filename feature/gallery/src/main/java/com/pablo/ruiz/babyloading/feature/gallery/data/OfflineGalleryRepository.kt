@@ -15,6 +15,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -28,7 +29,7 @@ class OfflineGalleryRepository @Inject constructor(
 ) : GalleryRepository {
     override val items: Flow<List<GalleryItem>> = roomDataSource.items.map { entities ->
         entities.map(mapper::toDomain)
-    }
+    }.flowOn(ioDispatcher)
 
     override suspend fun importPhotos(sourceUris: List<String>): GalleryImportResult {
         return withContext(ioDispatcher) {
