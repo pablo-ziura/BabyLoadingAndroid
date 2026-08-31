@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import kotlin.coroutines.CoroutineContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -102,14 +103,36 @@ class OfflineGalleryRepositoryTest {
         assertTrue(fileDataSource.deletedFileNames.isNotEmpty())
     }
 
-    private fun createRepository(): OfflineGalleryRepository {
+    @Test
+    fun galleryItemsAreMappedOnTheInjectedIoDispatcher() = runTest {
+        val dispatcher = RecordingDispatcher()
+        val repository = createRepository(dispatcher)
+
+        repository.items.first()
+
+        assertTrue(dispatcher.dispatchCount > 0)
+    }
+
+    private fun createRepository(
+        ioDispatcher: kotlinx.coroutines.CoroutineDispatcher = kotlinx.coroutines.Dispatchers.Unconfined,
+    ): OfflineGalleryRepository {
         return OfflineGalleryRepository(
             roomDataSource = roomDataSource,
             fileDataSource = fileDataSource,
             mapper = GalleryItemMapper(fileDataSource),
             clock = clock,
-            ioDispatcher = kotlinx.coroutines.Dispatchers.Unconfined,
+            ioDispatcher = ioDispatcher,
         )
+    }
+
+    private class RecordingDispatcher : kotlinx.coroutines.CoroutineDispatcher() {
+        var dispatchCount: Int = 0
+            private set
+
+        override fun dispatch(context: CoroutineContext, block: Runnable) {
+            dispatchCount += 1
+            block.run()
+        }
     }
 
     private class FakeGalleryRoomDataSource(

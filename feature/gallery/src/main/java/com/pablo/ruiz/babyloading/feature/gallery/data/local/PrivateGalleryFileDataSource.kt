@@ -19,8 +19,10 @@ class PrivateGalleryFileDataSource @Inject constructor(
     private val storageConfig: AppStorageConfig,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : GalleryFileDataSource {
-    private val galleryDirectory: File
-        get() = File(context.filesDir, storageConfig.privateGalleryDirectory).apply { mkdirs() }
+    private val pathResolver = GalleryFilePathResolver(
+        rootDirectory = context.filesDir,
+        directoryName = storageConfig.privateGalleryDirectory,
+    )
 
     override suspend fun importFromUri(uriValue: String): StoredGalleryImage = withContext(ioDispatcher) {
         val uri = uriValue.toUri()
@@ -50,8 +52,7 @@ class PrivateGalleryFileDataSource @Inject constructor(
     }
 
     override fun fileFor(fileName: String): File {
-        require(fileName == File(fileName).name) { "Gallery file name must not contain a path" }
-        return File(galleryDirectory, fileName)
+        return pathResolver.fileFor(fileName)
     }
 
     override suspend fun delete(fileName: String) = withContext(ioDispatcher) {
@@ -61,7 +62,7 @@ class PrivateGalleryFileDataSource @Inject constructor(
 
     private fun createTarget(extension: String): StoredGalleryImage {
         val fileName = "${UUID.randomUUID()}.$extension"
-        val file = fileFor(fileName)
+        val file = File(pathResolver.ensureDirectory(), fileName)
         return StoredGalleryImage(fileName = fileName, file = file)
     }
 
