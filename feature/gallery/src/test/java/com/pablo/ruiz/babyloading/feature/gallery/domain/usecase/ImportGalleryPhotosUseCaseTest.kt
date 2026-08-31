@@ -33,8 +33,8 @@ class ImportGalleryPhotosUseCaseTest {
             return GalleryImportResult(sourceUris.size, 0)
         }
 
-        override suspend fun addPrivatePhoto(
-            data: ByteArray,
+        override suspend fun addPrivatePhotoFromFile(
+            temporaryFilePath: String,
             source: GallerySource,
             capturedAt: Instant,
             pregnancyWeek: Int?,

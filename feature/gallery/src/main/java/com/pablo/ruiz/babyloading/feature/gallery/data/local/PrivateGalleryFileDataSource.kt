@@ -42,14 +42,17 @@ class PrivateGalleryFileDataSource @Inject constructor(
         }
     }
 
-    override suspend fun writeJpeg(data: ByteArray): StoredGalleryImage = withContext(ioDispatcher) {
-        require(data.isNotEmpty()) { "Image data cannot be empty" }
-        require(data.size <= MaximumPrivateGalleryImageBytes) {
-            "Image exceeds the private storage limit"
-        }
-        createTarget("jpg").also { storedImage ->
-            storedImage.file.writeBytes(data)
-        }
+    override suspend fun writeJpegFromFile(
+        temporaryFilePath: String,
+    ): StoredGalleryImage = withContext(ioDispatcher) {
+        val sourceFile = File(temporaryFilePath)
+        val storedImage = createTarget("jpg")
+        storeTemporaryCapture(
+            sourceFile = sourceFile,
+            targetFile = storedImage.file,
+            cacheDirectory = context.cacheDir,
+        )
+        storedImage
     }
 
     override fun fileFor(fileName: String): File {
@@ -87,7 +90,7 @@ internal fun copyGalleryImageWithLimit(
     input: java.io.InputStream,
     output: java.io.OutputStream,
     maximumBytes: Int = MaximumPrivateGalleryImageBytes,
-) {
+): Long {
     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
     var totalBytes = 0L
     while (true) {
@@ -98,5 +101,42 @@ internal fun copyGalleryImageWithLimit(
             throw IOException("Selected image exceeds the private storage limit")
         }
         output.write(buffer, 0, bytesRead)
+    }
+    return totalBytes
+}
+
+internal fun requireTemporaryCaptureFile(sourceFile: File, cacheDirectory: File) {
+    require(sourceFile.name.startsWith("guided-capture-") && sourceFile.extension == "jpg") {
+        "Captured photo must use the guided capture file name"
+    }
+    require(sourceFile.canonicalFile.parentFile == cacheDirectory.canonicalFile) {
+        "Captured photo must be stored in the application cache directory"
+    }
+    require(sourceFile.isFile) { "Captured photo file does not exist" }
+}
+
+internal fun storeTemporaryCapture(
+    sourceFile: File,
+    targetFile: File,
+    cacheDirectory: File,
+    maximumBytes: Int = MaximumPrivateGalleryImageBytes,
+) {
+    requireTemporaryCaptureFile(sourceFile, cacheDirectory)
+    try {
+        sourceFile.inputStream().buffered().use { input ->
+            targetFile.outputStream().buffered().use { output ->
+                val copiedBytes = copyGalleryImageWithLimit(input, output, maximumBytes)
+                require(copiedBytes > 0) { "Captured photo cannot be empty" }
+            }
+        }
+        Files.delete(sourceFile.toPath())
+    } catch (error: Throwable) {
+        runCatching { Files.deleteIfExists(targetFile.toPath()) }
+            .exceptionOrNull()
+            ?.let(error::addSuppressed)
+        runCatching { Files.deleteIfExists(sourceFile.toPath()) }
+            .exceptionOrNull()
+            ?.let(error::addSuppressed)
+        throw error
     }
 }
