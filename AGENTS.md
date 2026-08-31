@@ -28,6 +28,7 @@ Before creating or modifying any screen, reusable component, or widget containin
 - Do not hardcode dependency versions in module Gradle files when the Version Catalog can own them.
 - Keep build changes scoped and explain any changes to Android Gradle Plugin, Kotlin, Java compatibility, Compose compiler, or SDK versions.
 - Prefer Java/Kotlin compatibility levels already configured in the project unless a feature requires changing them.
+- Until Kotlin is upgraded to a stable 2.4.20 or newer release, do not enable remote, shared, or untrusted build caches. Use only isolated caches produced by trusted local or per-job builds; see `SECURITY.md`.
 - The `lab` build type is a debuggable, non-distributable manual-testing variant. It uses application ID `com.pablo.ruiz.babyloading.lab`, must keep production `debug` and `release` variants unchanged, and must never gain a production release counterpart.
 
 ## Architecture
