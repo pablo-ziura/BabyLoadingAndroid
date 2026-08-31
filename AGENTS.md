@@ -118,6 +118,7 @@ There are no feature-to-feature module dependencies.
 - Room databases are `baby-loading[-lab].db`. Keep version 1 and `app/schemas/1.json` unchanged unless a deliberate schema migration is introduced.
 - Private image directories are `gallery[-lab]`; MediaStore paths are `Pictures/Baby Loading` and `Pictures/Baby Loading Lab`; filenames retain the configured `BabyLoading` / `BabyLoadingLab` prefix.
 - The widget daily action is based on the real application ID through `AppStorageConfig`. Keep the fixed 4x2 provider XML, the receiver FQCN `com.pablo.ruiz.babyloading.feature.widget.presentation.BabyProgressWidgetReceiver`, and the absence of WorkManager and notifications.
+- Route internal widget alarms only through an explicit non-exported receiver. The exported Glance receiver must accept only app-widget and protected system broadcasts.
 
 ## Networking
 
