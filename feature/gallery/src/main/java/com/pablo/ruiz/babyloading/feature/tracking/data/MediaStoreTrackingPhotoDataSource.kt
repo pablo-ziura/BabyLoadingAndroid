@@ -16,8 +16,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
 interface TrackingPhotoMediaStoreDataSource {
-    suspend fun exportJpeg(
-        data: ByteArray,
+    suspend fun exportJpegFromFile(
+        privateFilePath: String,
         capturedAt: Instant,
     ): String
 }
@@ -28,11 +28,11 @@ class MediaStoreTrackingPhotoDataSource @Inject constructor(
     private val storageConfig: AppStorageConfig,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : TrackingPhotoMediaStoreDataSource {
-    override suspend fun exportJpeg(
-        data: ByteArray,
+    override suspend fun exportJpegFromFile(
+        privateFilePath: String,
         capturedAt: Instant,
     ): String = withContext(ioDispatcher) {
-        require(data.isNotEmpty()) { "Exported photo cannot be empty" }
+        require(privateFilePath.isNotBlank()) { "Exported photo path cannot be blank" }
         val uriValue = mediaStoreGateway.createPendingPhoto(
             TrackingMediaStorePhoto(
                 displayName =
@@ -43,7 +43,7 @@ class MediaStoreTrackingPhotoDataSource @Inject constructor(
             ),
         )
         try {
-            mediaStoreGateway.write(uriValue, data)
+            mediaStoreGateway.writeFromFile(uriValue, privateFilePath)
             mediaStoreGateway.publish(uriValue)
             uriValue
         } catch (error: Throwable) {
@@ -69,7 +69,7 @@ data class TrackingMediaStorePhoto(
 interface TrackingMediaStoreGateway {
     fun createPendingPhoto(photo: TrackingMediaStorePhoto): String
 
-    fun write(uriValue: String, data: ByteArray)
+    fun writeFromFile(uriValue: String, privateFilePath: String)
 
     fun publish(uriValue: String)
 
@@ -94,10 +94,15 @@ class AndroidTrackingMediaStoreGateway @Inject constructor(
             ?: throw IOException("Unable to create a MediaStore photo")
     }
 
-    override fun write(uriValue: String, data: ByteArray) {
-        context.contentResolver.openOutputStream(android.net.Uri.parse(uriValue), "w")
-            ?.use { output -> output.write(data) }
-            ?: throw IOException("Unable to open the MediaStore photo")
+    override fun writeFromFile(uriValue: String, privateFilePath: String) {
+        val sourceFile = java.io.File(privateFilePath)
+        require(sourceFile.isFile) { "Exported photo file does not exist" }
+        sourceFile.inputStream().buffered().use { input ->
+            context.contentResolver.openOutputStream(android.net.Uri.parse(uriValue), "w")
+                ?.buffered()
+                ?.use { output -> input.copyTo(output) }
+                ?: throw IOException("Unable to open the MediaStore photo")
+        }
     }
 
     override fun publish(uriValue: String) {

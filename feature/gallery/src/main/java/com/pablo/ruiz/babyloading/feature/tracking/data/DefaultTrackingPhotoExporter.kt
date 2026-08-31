@@ -9,7 +9,7 @@ import javax.inject.Singleton
 class DefaultTrackingPhotoExporter @Inject constructor(
     private val dataSource: TrackingPhotoMediaStoreDataSource,
 ) : TrackingPhotoExporter {
-    override suspend fun exportJpeg(data: ByteArray, capturedAt: Instant): String {
-        return dataSource.exportJpeg(data, capturedAt)
+    override suspend fun exportJpegFromFile(privateFilePath: String, capturedAt: Instant): String {
+        return dataSource.exportJpegFromFile(privateFilePath, capturedAt)
     }
 }

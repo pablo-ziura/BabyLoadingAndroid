@@ -1,5 +1,7 @@
 package com.pablo.ruiz.babyloading.feature.tracking.presentation
 
+import com.pablo.ruiz.babyloading.feature.tracking.domain.model.CapturedPhotoFile
+
 data class GuidedTrackingUiState(
     val pregnancyWeek: Int? = null,
     val referenceImagePath: String? = null,
@@ -19,7 +21,7 @@ enum class GuidedTrackingError {
 }
 
 sealed interface GuidedTrackingEvent {
-    data class PhotoCaptured(val data: ByteArray) : GuidedTrackingEvent
+    data class PhotoCaptured(val photo: CapturedPhotoFile) : GuidedTrackingEvent
 
     data object CaptureFailed : GuidedTrackingEvent
 
