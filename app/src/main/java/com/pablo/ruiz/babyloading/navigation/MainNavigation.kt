@@ -29,7 +29,9 @@ internal fun MainNavigation(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     dashboardContent: @Composable () -> Unit = { DashboardScreen() },
-    journeyContent: @Composable () -> Unit = { JourneyScreen() },
+    journeyContent: @Composable (isSelected: Boolean) -> Unit = { isSelected ->
+        JourneyScreen(isSelected = isSelected)
+    },
     galleryContent: @Composable () -> Unit = {
         GalleryScreen(
             onStartTracking = { navController.navigate(GuidedTrackingRoute) },
@@ -64,6 +66,7 @@ internal fun MainNavigation(
             navController = navController,
             dashboardContent = dashboardContent,
             journeyContent = journeyContent,
+            isJourneySelected = selectedTab == MainTab.Journey,
             galleryContent = galleryContent,
             guidedTrackingContent = guidedTrackingContent,
             settingsContent = settingsContent,
@@ -78,7 +81,8 @@ internal fun MainNavigation(
 private fun TabNavigationHost(
     navController: NavHostController,
     dashboardContent: @Composable () -> Unit,
-    journeyContent: @Composable () -> Unit,
+    journeyContent: @Composable (isSelected: Boolean) -> Unit,
+    isJourneySelected: Boolean,
     galleryContent: @Composable () -> Unit,
     guidedTrackingContent: @Composable () -> Unit,
     settingsContent: @Composable () -> Unit,
@@ -96,7 +100,7 @@ private fun TabNavigationHost(
         }
         navigation<JourneyGraph>(startDestination = JourneyRoute) {
             composable<JourneyRoute> {
-                journeyContent()
+                journeyContent(isJourneySelected)
             }
         }
         navigation<GalleryGraph>(startDestination = GalleryRoute) {

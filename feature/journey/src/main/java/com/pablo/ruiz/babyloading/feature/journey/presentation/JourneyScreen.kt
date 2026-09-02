@@ -1,5 +1,9 @@
 package com.pablo.ruiz.babyloading.feature.journey.presentation
 
+import android.animation.ValueAnimator
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,14 +23,23 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyLayoutScrollScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,9 +72,11 @@ import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.BabySize
 import com.pablo.ruiz.babyloading.core.pregnancy.content.domain.model.WeekContent
 import com.pablo.ruiz.babyloading.core.pregnancy.content.presentation.drawableResource
 import java.util.Locale
+import kotlin.math.abs
 
 @Composable
 fun JourneyScreen(
+    isSelected: Boolean,
     modifier: Modifier = Modifier,
     viewModel: JourneyViewModel = hiltViewModel(),
 ) {
@@ -71,6 +86,7 @@ fun JourneyScreen(
     }
     JourneyContent(
         uiState = uiState,
+        isSelected = isSelected,
         modifier = modifier,
     )
 }
@@ -78,6 +94,7 @@ fun JourneyScreen(
 @Composable
 private fun JourneyContent(
     uiState: JourneyUiState,
+    isSelected: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -94,6 +111,7 @@ private fun JourneyContent(
             )
             else -> JourneyTimeline(
                 uiState = uiState,
+                isSelected = isSelected,
                 modifier = Modifier.align(Alignment.TopCenter),
             )
         }
@@ -103,9 +121,50 @@ private fun JourneyContent(
 @Composable
 private fun JourneyTimeline(
     uiState: JourneyUiState,
+    isSelected: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val listState = rememberLazyListState()
+    val currentDayTimelineWeek = uiState.currentDayTimelineWeek()
+    var isCurrentDayScrollPending by remember { mutableStateOf(false) }
+    var currentDayScrollRequest by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(isSelected) {
+        isCurrentDayScrollPending = isSelected
+    }
+    LaunchedEffect(isCurrentDayScrollPending, currentDayTimelineWeek) {
+        if (isCurrentDayScrollPending && currentDayTimelineWeek != null) {
+            isCurrentDayScrollPending = false
+            currentDayScrollRequest += 1
+        }
+    }
+    LaunchedEffect(currentDayScrollRequest, isSelected) {
+        if (currentDayScrollRequest == 0 || !isSelected || currentDayTimelineWeek == null) {
+            return@LaunchedEffect
+        }
+
+        withFrameNanos { }
+        val weekIndex = uiState.weeks.indexOfFirst { it.week == currentDayTimelineWeek }
+        if (weekIndex < 0) return@LaunchedEffect
+
+        val timelineItemIndex = weekIndex + 1
+        val centerOffset = -(listState.layoutInfo.viewportSize.height / 2)
+
+        if (ValueAnimator.areAnimatorsEnabled()) {
+            listState.animateToTimelineItem(
+                index = timelineItemIndex,
+                scrollOffset = centerOffset,
+            )
+        } else {
+            listState.scrollToItem(
+                index = timelineItemIndex,
+                scrollOffset = centerOffset,
+            )
+        }
+    }
+
     LazyColumn(
+        state = listState,
         modifier = modifier
             .fillMaxSize()
             .widthIn(max = 720.dp),
@@ -135,6 +194,33 @@ private fun JourneyTimeline(
                 currentDay = uiState.currentDay,
             )
         }
+    }
+}
+
+private suspend fun LazyListState.animateToTimelineItem(
+    index: Int,
+    scrollOffset: Int,
+) {
+    scroll {
+        val lazyScrollScope = LazyLayoutScrollScope(this@animateToTimelineItem, this)
+
+        repeat(2) { pass ->
+            val distance = lazyScrollScope.calculateDistanceTo(index, scrollOffset)
+            if (abs(distance) < 1) return@scroll
+
+            var previousValue = 0f
+            animate(
+                initialValue = 0f,
+                targetValue = distance.toFloat(),
+                animationSpec = tween(
+                    durationMillis = if (pass == 0) 600 else 180,
+                    easing = FastOutSlowInEasing,
+                ),
+            ) { currentValue, _ ->
+                previousValue += scrollBy(currentValue - previousValue)
+            }
+        }
+        lazyScrollScope.snapToItem(index, scrollOffset)
     }
 }
 
@@ -370,6 +456,7 @@ private fun JourneyScreenPreview() {
                         ),
                     ),
                 ),
+                isSelected = true,
             )
         }
     }
