@@ -1,9 +1,13 @@
+import com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 val apiBaseUrl = providers
@@ -36,6 +40,9 @@ android {
         release {
             optimization {
                 enable = true
+            }
+            configure<CrashlyticsExtension> {
+                mappingFileUploadEnabled = true
             }
         }
         create("lab") {
@@ -93,4 +100,10 @@ dependencies {
     androidTestImplementation(libs.androidx.navigation.testing)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(platform(libs.firebase.bom))
+    debugImplementation(libs.firebase.crashlytics)
+    add("labImplementation", platform(libs.firebase.bom))
+    add("labImplementation", libs.firebase.crashlytics)
+    releaseImplementation(platform(libs.firebase.bom))
+    releaseImplementation(libs.firebase.crashlytics)
 }
