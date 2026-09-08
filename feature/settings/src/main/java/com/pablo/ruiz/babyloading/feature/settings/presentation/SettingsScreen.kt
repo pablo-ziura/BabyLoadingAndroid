@@ -1,5 +1,6 @@
 package com.pablo.ruiz.babyloading.feature.settings.presentation
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,11 +41,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,6 +84,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
@@ -100,6 +105,14 @@ fun SettingsScreen(
                 ),
             )
         },
+        onOpenPrivacyPolicy = {
+            try {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PrivacyPolicyUrl)))
+                true
+            } catch (_: ActivityNotFoundException) {
+                false
+            }
+        },
         versionName = versionName,
         modifier = modifier,
     )
@@ -110,11 +123,14 @@ private fun SettingsContent(
     uiState: SettingsUiState,
     onEvent: (SettingsEvent) -> Unit,
     onOpenLanguageSettings: () -> Unit,
+    onOpenPrivacyPolicy: () -> Boolean,
     versionName: String,
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
     val savedMessage = stringResource(R.string.settings_date_saved)
+    val privacyPolicyOpenError = stringResource(R.string.settings_privacy_policy_open_error)
 
     LaunchedEffect(uiState.saveCompleted) {
         if (uiState.saveCompleted) {
@@ -138,6 +154,13 @@ private fun SettingsContent(
                     onSaveDate = { onEvent(SettingsEvent.SaveDate) },
                     onDateSelected = { date -> onEvent(SettingsEvent.DateSelected(date)) },
                     onOpenLanguageSettings = onOpenLanguageSettings,
+                    onOpenPrivacyPolicy = {
+                        if (!onOpenPrivacyPolicy()) {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(privacyPolicyOpenError)
+                            }
+                        }
+                    },
                     versionName = versionName,
                     modifier = Modifier.align(Alignment.TopCenter),
                 )
@@ -152,6 +175,7 @@ private fun SettingsList(
     onSaveDate: () -> Unit,
     onDateSelected: (LocalDate) -> Unit,
     onOpenLanguageSettings: () -> Unit,
+    onOpenPrivacyPolicy: () -> Unit,
     versionName: String,
     modifier: Modifier = Modifier,
 ) {
@@ -273,7 +297,10 @@ private fun SettingsList(
             }
         }
         item {
-            SettingsInformation(versionName)
+            SettingsInformation(
+                versionName = versionName,
+                onOpenPrivacyPolicy = onOpenPrivacyPolicy,
+            )
         }
         item {
             Spacer(modifier = Modifier.height(BabyLoadingSpacing.ExtraLarge))
@@ -537,7 +564,10 @@ private fun appLanguageName(language: AppLanguage): String = stringResource(
 )
 
 @Composable
-private fun SettingsInformation(versionName: String) {
+private fun SettingsInformation(
+    versionName: String,
+    onOpenPrivacyPolicy: () -> Unit,
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -566,6 +596,18 @@ private fun SettingsInformation(versionName: String) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        TextButton(
+            onClick = onOpenPrivacyPolicy,
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_privacy_policy),
+                style = MaterialTheme.typography.labelLarge,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }
 
@@ -582,6 +624,7 @@ private fun YearMonth.calendarDates(): List<LocalDate?> {
 }
 
 private const val DaysInWeek = 7
+private const val PrivacyPolicyUrl = "https://sites.google.com/view/babyloading-privacy-policy/home"
 private const val DisabledActionAlpha = 0.38f
 private val CalendarDayHeight = 48.dp
 private val WeekdayReferenceDate = LocalDate.of(2024, 1, 1)
@@ -602,6 +645,7 @@ private fun SettingsScreenPreview() {
                 ),
                 onEvent = {},
                 onOpenLanguageSettings = {},
+                onOpenPrivacyPolicy = { true },
                 versionName = "1.0",
             )
         }

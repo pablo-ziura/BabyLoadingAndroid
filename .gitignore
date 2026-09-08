@@ -33,6 +33,7 @@ output.json
 *.jks
 *.keystore
 key.properties
+**/google-services.json
 
 # OS files
 .DS_Store
