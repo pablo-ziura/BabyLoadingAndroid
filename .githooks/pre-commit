@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -eu
+
+if git diff --cached --name-only --diff-filter=ACMR | grep -Eq '(^|/)AGENTS\.md$|(^|/)google-services\.json$'; then
+    echo "Refusing to commit local-only AGENTS.md or google-services.json files." >&2
+    echo "Remove them from the index before committing." >&2
+    exit 1
+fi

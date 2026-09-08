@@ -39,6 +39,7 @@ The `lab` build type installs **Baby Loading Lab** alongside the production app 
 - The variant has its own violet launcher icon, made from the production artwork with a uniform `#7C3AED` overlay at 28% opacity.
 - Android application sandboxes are separate by application ID. Lab additionally uses distinct names for its Preferences DataStores, Room database, app-private gallery directory, widget refresh action, and MediaStore exports (`Pictures/Baby Loading Lab`), so it cannot read or write production data.
 - Lab is for local and QA testing only; never distribute it as a production build.
+- Crashlytics uses the separately registered `com.pablo.ruiz.babyloading.lab` Firebase app. Never point this variant at the production Firebase app.
 
 Build, test, lint, or install it with:
 
@@ -97,6 +98,24 @@ When the property is absent, the app uses `https://example.invalid/`, a delibera
 Normal feature services use the default authenticated `Retrofit`. Authentication and refresh implementations bind the optional `AccessTokenDataSource` and `AccessTokenRefreshDataSource` contracts. Login and refresh services must use the qualified unauthenticated client or Retrofit instance to prevent recursive `401` handling. Automatic Bearer credentials are sent only to the configured API origin; caller-provided `Authorization` headers are preserved and excluded from automatic refresh.
 
 Network calls return `NetworkResult` through `safeApiCall`. A feature maps `NetworkError` to its own domain error before crossing from `data` into `domain` or `presentation`.
+
+## Crash reporting
+
+Firebase Crashlytics is integrated in the `:app` `debug`, `lab`, and `release` variants through the Firebase Android BoM. Release builds upload their R8 mapping file through the Crashlytics Gradle plugin.
+
+Firebase configuration is local-only and must never be committed. After registering or rotating Firebase applications, download the current configuration and place it in each matching source set:
+
+```text
+app/src/debug/google-services.json
+app/src/lab/google-services.json
+app/src/release/google-services.json
+```
+
+The repository ignores these files and `AGENTS.md`. The tracked pre-commit guard rejects staged `google-services.json` and `AGENTS.md` files; enable it after cloning with:
+
+```bash
+git config core.hooksPath .githooks
+```
 
 ## Navigation
 

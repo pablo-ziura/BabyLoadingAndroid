@@ -12,6 +12,7 @@
 # Local configuration
 local.properties
 AGENTS.md
+/app/**/google-services.json
 
 # Gradle / Kotlin
 .gradle/
