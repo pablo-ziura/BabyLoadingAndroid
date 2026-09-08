@@ -29,7 +29,7 @@ android {
         applicationId = "com.pablo.ruiz.babyloading"
         minSdk = 34
         targetSdk = 37
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
