@@ -20,4 +20,6 @@
     <string name="settings_next_month">Mes siguiente</string>
     <string name="settings_selected_date">Seleccionada</string>
     <string name="settings_version">Versión %1$s</string>
+    <string name="settings_privacy_policy">Política de privacidad</string>
+    <string name="settings_privacy_policy_open_error">No hay ninguna aplicación disponible para abrir la política de privacidad.</string>
 </resources>
