@@ -6,7 +6,6 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -85,6 +84,7 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlinx.coroutines.launch
+import androidx.core.net.toUri
 
 @Composable
 fun SettingsScreen(
@@ -107,7 +107,7 @@ fun SettingsScreen(
         },
         onOpenPrivacyPolicy = {
             try {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PrivacyPolicyUrl)))
+                context.startActivity(Intent(Intent.ACTION_VIEW, PrivacyPolicyUrl.toUri()))
                 true
             } catch (_: ActivityNotFoundException) {
                 false
