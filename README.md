@@ -29,7 +29,7 @@ The unified Gallery and Guided Tracking module imports up to 10 images per Photo
 
 Guided belly tracking uses CameraX with a consistent alignment overlay, front/back camera selection, and optional rear flash. Each capture is saved privately before Android exports an independent JPEG to `Pictures/Baby Loading`; a MediaStore failure never discards the private copy.
 
-The fixed 4×2 Glance home-screen widget shows the current week and day, remaining days, progress, and estimated due date. It resolves the app launcher through `PackageManager`, refreshes immediately after date changes, and schedules at most one refresh at the next local midnight while pregnancy is ongoing, late term, or postterm. Setup and invalid-date states cancel the alarm; the widget uses neither WorkManager nor notifications.
+The fixed 4×2 Glance home-screen widget shows the current week and day, remaining days, progress, and estimated due date. It resolves the app launcher through `PackageManager`, refreshes immediately after date changes, and schedules at most one refresh at the next local midnight while pregnancy is ongoing, late term, or postterm. Setup and invalid-date states cancel the alarm. The app does not schedule its own WorkManager jobs or notifications; Glance uses WorkManager internally for widget rendering.
 
 ## Lab build variant
 
@@ -140,3 +140,52 @@ deliberately excludes instrumentation tests, which require a connected device or
 emulator.
 
 The primary debugging target is a Pixel 9a running API 36.1. CameraX, MediaStore, the Glance widget, Compose navigation, and `GalleryDaoTest` require device validation when that target is connected. The project compiles and targets Android API 37 with `minSdk` 34 and Java 17 bytecode.
+
+### Release regression checks
+
+Debug and Lab do not run R8. Before publishing, validate an optimized release APK on
+Pixel 9a API 36.1 (and the affected physical device when available), including an
+update over the previous version with existing data and widgets. Local release
+APKs must be signed with a local test key on a test device; a different signature
+cannot replace a Google Play installation.
+
+```bash
+./gradlew assembleDebug
+./gradlew :app:assembleRelease -x uploadCrashlyticsMappingFileRelease
+APKANALYZER="$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" \
+  ./scripts/verify-release-widget.sh app/build/outputs/apk/release/app-release-unsigned.apk
+./gradlew :feature:widget:testDebugUnitTest --tests '*PrepareBabyProgressWidgetUseCaseTest'
+./gradlew :app:connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.pablo.ruiz.babyloading.NavigationIntegrationTest
+```
+
+The mapping upload exclusion is for local verification only. Keep mapping uploads
+enabled for production publishing.
+
+- Switch through every tab and back: exactly the visible tab must be selected.
+- Open Journey with a pregnancy in weeks 6–40: it must scroll to the current day;
+  manually scroll both ways, switch tabs, and verify centering on return.
+- Add a widget with a saved pregnancy date: the loading layout must be replaced
+  with pregnancy data. Repeat after updating an existing installation, and change
+  the date twice in quick succession in Settings to verify both widget refreshes.
+- Open Guided Tracking from Gallery: the bottom navigation must be hidden and
+  restored when returning to Gallery.
+
+Release regressions diagnosed in September 2026:
+
+- Comparing serialized navigation routes with `KClass.qualifiedName` breaks after
+  class obfuscation. Use Navigation `hasRoute` for destinations and graph hierarchy.
+  A permanently false Journey selection also suppresses its automatic scroll.
+- Glance 1.2.0 resolves WorkManager 2.7.1, whose InputMerger keep rule does not
+  explicitly preserve its default constructor. R8 removes
+  `OverwritingInputMerger()`, and rendering fails with `InstantiationException`
+  before widget content runs. `app/proguard-rules.pro` preserves just this class
+  and constructor. Reassess that workaround when upgrading Glance/WorkManager.
+- Glance does not restart `provideGlance` on every `updateAll` while a session is
+  active. The widget loads its initial snapshot, then collects pregnancy date and
+  language changes inside its composition so consecutive edits are rendered.
+
+The APK check guards the reflective constructor in the actual optimized DEX;
+it does not replace the device checks above. Relevant upstream documentation:
+[R8 full mode](https://developer.android.com/topic/performance/app-optimization/full-mode)
+and [Navigation type safety](https://developer.android.com/guide/navigation/design/type-safety).
