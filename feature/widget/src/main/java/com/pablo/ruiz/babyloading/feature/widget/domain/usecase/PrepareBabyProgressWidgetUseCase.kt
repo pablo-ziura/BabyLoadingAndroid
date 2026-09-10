@@ -10,7 +10,11 @@ import com.pablo.ruiz.babyloading.feature.widget.domain.PreparedBabyProgressWidg
 import com.pablo.ruiz.babyloading.feature.widget.domain.repository.WidgetRefreshRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onStart
 
 class PrepareBabyProgressWidgetUseCase @Inject constructor(
     private val pregnancyRepository: PregnancyRepository,
@@ -19,6 +23,11 @@ class PrepareBabyProgressWidgetUseCase @Inject constructor(
     private val appLanguageRepository: AppLanguageRepository,
     private val refreshRepository: WidgetRefreshRepository,
 ) {
+    fun observe(): Flow<PreparedBabyProgressWidget> = combine(
+        pregnancyRepository.lastPeriodDate.distinctUntilChanged(),
+        appLanguageRepository.changes.onStart { emit(appLanguageRepository.currentLanguage()) },
+    ) { _, _ -> invoke() }
+
     suspend operator fun invoke(): PreparedBabyProgressWidget {
         val state = loadState()
         refreshRepository.synchronize(state)

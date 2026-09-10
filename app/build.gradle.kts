@@ -29,8 +29,8 @@ android {
         applicationId = "com.pablo.ruiz.babyloading"
         minSdk = 34
         targetSdk = 37
-        versionCode = 3
-        versionName = "1.0.1"
+        versionCode = 4
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "API_BASE_URL", apiBaseUrlLiteral.get())
@@ -41,6 +41,7 @@ android {
             optimization {
                 enable = true
             }
+            proguardFiles("proguard-rules.pro")
             configure<CrashlyticsExtension> {
                 mappingFileUploadEnabled = true
             }

@@ -11,8 +11,12 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,6 +68,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.catch
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withClip
 
@@ -85,23 +90,31 @@ class BabyProgressWidget : GlanceAppWidget() {
                 weekContent = null,
             )
         }
-        val state = preparedWidget.state
-        val weekContent = preparedWidget.weekContent
-        val strings = BabyProgressWidgetStrings.create(context, state, weekContent)
-        val babySizeProgressImage = (state as? BabyProgressWidgetState.Ongoing)
-            ?.let { ongoing ->
-                weekContent?.let { content ->
-                    ImageProvider(
-                        BabySizeProgressImageRenderer.create(
-                            context = context,
-                            drawableRes = content.babySize.drawableResource(),
-                            progress = ongoing.progress.completionFraction(),
-                        ),
-                    )
+        provideContent {
+            val updates = remember(dependencies) {
+                dependencies.prepareBabyProgressWidget().observe().catch { error ->
+                    if (error is CancellationException) throw error
+                    Log.e("BabyProgressWidget", "Unable to observe widget data", error)
+                }
+            }
+            val currentWidget by updates.collectAsState(initial = preparedWidget)
+            val state = currentWidget.state
+            val weekContent = currentWidget.weekContent
+            val strings = BabyProgressWidgetStrings.create(context, state, weekContent)
+            val babySizeProgressImage = remember(currentWidget) {
+                (state as? BabyProgressWidgetState.Ongoing)?.let { ongoing ->
+                    weekContent?.let { content ->
+                        ImageProvider(
+                            BabySizeProgressImageRenderer.create(
+                                context = context,
+                                drawableRes = content.babySize.drawableResource(),
+                                progress = ongoing.progress.completionFraction(),
+                            ),
+                        )
+                    }
                 }
             }
 
-        provideContent {
             BabyProgressWidgetContent(
                 state = state,
                 strings = strings,
