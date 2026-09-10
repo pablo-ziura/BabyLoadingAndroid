@@ -10,14 +10,20 @@ import com.pablo.ruiz.babyloading.core.pregnancy.domain.repository.PregnancyRepo
 import com.pablo.ruiz.babyloading.core.pregnancy.domain.usecase.CalculatePregnancyProgressUseCase
 import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetState
 import com.pablo.ruiz.babyloading.feature.widget.domain.BabyProgressWidgetStateMapper
+import com.pablo.ruiz.babyloading.feature.widget.domain.PreparedBabyProgressWidget
 import com.pablo.ruiz.babyloading.feature.widget.domain.repository.WidgetRefreshRepository
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -25,6 +31,7 @@ import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class PrepareBabyProgressWidgetUseCaseTest {
     private val currentDate = LocalDate.of(2026, 8, 15)
     private val stateMapper = BabyProgressWidgetStateMapper(
@@ -89,6 +96,58 @@ class PrepareBabyProgressWidgetUseCaseTest {
         assertEquals(listOf(BabyProgressWidgetState.NeedsSetup), refreshRepository.synchronizedStates)
     }
 
+    @Test
+    fun activeSessionObservesSetupAndConsecutiveDateChanges() = runTest {
+        val pregnancyRepository = FakePregnancyRepository(null)
+        val refreshRepository = RecordingWidgetRefreshRepository()
+        val useCase = PrepareBabyProgressWidgetUseCase(
+            pregnancyRepository = pregnancyRepository,
+            stateMapper = stateMapper,
+            pregnancyContentRepository = RecordingPregnancyContentRepository(mutableListOf()),
+            appLanguageRepository = EnglishAppLanguageRepository,
+            refreshRepository = refreshRepository,
+        )
+        val observed = mutableListOf<PreparedBabyProgressWidget>()
+        backgroundScope.launch { useCase.observe().toList(observed) }
+        runCurrent()
+        assertSame(BabyProgressWidgetState.NeedsSetup, observed.last().state)
+
+        for (week in listOf(20, 21, 20)) {
+            pregnancyRepository.setLastPeriodDate(currentDate.minusWeeks(week.toLong()))
+            runCurrent()
+            assertEquals(week, observed.last().weekContent?.week)
+        }
+        pregnancyRepository.clearLastPeriodDate()
+        runCurrent()
+
+        assertEquals(5, observed.size)
+        assertSame(BabyProgressWidgetState.NeedsSetup, observed.last().state)
+        assertEquals(observed.map { it.state }, refreshRepository.synchronizedStates)
+    }
+
+    @Test
+    fun activeSessionReloadsContentWhenAppLanguageChanges() = runTest {
+        val languageRepository = MutableAppLanguageRepository()
+        val requestedLanguages = mutableListOf<AppLanguage>()
+        val useCase = PrepareBabyProgressWidgetUseCase(
+            pregnancyRepository = FakePregnancyRepository(currentDate.minusWeeks(20)),
+            stateMapper = stateMapper,
+            pregnancyContentRepository = RecordingPregnancyContentRepository(
+                mutableListOf(), requestedLanguages,
+            ),
+            appLanguageRepository = languageRepository,
+            refreshRepository = RecordingWidgetRefreshRepository(),
+        )
+        val observed = mutableListOf<PreparedBabyProgressWidget>()
+        backgroundScope.launch { useCase.observe().toList(observed) }
+        runCurrent()
+        languageRepository.setLanguage(AppLanguage.Spanish)
+        runCurrent()
+
+        assertEquals(listOf(AppLanguage.English, AppLanguage.Spanish), requestedLanguages)
+        assertEquals(2, observed.size)
+    }
+
     private suspend fun prepare(
         lastPeriodDate: LocalDate?,
         contentRepository: PregnancyContentRepository,
@@ -124,9 +183,11 @@ private object ThrowingPregnancyRepository : PregnancyRepository {
 
 private class RecordingPregnancyContentRepository(
     private val requestedWeeks: MutableList<Int>,
+    private val requestedLanguages: MutableList<AppLanguage> = mutableListOf(),
 ) : PregnancyContentRepository {
     override suspend fun contentForWeek(week: Int, language: AppLanguage): WeekContent {
         requestedWeeks += week
+        requestedLanguages += language
         return WeekContent(
             week = week,
             babySize = BabySize.Lentil,
@@ -155,4 +216,18 @@ private class RecordingWidgetRefreshRepository : WidgetRefreshRepository {
     }
 
     override fun cancel() = Unit
+}
+
+private class MutableAppLanguageRepository : AppLanguageRepository {
+    private var language = AppLanguage.English
+    override val changes = MutableSharedFlow<AppLanguage>(extraBufferCapacity = 1)
+
+    override fun currentLanguage() = language
+
+    override suspend fun refreshIfChanged() = false
+
+    suspend fun setLanguage(value: AppLanguage) {
+        language = value
+        changes.emit(value)
+    }
 }
