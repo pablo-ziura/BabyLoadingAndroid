@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -51,8 +52,7 @@ internal fun MainNavigation(
     val selectedTab = MainTab.entries.firstOrNull { tab ->
         navBackStackEntry?.destination.isInGraph(tab)
     } ?: MainTab.Dashboard
-    val isGuidedTracking = navBackStackEntry?.destination?.route ==
-        GuidedTrackingRoute::class.qualifiedName
+    val isGuidedTracking = navBackStackEntry?.destination?.hasRoute<GuidedTrackingRoute>() == true
 
     MainScreen(
         modifier = modifier,
@@ -128,9 +128,8 @@ private fun tabNavigationOptions(navController: NavHostController) = navOptions 
 }
 
 private fun NavDestination?.isInGraph(tab: MainTab): Boolean {
-    val graphRoute = tab.navigationGraph()::class.qualifiedName ?: return false
     return this?.hierarchy?.any { destination ->
-        destination.route == graphRoute
+        destination.hasRoute(tab.navigationGraph()::class)
     } == true
 }
 
