@@ -41,6 +41,7 @@ android {
             optimization {
                 enable = true
             }
+            proguardFiles("proguard-rules.pro")
             configure<CrashlyticsExtension> {
                 mappingFileUploadEnabled = true
             }
